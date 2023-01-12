@@ -4,7 +4,28 @@
   
     
     <entry>
-      <title>搭建图床</title>
+      <title>github pages的DNS check出现问题</title>
+      <link href="/2023/01/12/github-pages%E7%9A%84DNS-check%E5%87%BA%E7%8E%B0%E9%97%AE%E9%A2%98/"/>
+      <url>/2023/01/12/github-pages%E7%9A%84DNS-check%E5%87%BA%E7%8E%B0%E9%97%AE%E9%A2%98/</url>
+      
+        <content type="html"><![CDATA[<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Your site<span class="string">&#x27;s DNS settings are using a custom subdomain, www.daoxuan.cc, that is set up as an A record. We recommend you change this to a CNAME record pointing to dx2331lxz.github.io. For more information, see documentation (InvalidARecordError).</span></span><br></pre></td></tr></table></figure><blockquote><p>出现这种报错时候的解决方案是：以CNAME添加两个解析，一个@，一个www都让其解析到xxx.github.io就可以了</p></blockquote><p><a href="https://image.daoxuan.cc/image/202301122102656.jpg">https://image.daoxuan.cc/image/202301122102656.jpg</a></p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> github </tag>
+            
+            <tag> DNS </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>PicGo + 七牛云 + Typora 搭建图床</title>
       <link href="/2023/01/05/PicGo%20+%20%E4%B8%83%E7%89%9B%E4%BA%91%20+%20Typora%E6%90%AD%E5%BB%BA%E5%9B%BE%E5%BA%8A/"/>
       <url>/2023/01/05/PicGo%20+%20%E4%B8%83%E7%89%9B%E4%BA%91%20+%20Typora%E6%90%AD%E5%BB%BA%E5%9B%BE%E5%BA%8A/</url>
       
