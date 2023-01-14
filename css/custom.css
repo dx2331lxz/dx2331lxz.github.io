@@ -42,16 +42,3 @@ i:hover{
   src:url('/fonts/RuanMengXiaoGuoDong-2.ttf') format("truetype");; /* 字体文件路径 */
   font-display : swap;
 }
-
-@font-face{
-  font-family:'W01' ;  /* 字体名自定义即可 */
-  src:url('/fonts/站酷仓耳渔阳体-W01.ttf') format("truetype");; /* 字体文件路径 */
-  font-display : swap;
-}
-
-@font-face{
-  font-family:'English' ;  /* 字体名自定义即可 */
-  src:url('/fonts/Roboto-Black.ttf') format("truetype"); /* 字体文件路径 */
-  font-display : swap;
-}
-
