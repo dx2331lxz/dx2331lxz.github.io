@@ -36,9 +36,3 @@ i:hover{
       cursor: url('https://npm.elemecdn.com/akilar-candyassets/image/cur/hf.cur'),auto;
 }
 
-
-@font-face{
-  font-family:'Guodong' ;  /* 字体名自定义即可 */
-  src:url('/fonts/RuanMengXiaoGuoDong-2.ttf') format("truetype");; /* 字体文件路径 */
-  font-display : swap;
-}
