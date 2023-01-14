@@ -4,6 +4,29 @@
   
     
     <entry>
+      <title>如何处理报错“kex_exchange_identification: Connection closed by remote hostConnection closed by ::1 port 22”</title>
+      <link href="/2023/01/14/%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E6%8A%A5%E9%94%99%E2%80%9Ckex-exchange-identification-Connection-closed-by-remote-hostConnection-closed-by-1-port-22%E2%80%9D/"/>
+      <url>/2023/01/14/%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E6%8A%A5%E9%94%99%E2%80%9Ckex-exchange-identification-Connection-closed-by-remote-hostConnection-closed-by-1-port-22%E2%80%9D/</url>
+      
+        <content type="html"><![CDATA[<p>[TOC]</p><h1 id="如何处理报错“kex-exchange-identification-Connection-closed-by-remote-hostConnection-closed-by-1-port-22”"><a href="#如何处理报错“kex-exchange-identification-Connection-closed-by-remote-hostConnection-closed-by-1-port-22”" class="headerlink" title="如何处理报错“kex_exchange_identification: Connection closed by remote hostConnection closed by ::1 port 22”"></a>如何处理报错“kex_exchange_identification: Connection closed by remote hostConnection closed by ::1 port 22”</h1><p><img src="https://image.daoxuan.cc/image/202301142243578.png" alt="image-20230114220851778"></p><p>这是一张令人质壁分离的报错截图，在<code>hexo d</code>后出现这样一堆的报错</p><blockquote><p>原因是：ssh秘钥的过期，需要更新ssh的key</p></blockquote><ul><li><p>首先可以将本地/Users/username/.ssh/中的文件删除</p></li><li><p>然后再终端输入<code>ssh-keygen -t rsa -C “你的邮箱.com”</code></p></li><li><p>一路回车</p></li><li><p>输入<code>ssh -T git@github.com</code>测试连接</p></li><li><p>yes/no回答yes</p></li><li><pre><code>$ ssh -T git@github.comThe authenticity of host &#39;github.com (20.205.243.166)&#39; can&#39;t be established.ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.This key is not known by any other namesAre you sure you want to continue connecting (yes/no/[fingerprint])? yesWarning: Permanently added &#39;github.com&#39; (ED25519) to the list of known hosts.Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide shell access.</code></pre></li><li><p>看到<code>Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide shell access.</code>就可以了</p></li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 报错 </tag>
+            
+            <tag> hexo </tag>
+            
+            <tag> SSH </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>github pages的DNS check出现问题</title>
       <link href="/2023/01/12/github-pages%E7%9A%84DNS-check%E5%87%BA%E7%8E%B0%E9%97%AE%E9%A2%98/"/>
       <url>/2023/01/12/github-pages%E7%9A%84DNS-check%E5%87%BA%E7%8E%B0%E9%97%AE%E9%A2%98/</url>
