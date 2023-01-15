@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>如何通过链接实现QQ聊天和加好友</title>
+      <link href="/2023/01/15/%E5%A6%82%E4%BD%95%E9%80%9A%E8%BF%87%E9%93%BE%E6%8E%A5%E5%AE%9E%E7%8E%B0QQ%E8%81%8A%E5%A4%A9%E5%92%8C%E5%8A%A0%E5%A5%BD%E5%8F%8B/"/>
+      <url>/2023/01/15/%E5%A6%82%E4%BD%95%E9%80%9A%E8%BF%87%E9%93%BE%E6%8E%A5%E5%AE%9E%E7%8E%B0QQ%E8%81%8A%E5%A4%A9%E5%92%8C%E5%8A%A0%E5%A5%BD%E5%8F%8B/</url>
+      
+        <content type="html"><![CDATA[<h1 id="如何通过链接实现QQ聊天和加好友"><a href="#如何通过链接实现QQ聊天和加好友" class="headerlink" title="如何通过链接实现QQ聊天和加好友"></a>如何通过链接实现QQ聊天和加好友</h1><blockquote><p>强制聊天链接：</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tencent://Message/?Uin=3434055686&amp;websiteName=www.oicqzone.com&amp;Menu=yes</span><br></pre></td></tr></table></figure><blockquote><p>强制加好友链接：</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=2872983273&amp;fuin=3434055686&amp;website=www.oicqzone.com</span><br></pre></td></tr></table></figure><blockquote><p>uin 是被加的一方，fuin是主动加的一方</p></blockquote><ul><li>你可以去掉fuin，把2872983273换成你自己的就可以啦</li></ul><blockquote><p>可以在网页里添加跳转代码，打开网页自动添加好友哦。</p></blockquote><ul><li>以下代码需要添加在head里</li></ul><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0; url=tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=34340555686&amp;website=www.oicqzone.com&quot;&gt;</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 加好友 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>如何处理报错“kex_exchange_identification: Connection closed by remote hostConnection closed by ::1 port 22”</title>
       <link href="/2023/01/14/%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E6%8A%A5%E9%94%99%E2%80%9Ckex-exchange-identification-Connection-closed-by-remote-hostConnection-closed-by-1-port-22%E2%80%9D/"/>
       <url>/2023/01/14/%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E6%8A%A5%E9%94%99%E2%80%9Ckex-exchange-identification-Connection-closed-by-remote-hostConnection-closed-by-1-port-22%E2%80%9D/</url>
