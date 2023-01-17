@@ -57,8 +57,8 @@ i:hover{
 /*10s为加载动画的时间，1为加载动画的次数，ease-in-out为动画效果*/
 #page-header,
 #web_bg {
-    -webkit-animation: imgblur 10s 1 ease-in-out;
-    animation: imgblur 10s 1 ease-in-out;
+    -webkit-animation: imgblur 5s 1 ease-in-out;
+    animation: imgblur 5s 1 ease-in-out;
 }
 @keyframes imgblur {
   0% {
