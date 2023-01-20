@@ -5755,6 +5755,86 @@ blockquote.pullquote.right {
 .read-mode #article-container .note .note-icon {
   color: var(--font-color);
 }
+/* 全局默认鼠标指针 */
+body,
+html{
+  cursor: url('https://image.daoxuan.cc/Cursor%20LiS/Arrow.cur'),auto !important;
+}
+/* 悬停图片时的鼠标指针 */
+img{
+  cursor: url('https://image.daoxuan.cc/Cursor%20LiS/Arrow.cur'),auto !important;
+}
+/* 选择链接标签时的鼠标指针 */
+a:hover{
+    cursor: url('https://image.daoxuan.cc/Cursor%20LiS/Arrow.cur'),auto;
+}
+/* 选中输入框时的鼠标指针 */
+input:hover{
+    cursor: url('https://image.daoxuan.cc/Cursor%20LiS/Handwriting.cur'),auto;
+}
+/* 悬停按钮时的鼠标指针 */
+button:hover{
+    cursor: url('https://npm.elemecdn.com/akilar-candyassets/image/cur/btn.cur'),auto;
+}
+/* 悬停列表标签时的鼠标指针 */
+i:hover{
+    cursor: url('https://npm.elemecdn.com/akilar-candyassets/image/cur/link.cur'),auto;
+}
+/* 悬停页脚链接标签（例如页脚徽标）时的鼠标指针 */
+#footer-wrap a:hover{
+      cursor: url('https://npm.elemecdn.com/akilar-candyassets/image/cur/hf.cur'),auto;
+}
+/* 悬停页码时的鼠标指针 */
+#pagination .page-number:hover{
+      cursor: url('https://npm.elemecdn.com/akilar-candyassets/image/cur/i.cur'),auto;
+}
+/* 悬停菜单栏时的鼠标指针 */
+#nav .site-page:hover{
+      cursor: url('https://npm.elemecdn.com/akilar-candyassets/image/cur/hf.cur'),auto;
+}
+
+@font-face {
+  font-family: 'guodong';
+  font-display: swap;
+  src:url('/fonts/RuanMengXiaoGuoDong-2.ttf') format("truetype");
+}
+
+.aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+  left: -66px !important;
+  /* 默认情况下缩进左侧66px，只留一点箭头部分 */
+}
+
+.aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+  left: 0 !important;
+  /* 鼠标悬停是左侧缩进归零，完全显示按钮 */
+}
+
+
+
+/*10s为加载动画的时间，1为加载动画的次数，ease-in-out为动画效果*/
+#page-header,
+#web_bg {
+    -webkit-animation: imgblur 5s 1 ease-in-out;
+    animation: imgblur 5s 1 ease-in-out;
+}
+@keyframes imgblur {
+  0% {
+    filter: blur(5px);
+  }
+  100% {
+    filter: blur(0px);
+  }
+}
+/*适配使用-webkit内核的浏览器 */
+@-webkit-keyframes imgblur {
+  0% {
+    -webkit-filter: blur(5px);
+  }
+  100% {
+    -webkit-filter: blur(0px);
+  }
+}
+@import 'https://image.daoxuan.cc/css/bolang.css';
 .search-dialog {
   position: fixed;
   top: 10%;
