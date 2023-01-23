@@ -193,13 +193,16 @@ if (true) {
       avatar: 'monsterid',
       serverURLs: '',
       emojiMaps: "",
+      master: '92625bf99fe6dacaa62ad086ed4a2731',   //博主邮箱md5加密32位小写
+      tagMeta: ["博主", "小伙伴", "访客"],     //标识字段名
+      friends: [],  //小伙伴邮箱Md5
       path: window.location.pathname,
       visitor: false
     }, null))
   }
 
   if (typeof Valine === 'function') initValine() 
-  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+  else getScript('/js/Valine.min.js').then(initValine)
 }
 
 if ('Valine' === 'Valine' || !true) {
