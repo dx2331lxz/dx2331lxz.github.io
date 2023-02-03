@@ -4,6 +4,33 @@
   
     
     <entry>
+      <title>butterfly魔改时候报错</title>
+      <link href="/posts/51950/"/>
+      <url>/posts/51950/</url>
+      
+        <content type="html"><![CDATA[<div class="tip "><p>对于一个前端知识全靠用的时候学的后端菜菜，最头疼的莫过于仿照大佬更改源码之后<code>hexo g</code>报错</p></div><blockquote><p>今天分享一个错误</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Only named blocks and mixins can appear at the top level of an extending template</span><br></pre></td></tr></table></figure><h1 id="这个错误的正规解答是这样的"><a href="#这个错误的正规解答是这样的" class="headerlink" title="这个错误的正规解答是这样的"></a>这个错误的正规解答是这样的</h1><p>Pug的模板继承是一项强大的功能，可让您将复杂的页面模板结构拆分为更小，更简单的文件。 但是，如果将许多模板链接在一起，则可能会使页面复杂得不可维护。</p><p>请注意，只有命名块<code>(block)</code>和混合定义可以出现在子模板的顶层（未缩进），顶层不能出现其他内容，如<code>lin()</code>，<code>script</code>，和普通的标签如<code>div(class=&quot;content&quot;)</code>。 这个很重要！ 否则会报错：<code>Only named blocks and mixins can appear at the top level of an extending template</code>。父模板定义页面的整体结构，子模板只能附加，添加或替换特定的标记和逻辑块。 如果子模板试图在块外添加内容，Pug将无法知道将其放置在最终页面的何处。</p><p>使用未缓冲的代码，如果需要在子模块中使用变量，则可以使用下面几种不同的方法：</p><ul><li>将变量添加到Pug选项对象，或在父模板的未缓冲代码中定义它们。 子模板将继承这些变量。</li><li>在子模板的块中定义变量。 扩展模板必须至少包含一个块，否则将为空-只需在此处定义变量即可。</li></ul><p>出于同样的原因，Pug的缓冲注释不能出现在扩展模板的顶层：它们产生的HTML注释在生成的HTML中无处渲染。 （但是，无缓冲的Pug注释仍然可以）</p><blockquote><p>我的一个愚蠢的错误是：在做备份方面自以为是了。</p></blockquote><p>鉴于以往做Django项目的使用习惯，我以为<code>\\</code>这种注释在什么格式的文件都行得通，只用简单快捷键<kbd>Ctrl</kbd> + <kbd>/</kbd>就可以大功告成，成功备份，事实上在<code>png</code>格式的文本中我吃了亏</p><h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>每种文件的注释方式不同，一定不要自以为是。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 报错 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> butterfly </tag>
+            
+            <tag> 报错 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>hexo博客优化日记</title>
       <link href="/posts/12972/"/>
       <url>/posts/12972/</url>
