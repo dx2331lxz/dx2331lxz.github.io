@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>关于左值</title>
+      <link href="/posts/49774/"/>
+      <url>/posts/49774/</url>
+      
+        <content type="html"><![CDATA[<h1 id="关于左值"><a href="#关于左值" class="headerlink" title="关于左值"></a>关于左值</h1><details class="folding-tag" ><summary> 引用自小甲鱼的教程 </summary>              <div class='content'>              <div class="tag link"><a class="link-card" title="Tag Plugins Plus | 什么是lvalue" href="https://fishc.com.cn/thread-69833-1-1.html"><div class="left"><img src= "https://image.daoxuan.cc/image/202301161017428.gif" data-lazy-src="/img/link.png"/></div><div class="right"><p class="text">Tag Plugins Plus | 什么是lvalue</p><p class="url">https://fishc.com.cn/thread-69833-1-1.html</p></div></a></div>              </div>            </details><blockquote><p>一般来说，当你看到这样的报错时</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[Error] lvalue required as left operand of assignment</span><br></pre></td></tr></table></figure><p>就是左值概念不清晰的原因啦</p><p>首先我们引用一下c99的官方文档</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">The name &quot;lvalue&quot; comes originally from the assignment expression E1 = E2, in which the left operand E1 is required to be a (modi&amp;#64257;able) lvalue. It is perhaps better considered as representing an object &quot;locator value&quot;. What is sometimes called &quot;rvalue&quot; is in this International Standard described as the &quot;value of an expression&quot;.</span><br></pre></td></tr></table></figure><div class="tip "><p>当然，装装样子而已啦，还是用汉语叙述：</p></div><p>左值也就是lvalue，更加合理的解释应该是locator value（特定位置的值），rvalue则应该理解为value of an expression（表达式的值）</p><p>以下面的代码为例：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">        int a = 5;</span><br><span class="line"></span><br><span class="line">        ++(a++);</span><br><span class="line"></span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>这段代码是会报错的</p><blockquote><p>如果你认为左值只是赋值运算左边的值，这个错误就无法理解了</p><p>正确的理解是：</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(a++) 是先将变量 a 的值（5）做为整个表达式的值返回，再将 a 自增 1（类似于 a = a + 1）。</span><br><span class="line"></span><br><span class="line">所以这里 ++(a++); 相当于 ++(5), a = a + 1;</span><br><span class="line"></span><br><span class="line">那当然要报错啦，5 是一个常量，当然不能给你 5 = 5 + 1 咯~</span><br></pre></td></tr></table></figure><p>++的作用对象需要是一个用于识别或定位储存位置的表示符（lvalue）</p><h1 id="省流"><a href="#省流" class="headerlink" title="省流"></a>省流</h1><p>C 语言的术语 lvalue 指用于识别或定位一个存储位置的标识符。（注意：左值同时还必须是可改变的）</p><p>其实 rvalue 的发明完全是为了搭配 lvalue，rvalue 你可以理解为 readable value，即任何可读取的值都被认为是右值（非左值）。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> C语言 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 左值 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>butterfly魔改时候报错</title>
       <link href="/posts/51950/"/>
       <url>/posts/51950/</url>
