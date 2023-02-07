@@ -4,6 +4,33 @@
   
     
     <entry>
+      <title>hexo algolia 常见问题解决办法</title>
+      <link href="/posts/20439/"/>
+      <url>/posts/20439/</url>
+      
+        <content type="html"><![CDATA[<details class="folding-tag" ><summary> 下面是参考的教程 </summary>              <div class='content'>              <div class="tag link"><a class="link-card" title="Tag Plugins Plus | hexo algolia 常见问题解决办法 | 猿宵 (werty.cn)" href="https://werty.cn/2019/07/hexo/hexo%20algolia%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E5%A4%B1%E8%B4%A5%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/"><div class="left"><img src= "https://image.daoxuan.cc/image/202301161017428.gif" data-lazy-src="/img/link.png"/></div><div class="right"><p class="text">Tag Plugins Plus | hexo algolia 常见问题解决办法 | 猿宵 (werty.cn)</p><p class="url">https://werty.cn/2019/07/hexo/hexo%20algolia%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E5%A4%B1%E8%B4%A5%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/</p></div></a></div>              </div>            </details><div class="tip "><p>并非原创仅作记录，上面的教程更加详细</p></div><h1 id="hexo-algolia-常见问题解决办法"><a href="#hexo-algolia-常见问题解决办法" class="headerlink" title="hexo algolia 常见问题解决办法"></a>hexo algolia 常见问题解决办法</h1><p>执行algolia命令</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo algolia</span><br></pre></td></tr></table></figure><p>如果报错： <code>Usage: hexo &lt;command&gt;</code></p><p>说明是没有安装hexo algolia插件</p><p>解决办法： 在hexo项目根目录执行npm安装命令</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-algolia --save</span><br></pre></td></tr></table></figure><h1 id="报错-Please-set-an-HEXO-ALGOLIA-INDEXING-KEY-environment-variable-to-enable-content-indexing"><a href="#报错-Please-set-an-HEXO-ALGOLIA-INDEXING-KEY-environment-variable-to-enable-content-indexing" class="headerlink" title="报错: Please set an HEXO_ALGOLIA_INDEXING_KEY environment variable to enable content indexing."></a>报错: Please set an HEXO_ALGOLIA_INDEXING_KEY environment variable to enable content indexing.</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ERROR [hexo-algolia] Please set an `HEXO_ALGOLIA_INDEXING_KEY` environment variable to enable content indexing.</span><br><span class="line">ERROR &gt;&gt; Read https://npmjs.com/hexo-algolia#api-key for more informations.</span><br></pre></td></tr></table></figure><p>原因： 需要一种像ssh一样的API秘钥，具体可以参考你在第一次使用algolia时候的教程</p><p>解决办法：<code>export HEXO_ALGOLIA_INDEXING_KEY=你的Admin API Key</code></p><blockquote><p>上述命令直接在windows cmd或powershell中执行会报错，需要在git bash中执行,不需要重启电脑，但该方法设置的环境变量为临时变量，重启会失效</p></blockquote><p>我采用的主要是下面的方案</p><p>右键点击我的电脑 &gt; 属性 &gt; 高级系统设置 &gt; 环境变量</p><p>在用户变量中点击新建，添加环境变量，变量名为<code>HEXO_ALGOLIA_INDEXING_KEY</code> 值为 <code>Algolia admin key</code> ， 添加后点击确认，重启电脑后新增的环境变量生效(添加到系统变量中也是可以的)</p><p>环境变量设置成功后，执行hexo algolia 即可生成索引文件</p><h1 id="报错：Method-not-allowed-with-this-referer"><a href="#报错：Method-not-allowed-with-this-referer" class="headerlink" title="报错：Method not allowed with this referer"></a>报错：Method not allowed with this referer</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">INFO  [hexo-algolia] Testing HEXO_ALGOLIA_INDEXING_KEY permissions.</span><br><span class="line">INFO  Start processing</span><br><span class="line">INFO  [hexo-algolia] 47 records to index (post, page).</span><br><span class="line">INFO  [hexo-algolia] Indexing chunk 1 of 1 (47 records)</span><br><span class="line">ERROR [hexo-algolia] Method not allowed with this referer</span><br><span class="line">INFO  [hexo-algolia] Indexing done.原因：使用了查询API key环境变量中设置的密钥需要为Admin KEY</span><br></pre></td></tr></table></figure><p>解决办法：</p><p>登录Algolia官网，进入api key控制台</p><p>复制Admin API Key 修改环境变量HEXO_ALGOLIA_INDEXING_KEY 的值为该API Key即可</p><blockquote><p>PS：__config.yml文件中配置的API密钥为搜索密钥(Search-Only API Key)，请注意区分</p></blockquote>]]></content>
+      
+      
+      <categories>
+          
+          <category> 报错 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> hexo </tag>
+            
+            <tag> algolia </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>关于左值</title>
       <link href="/posts/49774/"/>
       <url>/posts/49774/</url>
