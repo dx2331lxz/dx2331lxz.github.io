@@ -4,6 +4,56 @@
   
     
     <entry>
+      <title>C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’</title>
+      <link href="/posts/371/"/>
+      <url>/posts/371/</url>
+      
+        <content type="html"><![CDATA[<h1 id="C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’"><a href="#C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’" class="headerlink" title="C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’"></a>C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’</h1><h2 id="C语言关于动态创建数组的问题"><a href="#C语言关于动态创建数组的问题" class="headerlink" title="C语言关于动态创建数组的问题"></a>C语言关于动态创建数组的问题</h2><p>C语言的数组设置完应该进行初始化，不然会出现补不可预测的bug</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int arr[100] = &#123;0&#125;;</span><br></pre></td></tr></table></figure><p>C语言中由变量动态创建的数组需要初始化，初始化方式和固定长度的一致</p><p>C语言中字符数组可以不初始化，如果不初始化会存储一个类似于α的东西和a很像。</p><h2 id="C语言关于如何传递‘以变量定义长宽的二维数组’"><a href="#C语言关于如何传递‘以变量定义长宽的二维数组’" class="headerlink" title="C语言关于如何传递‘以变量定义长宽的二维数组’"></a>C语言关于如何传递‘以变量定义长宽的二维数组’</h2><div class="tip "><p>前言</p></div><blockquote><p>众所周知，C语言传递二维数组这件事是很容易完成的（在二维数组的长度已经确定的情况下），但是很多时候，为了优化代码，节省空间，我们需要自定义长度和宽度的二维数组，eg：用户自定义输入长宽，然后创建二维数组。然后传入数据。</p><p>这个时候，由于我们事先并不知道二维数组的长宽，所以这个时候编写的函数如果想要按照原来的方式以二维数组为参数，那么我们的子函数便不知道应该开辟多大的空间，就会报错。</p></blockquote><div class="tip "><p>解决方案</p></div><blockquote><p>通过创建一个二级指针来实现二维数组的传递.<br>优点:易于理解,而且在函数间传递起来较为方便.<br>缺点:创建和释放比较麻烦.</p></blockquote><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">a</span><span class="params">(<span class="type">int</span> hei,<span class="type">int</span> wide, <span class="type">int</span> **arr)</span><span class="comment">//打印数据 </span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i&lt;hei; i++)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> j =<span class="number">0</span>; j&lt;wide; j++)</span><br><span class="line">&#123;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, arr[i][j]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">putchar</span>(<span class="string">&#x27;\n&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="type">int</span> hei, wide;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;输入hei：&quot;</span>);<span class="comment">//自定义 </span></span><br><span class="line"><span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;hei);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;输入wide:&quot;</span>);</span><br><span class="line"><span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;wide);<span class="comment">// </span></span><br><span class="line"><span class="type">int</span> **arr = (<span class="type">int</span> **)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="type">int</span> *)*hei);</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i&lt; hei; i++)</span><br><span class="line">&#123;</span><br><span class="line">arr[i] = (<span class="type">int</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="type">int</span>)*wide);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i&lt;hei; i++)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> j =<span class="number">0</span>; j&lt;wide; j++)</span><br><span class="line">&#123;</span><br><span class="line"><span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;arr[i][j]);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">a(hei, wide, arr);</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i&lt;hei; i++)</span><br><span class="line">&#123;</span><br><span class="line"><span class="built_in">free</span>(arr[i]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">free</span>(arr);</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure><blockquote><p>通过二级指针进行传递，这样在子函数中不需要开辟空间，当然我们需要在创建二级指针的时候，手动申请空间，通过malloc函数（包含在stdlib.h头文件中），在堆上申请空间，具体申请步骤看上面代码。</p><p>这样就可以将二维数组进行传递了。</p></blockquote><p>注意：别忘记free掉申请的空间，不然会造成程序使用中的内存泄漏。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> C语言 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> C语言 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>C语言读入多个字符串（不含空格）的方法</title>
+      <link href="/posts/54468/"/>
+      <url>/posts/54468/</url>
+      
+        <content type="html"><![CDATA[<h1 id="C语言读入多个字符串（不含空格）的方法"><a href="#C语言读入多个字符串（不含空格）的方法" class="headerlink" title="C语言读入多个字符串（不含空格）的方法"></a>C语言读入多个字符串（不含空格）的方法</h1><p>方法一：定义二维字符串数组</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//方法一：直接定义字符串数组</span><br><span class="line"></span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    int len = 100;//len是每个字符串最大的长度</span><br><span class="line">    //输入字符串的个数</span><br><span class="line">    int n;</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;n);</span><br><span class="line">    //定义字符串数组</span><br><span class="line">    char p[n][len];</span><br><span class="line">    //读入字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">    scanf(&quot;%s&quot;, &amp;p[i][0]);</span><br><span class="line">    &#125;</span><br><span class="line">    //输出字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        printf(&quot;%s \n&quot;, &amp;p[i][0]);</span><br><span class="line">    &#125;   </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure><p>方法二：定义字符串指针数组</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*方法二：定义字符串指针数组，即数组中的指针指向字符串，</span><br><span class="line">并需要给数组中的每个指针分配动态内存*/</span><br><span class="line"></span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">#include&lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    int len = 100;//len是每个字符串最大的长度</span><br><span class="line">    //输入字符串的个数,</span><br><span class="line">    int n;</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;n);</span><br><span class="line">    //定义字符串指针数组，并给每个指针分配动态内存</span><br><span class="line">    char *p[n];</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        p[i] = (char*)malloc(len * sizeof(char));</span><br><span class="line">    &#125;</span><br><span class="line">    //读入字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        scanf(&quot;%s&quot;, p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    //输出字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        printf(&quot;%s \n&quot;, p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    //释放内存</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        free(p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> C语言 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> C语言 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>C语言的变长数组</title>
       <link href="/posts/30117/"/>
       <url>/posts/30117/</url>
