@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>英文散记</title>
+      <link href="/posts/32992/"/>
+      <url>/posts/32992/</url>
+      
+        <content type="html"><![CDATA[<div class="tip cogs"><p>持续更新中</p></div><div class="table-container"><table><thead><tr><th>英文</th><th>翻译</th></tr></thead><tbody><tr><td>get the hang of it</td><td>掌握窍门</td></tr><tr><td>sponsorship</td><td>奖学金</td></tr></tbody></table></div>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> English </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’</title>
       <link href="/posts/371/"/>
       <url>/posts/371/</url>
