@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>创新科技月演讲稿</title>
+      <link href="/posts/46458/"/>
+      <url>/posts/46458/</url>
+      
+        <content type="html"><![CDATA[<h1 id="介绍部分"><a href="#介绍部分" class="headerlink" title="介绍部分"></a>介绍部分</h1><h2 id="什么是个人博客"><a href="#什么是个人博客" class="headerlink" title="什么是个人博客"></a>什么是个人博客</h2><p>很多人都有自己的分享欲，有些人发动态，有些人发朋友圈，而搭建博客发表文章便是程序员们独有的浪漫。</p><blockquote><p>博客：分享技术，分享生活的地方。</p></blockquote><p><strong>当然此博客并不是像CSDN之类的依附于官方网站的博客，而是自己的网站。</strong></p><h2 id="我的博客主要部分介绍（速度过）"><a href="#我的博客主要部分介绍（速度过）" class="headerlink" title="我的博客主要部分介绍（速度过）"></a>我的博客主要部分介绍（速度过）</h2><p>首先展示默认样式，然后展示我自己的。<a href="https://hexo.io/zh-cn/index.html">官方文档</a></p><h3 id="介绍主要组成部分"><a href="#介绍主要组成部分" class="headerlink" title="介绍主要组成部分"></a>介绍主要组成部分</h3><ul><li>功能类别介绍</li><li>每个功能简单介绍</li><li>文章展示（展示技术文章和生活类文章）</li></ul><h2 id="博客能做什么"><a href="#博客能做什么" class="headerlink" title="博客能做什么"></a>博客能做什么</h2><p>可以在上一步介绍的过程中渗透</p><h1 id="教程部分"><a href="#教程部分" class="headerlink" title="教程部分"></a>教程部分</h1><h2 id="如何搭建"><a href="#如何搭建" class="headerlink" title="如何搭建"></a>如何搭建</h2><p>这里使用别人写好的文章进行讲解<a href="https://blog.csdn.net/weixin_44865458/article/details/122210068?utm_source=pocket_saves">使用 Hexo+GitHub 搭建个人免费博客教程_十九万里的博客-CSDN博客</a></p><h2 id="确定主题"><a href="#确定主题" class="headerlink" title="确定主题"></a>确定主题</h2><p>推荐butterfly，原因：使用的人多，遇到问题方便查询，而且有一堆大佬带路，美化方便。（这里可以展示一下大佬们的主题的魔改）<a href="https://blog.zhheo.com/">张洪Heo - 分享设计与科技生活 (zhheo.com)</a></p><h2 id="如何美化"><a href="#如何美化" class="headerlink" title="如何美化"></a>如何美化</h2><p>首先当然是根据官方配置网址<a href="https://butterfly.js.org/">Butterfly - A Simple and Card UI Design theme for Hexo</a>进行美化，然后就分为两种情况：</p><ol><li>有前端基础，自己魔改（记得备份）</li><li>纯小白（像我一样），根据大佬们的文章进行魔改（记得备份）</li></ol><blockquote><p>这里给出大佬们合作完成的美化教程<a href="https://butterfly.zhheo.com/">Butterfly主题美化教程 (zhheo.com)</a></p><p>这里找一个示例文章进行演示<a href="https://blog.leonus.cn/2023/collectPage.html">藏宝阁页面的实现 | Leonus</a></p></blockquote><h2 id="如何加速"><a href="#如何加速" class="headerlink" title="如何加速"></a>如何加速</h2><p>简单介绍为什么要加速一下</p><p>简单粗暴的方法是将博客部署到个人服务器。</p><p>其次就是使用国内例如七牛云之类的免费cdn服务。</p><h1 id="文章技巧"><a href="#文章技巧" class="headerlink" title="文章技巧"></a>文章技巧</h1><h2 id="图床的使用"><a href="#图床的使用" class="headerlink" title="图床的使用"></a>图床的使用</h2><p>这里用我自己写的文章来讲解<a href="https://daoxuan.cc/posts/undefined/">PicGo + 七牛云 + Typora 搭建图床 | DaoXuan</a></p><p>顺便简单演示一下。</p><h2 id="最后总结一下写博客的好处（时间允许的话）"><a href="#最后总结一下写博客的好处（时间允许的话）" class="headerlink" title="最后总结一下写博客的好处（时间允许的话）"></a>最后总结一下写博客的好处（时间允许的话）</h2><ol><li>记录个人所得，最主要是为了给自己看，其次是为了帮助别人。</li><li>看别人的文章，接触新事物，新知识。</li><li>分享生活中的快乐，记录自己生活的点滴。（程序员的浪漫）</li><li>锻炼自己的前端知识和动手能力</li><li>自己挖掘的一些小功能，比如背单词。</li><li><del>用来装逼</del></li></ol>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 演讲稿 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>英文散记大英二 unit2 2-2汉译英</title>
       <link href="/posts/50631/"/>
       <url>/posts/50631/</url>
