@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>使用宝塔面板部署django项目</title>
+      <link href="/posts/20868/"/>
+      <url>/posts/20868/</url>
+      
+        <content type="html"><![CDATA[<h1 id="使用宝塔面板部署django项目"><a href="#使用宝塔面板部署django项目" class="headerlink" title="使用宝塔面板部署django项目"></a>使用宝塔面板部署django项目</h1><div class="tip cogs"><p>非常emo</p></div><p>爱特程序部现在只剩下三人，为了方便程序部成员使用，写一篇关于部署的教程</p><blockquote><p>欢迎加入爱特工作室</p></blockquote><h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><blockquote><p>我使用的服务器是腾讯云服务器，什么服务器倒是无所谓，只需要根据官方文档和你的服务器使用的系统安装宝塔面板即可。</p></blockquote><p>这个是宝塔官网<a href="https://www.bt.cn/new/index.html">宝塔面板 - 简单好用的Linux/Windows服务器运维管理面板 (bt.cn)</a>网上一搜就有其实。</p><h2 id="登录改密"><a href="#登录改密" class="headerlink" title="登录改密"></a>登录改密</h2><p><img src= "https://image.daoxuan.cc/image/202301161017428.gif" data-lazy-src="https://image.daoxuan.cc/image/202304172157280.png" alt="image-20230417185210940"></p><blockquote><p>安装完之后会显示网址，那个网址一定要记住，访问之后的界面是这样的，用服务器返回给你的账号密码进行登录</p></blockquote><p>当然，因为那个账号密码用起来很不方便可以在登录时候进行改密。</p><blockquote><p>第一次进入之后安装提示会安装一些东西，我们安装体量小的那个。</p></blockquote><p><img src= "https://image.daoxuan.cc/image/202301161017428.gif" data-lazy-src="https://image.daoxuan.cc/image/202304172157735.png" alt="image-20230417202220060"></p><h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>进入软件商店下载Python项目管理器，在Python管理器中需要下载Python</p><blockquote><p>有一些东西需要下载我记不全。</p></blockquote><h2 id="配置数据库"><a href="#配置数据库" class="headerlink" title="配置数据库"></a>配置数据库</h2><p>点击添加数据库，编码utf-8其他的可以和自己本地的一样（这样就不用调settings的设置了）</p><blockquote><p>需要核对一下自己settings里面的数据库设置和自己添加的数据库需要一致。</p></blockquote><p>创建完数据库时候就可以点击导入，然后导入本地的数据库包（.sql）</p><h2 id="在本地生成依赖文件"><a href="#在本地生成依赖文件" class="headerlink" title="在本地生成依赖文件"></a>在本地生成依赖文件</h2><p><code>pip freeze &gt; requirements.txt</code>输入这个命令生成依赖文件<code>requirements.txt</code>查看该文件中的依赖是不是自己这个项目用的，不是的话自己debug，然后改一下依赖的编码格式为utf-8,防止识别不到。</p><h2 id="上传项目压缩包"><a href="#上传项目压缩包" class="headerlink" title="上传项目压缩包"></a>上传项目压缩包</h2><p>上传项目压缩包到/www/wwwroot这个目录下面进行解压（其实到哪里无所谓，习惯上放这里）</p><h2 id="部署项目"><a href="#部署项目" class="headerlink" title="部署项目"></a>部署项目</h2><p>打开之前下载好的Python项目管理器，点击添加项目。路径选择刚刚导入的文件夹，框架选择django，启动方式选择gunicorn，选择一个没有被占用过的端口比如9000；8088之类的，点击安装模块依赖，开机启动，之后就可以点击确定了。</p><blockquote><p>下载完成之后打开项目日志，查看有没有bug，有报错的话可能是依赖包缺少，自行查看下载。</p><p>到这里需要保证数据库的配置是正确的，而且settings有一句这个ALLOWED_HOSTS = []给他改成ALLOWED_HOSTS = [“*”]</p></blockquote><p>然后在Python项目管理器里点击映射，有自己域名的映射自己为这个项目起的域名，没有的话把服务器地址写一下。</p><p>到这里就成功了</p><h2 id="需要自行完善的地方"><a href="#需要自行完善的地方" class="headerlink" title="需要自行完善的地方"></a>需要自行完善的地方</h2><ol><li><p>项目部署的时候设置了端口，这个需要在宝塔面板的”安全“那里，和服务器的“防火墙”那里把你添加的端口放行一下。</p></li><li><p>域名的ssl证书自行配置。</p></li><li><p>数据库的文件可以在Navicat里面按照下图进行导出</p></li></ol><p><img src= "https://image.daoxuan.cc/image/202301161017428.gif" data-lazy-src="https://image.daoxuan.cc/image/202304172157907.png" alt="image-20230417214005276"></p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> django </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>大英散记</title>
       <link href="/posts/64429/"/>
       <url>/posts/64429/</url>
