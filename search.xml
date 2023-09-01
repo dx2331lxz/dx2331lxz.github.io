@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式</title>
+      <link href="/posts/64135/"/>
+      <url>/posts/64135/</url>
+      
+        <content type="html"><![CDATA[<h1 id="picgo报错Error-connect-ECONNREFUSED-127-0-0-1-443的解决方式"><a href="#picgo报错Error-connect-ECONNREFUSED-127-0-0-1-443的解决方式" class="headerlink" title="picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式"></a>picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式</h1><p>参考文章：</p><p><a href="https://blog.csdn.net/m0_53277621/article/details/125121042">picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式_JohnnyassSilverhand的博客-CSDN博客</a></p><p>处理方式：换dns域名解析服务器、换host</p><p>具体解决方式：</p><p>查找 api.github.com 的正确域名（不要直接 ping，建议通过 DNS 查询工具进行查询）</p><p>将其添加到对应的 hosts 文件中</p><p>在C:\Windows\System32\drivers\etc路径找到hosts文件，在末尾加入：</p><p> 140.82.112.6 api.github.com<br> 140.82.114.5 api.github.com<br> //github域名会定期更新，如果不行需要自行查询<br>刷新本地 dns 缓存：cmd执行命令行ipconfig /flushdns</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 报错 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>VisualGLM-6B-趋动云部署</title>
       <link href="/posts/55030/"/>
       <url>/posts/55030/</url>
