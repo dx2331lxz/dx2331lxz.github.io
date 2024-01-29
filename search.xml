@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>django如何将jwt的token作为参数传递验证身份</title>
+      <link href="/posts/64064/"/>
+      <url>/posts/64064/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>有些时候，我们需要将access_token作为参数传递，而不是携带请求头中</p><p>这个时候，我们可以先豁免将jwt验证，然后将参数中的token放到请求头中，</p><p>然后使用官方函数手动验证。</p></blockquote><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">from rest_framework_simplejwt.authentication import JWTAuthentication</span><br><span class="line"> # 豁免验证</span><br><span class="line"> permission_classes = [AllowAny]</span><br><span class="line"></span><br><span class="line"> def parse(self, request, token):</span><br><span class="line">     authentication = JWTAuthentication()</span><br><span class="line">     request.META[&#x27;HTTP_AUTHORIZATION&#x27;] = &#x27;Bearer &#x27; + token</span><br><span class="line">     user, token = authentication.authenticate(request)</span><br><span class="line">     return user</span><br><span class="line">    </span><br><span class="line"> def get(self, request):</span><br><span class="line">     # 获取到get方法的参数</span><br><span class="line">     params = request.query_params</span><br><span class="line">     # id = request.user.id</span><br><span class="line">     # print(id)</span><br><span class="line">     if not params.get(&#x27;token&#x27;):</span><br><span class="line">         return Response(&#123;&#x27;msg&#x27;: &#x27;token未传入&#x27;, &#x27;code&#x27;: 403&#125;, status=status.HTTP_403_FORBIDDEN)</span><br><span class="line">     else:</span><br><span class="line">         token = params.get(&#x27;token&#x27;)</span><br><span class="line">         # 为请求头添加token</span><br><span class="line">         user = self.parse(request, token)</span><br><span class="line"></span><br><span class="line">         # 利用jwt解析token函数进行登录验证并且得到用户id</span><br><span class="line">         if not user:</span><br><span class="line">             return Response(&#123;&#x27;msg&#x27;: &#x27;token无效&#x27;, &#x27;code&#x27;: 403&#125;, status=status.HTTP_403_FORBIDDEN)</span><br></pre></td></tr></table></figure><h2 id="parse"><a href="#parse" class="headerlink" title="parse"></a>parse</h2><p>parse的主要作用便是在请求头中添加token并且进行验证，这也是整个流程的关键。</p><h2 id="get"><a href="#get" class="headerlink" title="get"></a>get</h2><p>下面的get是drf中get请求处理函数，算是使用实例，无需在意。</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> django </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>python蓝桥杯刷题笔记</title>
       <link href="/posts/55779/"/>
       <url>/posts/55779/</url>
