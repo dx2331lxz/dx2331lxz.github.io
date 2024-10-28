@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>Beego启动！！！</title>
+      <link href="/posts/3200/"/>
+      <url>/posts/3200/</url>
+      
+        <content type="html"><![CDATA[<h1 id="beego启动！！！"><a href="#beego启动！！！" class="headerlink" title="beego启动！！！"></a>beego启动！！！</h1><h2 id="Beego核心包"><a href="#Beego核心包" class="headerlink" title="Beego核心包"></a>Beego核心包</h2><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">go</span> get -u github.com/beego/beego/v2</span><br></pre></td></tr></table></figure><h2 id="bee工具"><a href="#bee工具" class="headerlink" title="bee工具"></a>bee工具</h2><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">go</span> install github.com/beego/bee/v2@latest</span><br></pre></td></tr></table></figure><h2 id="把-GOPATH-bin-添加到环境变量中"><a href="#把-GOPATH-bin-添加到环境变量中" class="headerlink" title="把 $GOPATH/bin 添加到环境变量中"></a>把 <code>$GOPATH/bin</code> 添加到环境变量中</h2><p>mac：</p><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vim ~/.zshrc</span><br></pre></td></tr></table></figure><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:$GOPATH/bin</span><br></pre></td></tr></table></figure><h2 id="使用bee创建项目"><a href="#使用bee创建项目" class="headerlink" title="使用bee创建项目"></a>使用bee创建项目</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bee new [项目名称]</span><br></pre></td></tr></table></figure><h2 id="运行项目"><a href="#运行项目" class="headerlink" title="运行项目"></a>运行项目</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bee run</span><br></pre></td></tr></table></figure><h2 id="app-conf"><a href="#app-conf" class="headerlink" title="app.conf"></a>app.conf</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">appname = beego</span><br><span class="line">httpport = 8080</span><br><span class="line">runmode = dev</span><br><span class="line"></span><br><span class="line"># 处理JSON请求参数</span><br><span class="line">copyrequestbody = true</span><br><span class="line"></span><br><span class="line"># 禁止自动渲染模板</span><br><span class="line">autorender = false</span><br><span class="line">#包含MySQL配置文件</span><br><span class="line">include &quot;mysql.conf&quot;</span><br><span class="line"></span><br><span class="line">sessionon = true # 开启session</span><br><span class="line">sessionname = &quot;beegosessionID&quot; # beegosessionID</span><br><span class="line">sessiongcmaxlifetime = 3600 # session过期时间</span><br><span class="line">SessionCookieLifeTime = 3600 # session id 的过期时间，因为其保存在cookie中</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> Beego </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Windows远程连接方案（公网）</title>
       <link href="/posts/26473/"/>
       <url>/posts/26473/</url>
