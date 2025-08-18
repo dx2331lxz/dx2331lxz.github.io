@@ -50,51 +50,6 @@
       </tags>
   </entry>
   <entry>
-    <title>C语言的变长数组</title>
-    <url>/posts/30117/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="C语言的变长数组"><a href="#C语言的变长数组" class="headerlink" title="C语言的变长数组"></a>C语言的变长数组</h1><h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>写程序的时候经常要定义这样一个数组，要前面程序运行后才能知道要定义数组的大小。</p>
-<h2 id="C99之可变长度数组（VLA）"><a href="#C99之可变长度数组（VLA）" class="headerlink" title="C99之可变长度数组（VLA）"></a>C99之可变长度数组（VLA）</h2><p>C99：<br>1994年，由ANSI/ISO联合委员会开始修订C标准<br>1999年，1994年对C语言的修订引出了ISO 9899:1999的发表，它通常被称为C99<br>C11：<br>2011年，国际标准化组织（ISO）和国际电工委员会（IEC） 旗下的C语言标准委员会（ISO/IEC JTC1/SC22/WG14）正式发布了C11标准</p>
-<p>c99标准中，新增了可变长度数组：Variable-length array (VLA)；C11中VLA变为可选项，不是语言必备的特性。</p>
-<p>关于变长数组</p>
-<p>变长数组中的“变”不是指可以修改已创建数组的大小，一旦创建了变长数组，它的大小则保持不变。这里的“变”指的是：在创建数组时，可以使用变量指定数组的长度。(普通数组只能用常量或常量表达式指定数组的长度)</p>
-<ul>
-<li>变长数组VLA只能是局部变量数组</li>
-<li>变长数组VLA不能在定义的时候进行初始化</li>
-<li>变长数组VLA必须是自动存储类别，即不能使用extern或static存储类别说明符</li>
-<li>变长数组VLA不等于动态数组，本质还是静态数组，也就是说，数组的长度在变量的整个生命周期中是不可变的</li>
-<li>由于变长数组只能是局部变量，且必须是自动存储类别，因此变长数组分配在栈上</li>
-<li>可变长数组对于多维数组也适用（如array[a][b] ）</li>
-</ul>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	int a=0;</span><br><span class="line">	int b=0;</span><br><span class="line">	scanf(&quot;%d %d&quot;,&amp;a,&amp;b);</span><br><span class="line">	char array[a][b];</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line">上述代码需在支持C99标准的编译器上才行（注意，VS系列编译器均不支持该特性）</span><br></pre></td></tr></table></figure>
-<p>根据上面关于数组的几项注意点，下面列出几种错误的示例:</p>
-<ul>
-<li><p><code>int a=2;</code></p>
-</li>
-<li><p><code>int b=3;</code></p>
-</li>
-<li><p><code>char array1[a][b] = &#123;1,2,3,4,5,6&#125;;</code> //错误，变长数组VLA不能在定义的时候进行初始化</p>
-</li>
-<li><p><code>char array2[a][b] = &#123;&#123;1,2,3&#125;,&#123;4,5,6&#125;&#125;;</code> //错误，变长数组VLA不能在定义的时候进行初始化</p>
-</li>
-<li><p><code>static char array3[a][b];</code> //错误，变长数组VLA必须是自动存储类别</p>
-</li>
-</ul>
-<h1 id="关于如果是const变量做数组长度，下面还有几种情况需要思考："><a href="#关于如果是const变量做数组长度，下面还有几种情况需要思考：" class="headerlink" title="关于如果是const变量做数组长度，下面还有几种情况需要思考："></a>关于如果是const变量做数组长度，下面还有几种情况需要思考：</h1><h2 id="1、在函数体外部，全局数组长度用const类型全局变量，是否可行？-–-答：可以。"><a href="#1、在函数体外部，全局数组长度用const类型全局变量，是否可行？-–-答：可以。" class="headerlink" title="1、在函数体外部，全局数组长度用const类型全局变量，是否可行？ – 答：可以。"></a>1、在函数体外部，全局数组长度用const类型全局变量，是否可行？ – 答：可以。</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">const int len = 10;</span><br><span class="line">char array[len];</span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="2、在函数体外部，static-全局数组长度用const类型全局变量，是否可行？-–-答：可以。"><a href="#2、在函数体外部，static-全局数组长度用const类型全局变量，是否可行？-–-答：可以。" class="headerlink" title="2、在函数体外部，static 全局数组长度用const类型全局变量，是否可行？ – 答：可以。"></a>2、在函数体外部，static 全局数组长度用const类型全局变量，是否可行？ – 答：可以。</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">const int len = 10;</span><br><span class="line">static char array[len];</span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="3、在函数体内部，static-局部数组长度用const类型局部变量，是否可行？-–-答：可以。"><a href="#3、在函数体内部，static-局部数组长度用const类型局部变量，是否可行？-–-答：可以。" class="headerlink" title="3、在函数体内部，static 局部数组长度用const类型局部变量，是否可行？ – 答：可以。"></a>3、在函数体内部，static 局部数组长度用const类型局部变量，是否可行？ – 答：可以。</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">	const int len = 10;</span><br><span class="line">	static char array[len];</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="4、在函数体内部，局部数组长度用const类型局部变量，是否可行？-–-答：可以。"><a href="#4、在函数体内部，局部数组长度用const类型局部变量，是否可行？-–-答：可以。" class="headerlink" title="4、在函数体内部，局部数组长度用const类型局部变量，是否可行？ – 答：可以。"></a>4、在函数体内部，局部数组长度用const类型局部变量，是否可行？ – 答：可以。</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">	const int len = 10;</span><br><span class="line">	char array[len];</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>总结：const变量不能直接改变，用其定义数组长度实际上已经不再是变长数组了。</p>
-</blockquote>
-</div>]]></content>
-      <categories>
-        <category>C语言</category>
-      </categories>
-      <tags>
-        <tag>c语言</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>C语言读入多个字符串（不含空格）的方法</title>
     <url>/posts/54468/</url>
     <content><![CDATA[<div id="postchat_postcontent"><h1 id="C语言读入多个字符串（不含空格）的方法"><a href="#C语言读入多个字符串（不含空格）的方法" class="headerlink" title="C语言读入多个字符串（不含空格）的方法"></a>C语言读入多个字符串（不含空格）的方法</h1><p>方法一：定义二维字符串数组</p>
@@ -441,6 +396,62 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
       </tags>
   </entry>
   <entry>
+    <title>NAT的四种类型</title>
+    <url>/posts/58955/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h1 id="NAT的四种类型"><a href="#NAT的四种类型" class="headerlink" title="NAT的四种类型"></a>NAT的四种类型</h1><p>参考文章：</p>
+<p><a href="https://blog.csdn.net/s2603898260/article/details/11875547">NAT的四种分类：全锥形NAT,地址受限锥形NAT,端口受限锥形NAT,对称NAT</a></p>
+<h2 id="Full-cone-NAT（全锥形NAT）"><a href="#Full-cone-NAT（全锥形NAT）" class="headerlink" title="Full cone NAT（全锥形NAT）"></a>Full cone NAT（全锥形NAT）</h2><blockquote>
+<p><strong>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到同一个外网（IP，端口），且任何一个外网主机都可以通过访问映射后的公网地址，实现访问位于内网的主机设备功能。</strong></p>
+<p>外网主机可以主动连接内网主机。</p>
+</blockquote>
+<p><img src="https://image.daoxuan.cc/2025/08/1adccc807281c0afa142ce634a3c7a35.png" alt=""></p>
+<h2 id="Restricted-Cone-NAT（地址受限锥形NAT）"><a href="#Restricted-Cone-NAT（地址受限锥形NAT）" class="headerlink" title="Restricted Cone NAT（地址受限锥形NAT）"></a>Restricted Cone NAT（地址受限锥形NAT）</h2><blockquote>
+<p>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到通过一个外网（IP，端口），但与全锥形不同点在于：生成的映射表项与目的IP有关，只有符合要求的目的IP(要访问的公网服务器IP)才可以通讯。此NAT还有个特点：不能主动连接内网中的主机地址，连接必须由内网地址发起。</p>
+<p>限制比全锥形NAT多了：IP地址限制。</p>
+</blockquote>
+<p>此类型NAT除了与源IP和源端口相关外，还与目的IP有关，只有内网主机主动连接的公网IP才可以与内网中的主机通讯。</p>
+<p><img src="https://image.daoxuan.cc/2025/08/8ae88aeed2b1916a9f759ab9aa812877.png" alt="在这里插入图片描述"></p>
+<h2 id="Port-Restricted-Cone-NAT（端口受限锥形NAT）"><a href="#Port-Restricted-Cone-NAT（端口受限锥形NAT）" class="headerlink" title="Port Restricted Cone NAT（端口受限锥形NAT）"></a>Port Restricted Cone NAT（端口受限锥形NAT）</h2><blockquote>
+<p>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到通过一个外网（IP，端口），但是在地址受限锥形NAT基础上增加了端口的限制。</p>
+<p>地址受限锥形NAT时，只有内网主机主动连接的公网主机才可与之进行通讯，而不用担心端口号是否与请求的端口相同。</p>
+<p>但是端口受限锥形NAT除了IP限制外，增加了端口限制。意思是说：除了之前主动连接了主机的（IP，port1,）可以通讯，其他的（IP，port2）等都不可以与之通讯。此NAT映射与报文的三元组绑定</p>
+</blockquote>
+<p><img src="https://image.daoxuan.cc/2025/08/8543bc0f2da38172dac22217358ad06d.jpeg" alt="在这里插入图片描述"></p>
+<h2 id="Symetric-NAT（对称NAT）"><a href="#Symetric-NAT（对称NAT）" class="headerlink" title="Symetric NAT（对称NAT）"></a>Symetric NAT（对称NAT）</h2><blockquote>
+<p>所有从同一个内网（IP，端口）发送到同一个目的IP和端口的请求都会被映射到同一个IP和端口。换句话说（SIP，Sport, DIP, Dport）只要有一个发生变化都会使用不同的映射条目，即此NAT映射与报文四元组绑定。</p>
+</blockquote>
+<ul>
+<li>SIP: Source IP，源IP地址</li>
+<li>Sport: Source Port，源端口</li>
+<li>DIP: Destination IP，目的IP地址</li>
+<li>Dport: Destination Port，目的端口</li>
+</ul>
+<p><img src="https://image.daoxuan.cc/2025/08/5894c4f46833a9bd0e1c80fb1c1abb32.png" alt="在这里插入图片描述"></p>
+<p><strong>“流量过滤的过程依赖 <code>conntrack</code> 维护的连接状态记录，但实际的过滤行为是由iptables/nftables规则或内核NAT模块根据这些状态执行的。”</strong></p>
+<h4 id="具体流程示例"><a href="#具体流程示例" class="headerlink" title="具体流程示例"></a><strong>具体流程示例</strong></h4><ol>
+<li><strong>内网主机</strong> <code>192.168.1.100</code> 访问 <code>8.8.8.8:80</code>，<code>conntrack</code> 记录状态为 <code>NEW</code>。</li>
+<li><strong>iptables的NAT规则</strong> 在 <code>POSTROUTING</code> 链修改源IP为 <code>1.2.3.4:60000</code>，并更新 <code>conntrack</code>。</li>
+<li><strong>返回包</strong> <code>8.8.8.8:80 → 1.2.3.4:60000</code> 到达时：<ul>
+<li>内核查询 <code>conntrack</code>，发现匹配 <code>ESTABLISHED</code> 状态。</li>
+<li><strong>如果是对称NAT</strong>：进一步检查端口是否匹配会话。</li>
+<li><strong>如果是端口受限锥形NAT</strong>：检查 <code>8.8.8.8:80</code> 是否在记录中。</li>
+</ul>
+</li>
+<li><strong>最终决策</strong>：<ul>
+<li>通过 <code>conntrack</code> 验证后，内核决定是否转发或丢弃数据包。</li>
+</ul>
+</li>
+</ol>
+<h3 id="🌟-总结"><a href="#🌟-总结" class="headerlink" title="🌟 总结"></a>🌟 <strong>总结</strong></h3><ul>
+<li><strong><code>conntrack</code> 是“账本”</strong>：记录谁在和谁通信。</li>
+<li><strong>iptables/内核是“警察”</strong>：根据账本决定是否放行。</li>
+</ul>
+</div>]]></content>
+      <tags>
+        <tag>网络</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Python 包管理工具UV命令速记</title>
     <url>/posts/39530/</url>
     <content><![CDATA[<div id="postchat_postcontent"><h1 id="Python-包管理工具UV命令速记"><a href="#Python-包管理工具UV命令速记" class="headerlink" title="Python 包管理工具UV命令速记"></a>Python 包管理工具UV命令速记</h1><blockquote>
@@ -639,6 +650,51 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
       </tags>
   </entry>
   <entry>
+    <title>C语言的变长数组</title>
+    <url>/posts/30117/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h1 id="C语言的变长数组"><a href="#C语言的变长数组" class="headerlink" title="C语言的变长数组"></a>C语言的变长数组</h1><h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>写程序的时候经常要定义这样一个数组，要前面程序运行后才能知道要定义数组的大小。</p>
+<h2 id="C99之可变长度数组（VLA）"><a href="#C99之可变长度数组（VLA）" class="headerlink" title="C99之可变长度数组（VLA）"></a>C99之可变长度数组（VLA）</h2><p>C99：<br>1994年，由ANSI/ISO联合委员会开始修订C标准<br>1999年，1994年对C语言的修订引出了ISO 9899:1999的发表，它通常被称为C99<br>C11：<br>2011年，国际标准化组织（ISO）和国际电工委员会（IEC） 旗下的C语言标准委员会（ISO/IEC JTC1/SC22/WG14）正式发布了C11标准</p>
+<p>c99标准中，新增了可变长度数组：Variable-length array (VLA)；C11中VLA变为可选项，不是语言必备的特性。</p>
+<p>关于变长数组</p>
+<p>变长数组中的“变”不是指可以修改已创建数组的大小，一旦创建了变长数组，它的大小则保持不变。这里的“变”指的是：在创建数组时，可以使用变量指定数组的长度。(普通数组只能用常量或常量表达式指定数组的长度)</p>
+<ul>
+<li>变长数组VLA只能是局部变量数组</li>
+<li>变长数组VLA不能在定义的时候进行初始化</li>
+<li>变长数组VLA必须是自动存储类别，即不能使用extern或static存储类别说明符</li>
+<li>变长数组VLA不等于动态数组，本质还是静态数组，也就是说，数组的长度在变量的整个生命周期中是不可变的</li>
+<li>由于变长数组只能是局部变量，且必须是自动存储类别，因此变长数组分配在栈上</li>
+<li>可变长数组对于多维数组也适用（如array[a][b] ）</li>
+</ul>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">	int a=0;</span><br><span class="line">	int b=0;</span><br><span class="line">	scanf(&quot;%d %d&quot;,&amp;a,&amp;b);</span><br><span class="line">	char array[a][b];</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line">上述代码需在支持C99标准的编译器上才行（注意，VS系列编译器均不支持该特性）</span><br></pre></td></tr></table></figure>
+<p>根据上面关于数组的几项注意点，下面列出几种错误的示例:</p>
+<ul>
+<li><p><code>int a=2;</code></p>
+</li>
+<li><p><code>int b=3;</code></p>
+</li>
+<li><p><code>char array1[a][b] = &#123;1,2,3,4,5,6&#125;;</code> //错误，变长数组VLA不能在定义的时候进行初始化</p>
+</li>
+<li><p><code>char array2[a][b] = &#123;&#123;1,2,3&#125;,&#123;4,5,6&#125;&#125;;</code> //错误，变长数组VLA不能在定义的时候进行初始化</p>
+</li>
+<li><p><code>static char array3[a][b];</code> //错误，变长数组VLA必须是自动存储类别</p>
+</li>
+</ul>
+<h1 id="关于如果是const变量做数组长度，下面还有几种情况需要思考："><a href="#关于如果是const变量做数组长度，下面还有几种情况需要思考：" class="headerlink" title="关于如果是const变量做数组长度，下面还有几种情况需要思考："></a>关于如果是const变量做数组长度，下面还有几种情况需要思考：</h1><h2 id="1、在函数体外部，全局数组长度用const类型全局变量，是否可行？-–-答：可以。"><a href="#1、在函数体外部，全局数组长度用const类型全局变量，是否可行？-–-答：可以。" class="headerlink" title="1、在函数体外部，全局数组长度用const类型全局变量，是否可行？ – 答：可以。"></a>1、在函数体外部，全局数组长度用const类型全局变量，是否可行？ – 答：可以。</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">const int len = 10;</span><br><span class="line">char array[len];</span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="2、在函数体外部，static-全局数组长度用const类型全局变量，是否可行？-–-答：可以。"><a href="#2、在函数体外部，static-全局数组长度用const类型全局变量，是否可行？-–-答：可以。" class="headerlink" title="2、在函数体外部，static 全局数组长度用const类型全局变量，是否可行？ – 答：可以。"></a>2、在函数体外部，static 全局数组长度用const类型全局变量，是否可行？ – 答：可以。</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">const int len = 10;</span><br><span class="line">static char array[len];</span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3、在函数体内部，static-局部数组长度用const类型局部变量，是否可行？-–-答：可以。"><a href="#3、在函数体内部，static-局部数组长度用const类型局部变量，是否可行？-–-答：可以。" class="headerlink" title="3、在函数体内部，static 局部数组长度用const类型局部变量，是否可行？ – 答：可以。"></a>3、在函数体内部，static 局部数组长度用const类型局部变量，是否可行？ – 答：可以。</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">	const int len = 10;</span><br><span class="line">	static char array[len];</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="4、在函数体内部，局部数组长度用const类型局部变量，是否可行？-–-答：可以。"><a href="#4、在函数体内部，局部数组长度用const类型局部变量，是否可行？-–-答：可以。" class="headerlink" title="4、在函数体内部，局部数组长度用const类型局部变量，是否可行？ – 答：可以。"></a>4、在函数体内部，局部数组长度用const类型局部变量，是否可行？ – 答：可以。</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">	const int len = 10;</span><br><span class="line">	char array[len];</span><br><span class="line">	printf(&quot;sizeof(array)=%d\n&quot;,sizeof(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>总结：const变量不能直接改变，用其定义数组长度实际上已经不再是变长数组了。</p>
+</blockquote>
+</div>]]></content>
+      <categories>
+        <category>C语言</category>
+      </categories>
+      <tags>
+        <tag>c语言</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Windows远程连接方案（公网）</title>
     <url>/posts/26473/</url>
     <content><![CDATA[<div id="postchat_postcontent"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>自从入了MacBook之后，我的Windows就长期入住在宿舍了，平时使用远程连接使用，不过正直国庆节，出去玩自然是带着MacBook而不是我的Windows板砖游戏本，真够沉的。在外面不能通过内网连接Windows（没有建代理），因此搜索了一下内网穿透方案。</p>
@@ -658,6 +714,34 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
 </div>]]></content>
       <tags>
         <tag>工作流</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>cron的任务堆积问题</title>
+    <url>/posts/31606/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h1 id="cron的任务堆积问题"><a href="#cron的任务堆积问题" class="headerlink" title="cron的任务堆积问题"></a>cron的任务堆积问题</h1><blockquote>
+<p>本篇为记录<a href="https://github.com/dx2331lxz/OUCSearcher">搜索引擎项目</a>遇到的问题</p>
+</blockquote>
+<h2 id="cron是什么？"><a href="#cron是什么？" class="headerlink" title="cron是什么？"></a>cron是什么？</h2><p>Cron是一个实用程序，用于在特定的时间自动执行重复任务。在Linux中，常用 cron 服务器来完成这项工作，以下是Cron的工作原理：</p>
+<p>如果想稍后执行特定任务一次，可以使用其他命令。但是，对于重复性任务，cron是完美的解决方案。Cron是一个守护进程，这意味着它在后台运行以执行非交互式任务。类似Windows后台进程中的服务。</p>
+<h2 id="cron的运行机制"><a href="#cron的运行机制" class="headerlink" title="cron的运行机制"></a>cron的运行机制</h2><p>不过，<strong>Cron 不会自动等待上一个任务完成后再执行下一个任务</strong>。Cron 仅负责按计划触发任务，不会管理任务之间的依赖关系或执行状态。</p>
+<p>这也就导致我们不得不注意在使用cron重复运行任务的时候，会出现的任务堆积的问题。</p>
+<p>如果上一次的任务在时间间隔内没有执行完成的话，cron不会等待，会再次启动一个任务。时间长了之后便会造成程序的崩溃。</p>
+<h2 id="如何解决？"><a href="#如何解决？" class="headerlink" title="如何解决？"></a>如何解决？</h2><p><strong>我们最先想到的最简单粗暴的方式便是延长等待时间：</strong></p>
+<p>这种方式看起来不是很优雅，因为我们不能清除的知道任务会执行多久，意味的延长过多的时间影响任务执行效率。那么我们是否可以通过多次运行程序衡量时间呢，正常情况是可以的，不过在我写的搜索引擎项目中，任务有访问数据库的部分，这部分会因为锁的占用而延迟，这是一种动态的时间不好估计，因此这个方案不是很好</p>
+<p><strong>那么对于任务设置超时时间怎么样呢？</strong></p>
+<p>如果我们的循环时间间隔是10s，而一个任务的超时时间也是10s的话就不会出现任务堆积的情况，不过问题仍然没有改变，我们无法确定一个任务的执行时间。因此这个方法也不是很优雅。</p>
+<p><strong>所以我最终的解决方案是：</strong></p>
+<p>在每次任务开始之前检查这个任务是否在运行，如果在运行就跳过本次任务的启动。</p>
+<p>通过一个bool变量<code>taskInProgress</code>表示任务的运行状态，运行开始时候<code>taskInProgress</code>置为true，运行结束时候改为false，需要注意考虑程序崩溃的情况，确保崩溃也可以将<code>taskInProgress</code>状态改为false。</p>
+<p>在每次程序运行时候检查<code>taskInProgress</code>变量的值，如果为true则跳过本次任务，如果为false则开始任务。</p>
+<p>这样的话其实间隔时间可以设置的小一点，通过<code>taskInProgress</code>确保了始终只有一个任务在运行。</p>
+</div>]]></content>
+      <categories>
+        <category>后端</category>
+      </categories>
+      <tags>
+        <tag>后端</tag>
       </tags>
   </entry>
   <entry>
@@ -689,34 +773,6 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
       <tags>
         <tag>butterfly</tag>
         <tag>报错</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>cron的任务堆积问题</title>
-    <url>/posts/31606/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="cron的任务堆积问题"><a href="#cron的任务堆积问题" class="headerlink" title="cron的任务堆积问题"></a>cron的任务堆积问题</h1><blockquote>
-<p>本篇为记录<a href="https://github.com/dx2331lxz/OUCSearcher">搜索引擎项目</a>遇到的问题</p>
-</blockquote>
-<h2 id="cron是什么？"><a href="#cron是什么？" class="headerlink" title="cron是什么？"></a>cron是什么？</h2><p>Cron是一个实用程序，用于在特定的时间自动执行重复任务。在Linux中，常用 cron 服务器来完成这项工作，以下是Cron的工作原理：</p>
-<p>如果想稍后执行特定任务一次，可以使用其他命令。但是，对于重复性任务，cron是完美的解决方案。Cron是一个守护进程，这意味着它在后台运行以执行非交互式任务。类似Windows后台进程中的服务。</p>
-<h2 id="cron的运行机制"><a href="#cron的运行机制" class="headerlink" title="cron的运行机制"></a>cron的运行机制</h2><p>不过，<strong>Cron 不会自动等待上一个任务完成后再执行下一个任务</strong>。Cron 仅负责按计划触发任务，不会管理任务之间的依赖关系或执行状态。</p>
-<p>这也就导致我们不得不注意在使用cron重复运行任务的时候，会出现的任务堆积的问题。</p>
-<p>如果上一次的任务在时间间隔内没有执行完成的话，cron不会等待，会再次启动一个任务。时间长了之后便会造成程序的崩溃。</p>
-<h2 id="如何解决？"><a href="#如何解决？" class="headerlink" title="如何解决？"></a>如何解决？</h2><p><strong>我们最先想到的最简单粗暴的方式便是延长等待时间：</strong></p>
-<p>这种方式看起来不是很优雅，因为我们不能清除的知道任务会执行多久，意味的延长过多的时间影响任务执行效率。那么我们是否可以通过多次运行程序衡量时间呢，正常情况是可以的，不过在我写的搜索引擎项目中，任务有访问数据库的部分，这部分会因为锁的占用而延迟，这是一种动态的时间不好估计，因此这个方案不是很好</p>
-<p><strong>那么对于任务设置超时时间怎么样呢？</strong></p>
-<p>如果我们的循环时间间隔是10s，而一个任务的超时时间也是10s的话就不会出现任务堆积的情况，不过问题仍然没有改变，我们无法确定一个任务的执行时间。因此这个方法也不是很优雅。</p>
-<p><strong>所以我最终的解决方案是：</strong></p>
-<p>在每次任务开始之前检查这个任务是否在运行，如果在运行就跳过本次任务的启动。</p>
-<p>通过一个bool变量<code>taskInProgress</code>表示任务的运行状态，运行开始时候<code>taskInProgress</code>置为true，运行结束时候改为false，需要注意考虑程序崩溃的情况，确保崩溃也可以将<code>taskInProgress</code>状态改为false。</p>
-<p>在每次程序运行时候检查<code>taskInProgress</code>变量的值，如果为true则跳过本次任务，如果为false则开始任务。</p>
-<p>这样的话其实间隔时间可以设置的小一点，通过<code>taskInProgress</code>确保了始终只有一个任务在运行。</p>
-</div>]]></content>
-      <categories>
-        <category>后端</category>
-      </categories>
-      <tags>
-        <tag>后端</tag>
       </tags>
   </entry>
   <entry>
@@ -790,6 +846,22 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
       </tags>
   </entry>
   <entry>
+    <title>django如何将jwt的token作为参数传递验证身份</title>
+    <url>/posts/64064/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><blockquote>
+<p>有些时候，我们需要将access_token作为参数传递，而不是携带请求头中</p>
+<p>这个时候，我们可以先豁免将jwt验证，然后将参数中的token放到请求头中，</p>
+<p>然后使用官方函数手动验证。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">from rest_framework_simplejwt.authentication import JWTAuthentication</span><br><span class="line"> # 豁免验证</span><br><span class="line"> permission_classes = [AllowAny]</span><br><span class="line"></span><br><span class="line"> def parse(self, request, token):</span><br><span class="line">     authentication = JWTAuthentication()</span><br><span class="line">     request.META[&#x27;HTTP_AUTHORIZATION&#x27;] = &#x27;Bearer &#x27; + token</span><br><span class="line">     user, token = authentication.authenticate(request)</span><br><span class="line">     return user</span><br><span class="line">    </span><br><span class="line"> def get(self, request):</span><br><span class="line">     # 获取到get方法的参数</span><br><span class="line">     params = request.query_params</span><br><span class="line">     # id = request.user.id</span><br><span class="line">     # print(id)</span><br><span class="line">     if not params.get(&#x27;token&#x27;):</span><br><span class="line">         return Response(&#123;&#x27;msg&#x27;: &#x27;token未传入&#x27;, &#x27;code&#x27;: 403&#125;, status=status.HTTP_403_FORBIDDEN)</span><br><span class="line">     else:</span><br><span class="line">         token = params.get(&#x27;token&#x27;)</span><br><span class="line">         # 为请求头添加token</span><br><span class="line">         user = self.parse(request, token)</span><br><span class="line"></span><br><span class="line">         # 利用jwt解析token函数进行登录验证并且得到用户id</span><br><span class="line">         if not user:</span><br><span class="line">             return Response(&#123;&#x27;msg&#x27;: &#x27;token无效&#x27;, &#x27;code&#x27;: 403&#125;, status=status.HTTP_403_FORBIDDEN)</span><br></pre></td></tr></table></figure>
+<h2 id="parse"><a href="#parse" class="headerlink" title="parse"></a>parse</h2><p>parse的主要作用便是在请求头中添加token并且进行验证，这也是整个流程的关键。</p>
+<h2 id="get"><a href="#get" class="headerlink" title="get"></a>get</h2><p>下面的get是drf中get请求处理函数，算是使用实例，无需在意。</p>
+</div>]]></content>
+      <tags>
+        <tag>django</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>django如何使用github当做项目图床</title>
     <url>/posts/55622/</url>
     <content><![CDATA[<div id="postchat_postcontent"><blockquote>
@@ -810,22 +882,6 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
 <p>函数大概就是这个样子GITHUB_API_URL、GITHUB_OWNER、GITHUB_REPO都放在settings里面</p>
 <p>GITHUB_TOKEN是token，怎么申请可以在网上搜索教程，正常的url应该是image_url = f”<a href="https://raw.githubusercontent.com/{settings.GITHUB_OWNER}/{settings.GITHUB_REPO}/{settings.GITHUB_BRANCH}/{filename}&quot;这样的,只不过我使用cloudfare的worker代理了一下，所以绑定自己的域名进行访问了。">https://raw.githubusercontent.com/{settings.GITHUB_OWNER}/{settings.GITHUB_REPO}/{settings.GITHUB_BRANCH}/{filename}&quot;这样的,只不过我使用cloudfare的worker代理了一下，所以绑定自己的域名进行访问了。</a></p>
 </blockquote>
-</div>]]></content>
-      <tags>
-        <tag>django</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>django如何将jwt的token作为参数传递验证身份</title>
-    <url>/posts/64064/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><blockquote>
-<p>有些时候，我们需要将access_token作为参数传递，而不是携带请求头中</p>
-<p>这个时候，我们可以先豁免将jwt验证，然后将参数中的token放到请求头中，</p>
-<p>然后使用官方函数手动验证。</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">from rest_framework_simplejwt.authentication import JWTAuthentication</span><br><span class="line"> # 豁免验证</span><br><span class="line"> permission_classes = [AllowAny]</span><br><span class="line"></span><br><span class="line"> def parse(self, request, token):</span><br><span class="line">     authentication = JWTAuthentication()</span><br><span class="line">     request.META[&#x27;HTTP_AUTHORIZATION&#x27;] = &#x27;Bearer &#x27; + token</span><br><span class="line">     user, token = authentication.authenticate(request)</span><br><span class="line">     return user</span><br><span class="line">    </span><br><span class="line"> def get(self, request):</span><br><span class="line">     # 获取到get方法的参数</span><br><span class="line">     params = request.query_params</span><br><span class="line">     # id = request.user.id</span><br><span class="line">     # print(id)</span><br><span class="line">     if not params.get(&#x27;token&#x27;):</span><br><span class="line">         return Response(&#123;&#x27;msg&#x27;: &#x27;token未传入&#x27;, &#x27;code&#x27;: 403&#125;, status=status.HTTP_403_FORBIDDEN)</span><br><span class="line">     else:</span><br><span class="line">         token = params.get(&#x27;token&#x27;)</span><br><span class="line">         # 为请求头添加token</span><br><span class="line">         user = self.parse(request, token)</span><br><span class="line"></span><br><span class="line">         # 利用jwt解析token函数进行登录验证并且得到用户id</span><br><span class="line">         if not user:</span><br><span class="line">             return Response(&#123;&#x27;msg&#x27;: &#x27;token无效&#x27;, &#x27;code&#x27;: 403&#125;, status=status.HTTP_403_FORBIDDEN)</span><br></pre></td></tr></table></figure>
-<h2 id="parse"><a href="#parse" class="headerlink" title="parse"></a>parse</h2><p>parse的主要作用便是在请求头中添加token并且进行验证，这也是整个流程的关键。</p>
-<h2 id="get"><a href="#get" class="headerlink" title="get"></a>get</h2><p>下面的get是drf中get请求处理函数，算是使用实例，无需在意。</p>
 </div>]]></content>
       <tags>
         <tag>django</tag>
@@ -951,6 +1007,38 @@ return HttpResponse(book)
 </div>]]></content>
       <tags>
         <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>fatal: unable to access &#39;https://github.com/username/repo.git/&#39;: GnuTLS recv error (-110): The TLS connection was non-properly terminated.</title>
+    <url>/posts/27467/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h1 id="fatal-unable-to-access-‘https-github-com-username-repo-git-‘-GnuTLS-recv-error-110-The-TLS-connection-was-non-properly-terminated"><a href="#fatal-unable-to-access-‘https-github-com-username-repo-git-‘-GnuTLS-recv-error-110-The-TLS-connection-was-non-properly-terminated" class="headerlink" title="fatal: unable to access ‘https://github.com/username/repo.git/‘: GnuTLS recv error (-110): The TLS connection was non-properly terminated."></a>fatal: unable to access ‘<a href="https://github.com/username/repo.git/">https://github.com/username/repo.git/</a>‘: GnuTLS recv error (-110): The TLS connection was non-properly terminated.</h1><p>解决方案：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt-get install gnutls-bin</span><br><span class="line">git config --global http.sslVerify <span class="literal">false</span></span><br><span class="line">git config --global http.postBuffer 1048576000</span><br></pre></td></tr></table></figure>
+<ol>
+<li>安装gnutls-bin</li>
+<li>禁用全局SSL验证</li>
+<li>增大 http.postBuffer 的大小，http.postBuffer 决定了 Git 向远程服务器发送数据时的缓冲区大小，默认值为 1MB。将缓冲区大小增大到 1GB（1048576000 字节）可以解决因数据量大导致的推送中断问题。</li>
+</ol>
+</div>]]></content>
+      <categories>
+        <category>报错</category>
+      </categories>
+      <tags>
+        <tag>报错</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>github pages的DNS check出现问题</title>
+    <url>/posts/12709/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Your site<span class="string">&#x27;s DNS settings are using a custom subdomain, www.daoxuan.cc, that is set up as an A record. We recommend you change this to a CNAME record pointing to dx2331lxz.github.io. For more information, see documentation (InvalidARecordError).</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>出现这种报错时候的解决方案是：以CNAME添加两个解析，一个@，一个www都让其解析到xxx.github.io就可以了</p>
+</blockquote>
+<p><img src="http://picture.daoxuan.cc/image/202301122102656.jpg" alt=""></p>
+</div>]]></content>
+      <tags>
+        <tag>github</tag>
+        <tag>DNS</tag>
       </tags>
   </entry>
   <entry>
@@ -1084,61 +1172,6 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>fatal: unable to access &#39;https://github.com/username/repo.git/&#39;: GnuTLS recv error (-110): The TLS connection was non-properly terminated.</title>
-    <url>/posts/27467/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="fatal-unable-to-access-‘https-github-com-username-repo-git-‘-GnuTLS-recv-error-110-The-TLS-connection-was-non-properly-terminated"><a href="#fatal-unable-to-access-‘https-github-com-username-repo-git-‘-GnuTLS-recv-error-110-The-TLS-connection-was-non-properly-terminated" class="headerlink" title="fatal: unable to access ‘https://github.com/username/repo.git/‘: GnuTLS recv error (-110): The TLS connection was non-properly terminated."></a>fatal: unable to access ‘<a href="https://github.com/username/repo.git/">https://github.com/username/repo.git/</a>‘: GnuTLS recv error (-110): The TLS connection was non-properly terminated.</h1><p>解决方案：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt-get install gnutls-bin</span><br><span class="line">git config --global http.sslVerify <span class="literal">false</span></span><br><span class="line">git config --global http.postBuffer 1048576000</span><br></pre></td></tr></table></figure>
-<ol>
-<li>安装gnutls-bin</li>
-<li>禁用全局SSL验证</li>
-<li>增大 http.postBuffer 的大小，http.postBuffer 决定了 Git 向远程服务器发送数据时的缓冲区大小，默认值为 1MB。将缓冲区大小增大到 1GB（1048576000 字节）可以解决因数据量大导致的推送中断问题。</li>
-</ol>
-</div>]]></content>
-      <categories>
-        <category>报错</category>
-      </categories>
-      <tags>
-        <tag>报错</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>github pages的DNS check出现问题</title>
-    <url>/posts/12709/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Your site<span class="string">&#x27;s DNS settings are using a custom subdomain, www.daoxuan.cc, that is set up as an A record. We recommend you change this to a CNAME record pointing to dx2331lxz.github.io. For more information, see documentation (InvalidARecordError).</span></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>出现这种报错时候的解决方案是：以CNAME添加两个解析，一个@，一个www都让其解析到xxx.github.io就可以了</p>
-</blockquote>
-<p><img src="http://picture.daoxuan.cc/image/202301122102656.jpg" alt=""></p>
-</div>]]></content>
-      <tags>
-        <tag>github</tag>
-        <tag>DNS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>go channel在何时关闭</title>
-    <url>/posts/20760/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="go-channel在何时关闭"><a href="#go-channel在何时关闭" class="headerlink" title="go channel在何时关闭"></a>go channel在何时关闭</h1><blockquote>
-<p> go语言的channel关闭方式只有一种，那就是使用内建<code>close</code>方法关闭，如果不进行显示关闭的话，消费者就一直会等待</p>
-</blockquote>
-<p>不过在使用for等待channel的时候，需要在channel中的所有数据弹出来之后才会彻底关闭channel，收回channel的资源, 例如：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">c := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">int</span>, <span class="number">10</span>)</span><br><span class="line">c &lt;- <span class="number">1</span></span><br><span class="line">c &lt;- <span class="number">2</span></span><br><span class="line"><span class="built_in">close</span>(c)</span><br><span class="line"><span class="keyword">for</span> i := <span class="keyword">range</span> c &#123;</span><br><span class="line">    fmt.Println(i)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这种情况下，还是会打印出1、2之后才结束for循环。</p>
-<h2 id="如何判断channel是否已经关闭"><a href="#如何判断channel是否已经关闭" class="headerlink" title="如何判断channel是否已经关闭"></a>如何判断channel是否已经关闭</h2><p>可以通过如下方式读取到channel状态：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">i, ok := &lt;- channel</span><br></pre></td></tr></table></figure>
-<p><code>i</code>是channel中读取到的值，<code>ok</code>是bool值，表示channel是否关闭，只有一种情况<code>ok</code>为false，就是channel被显示close并且channel内没有数据可以被读取的时候<code>ok</code>才为false</p>
-<p>如果channel内的没有值的话，读取获得的i为空，具体为那种数据类型的空主要看channel最开始怎么声明的，例如：（ch := make(chan int)，空值为0）</p>
-<p><strong>那么我们可不可以通过i的值来判断是否channel已经关闭了呢？</strong></p>
-<p>当然不可以，因为空值也可能是生产者主动发的，所以要使用<code>ok</code>来判断。</p>
-</div>]]></content>
-      <categories>
-        <category>后端</category>
-      </categories>
-      <tags>
-        <tag>go</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>go map并发读写问题</title>
     <url>/posts/45899/</url>
     <content><![CDATA[<div id="postchat_postcontent"><h1 id="go-map并发读写问题"><a href="#go-map并发读写问题" class="headerlink" title="go map并发读写问题"></a>go map并发读写问题</h1><h2 id="问题引入"><a href="#问题引入" class="headerlink" title="问题引入"></a>问题引入</h2><p>go语言的map是不允许并发读写的，例如下面这段程序：</p>
@@ -1231,6 +1264,29 @@ return HttpResponse(book)
 <p>示例：</p>
 <figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> A <span class="type">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getA</span><span class="params">()</span></span> <span class="type">string</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> A == <span class="string">&quot;&quot;</span> &#123; <span class="comment">// 检查是否已初始化</span></span><br><span class="line">        A = <span class="string">&quot;Hello from A&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> A</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(getA()) <span class="comment">// 第一次调用时初始化 A</span></span><br><span class="line">    fmt.Println(getA()) <span class="comment">// 之后直接返回已初始化的值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>A的初始化会发生在第一次调用A的时候，这样可以避免编译时候初始化变量时出现的循环依赖</p>
+</div>]]></content>
+      <categories>
+        <category>后端</category>
+      </categories>
+      <tags>
+        <tag>go</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>go channel在何时关闭</title>
+    <url>/posts/20760/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h1 id="go-channel在何时关闭"><a href="#go-channel在何时关闭" class="headerlink" title="go channel在何时关闭"></a>go channel在何时关闭</h1><blockquote>
+<p> go语言的channel关闭方式只有一种，那就是使用内建<code>close</code>方法关闭，如果不进行显示关闭的话，消费者就一直会等待</p>
+</blockquote>
+<p>不过在使用for等待channel的时候，需要在channel中的所有数据弹出来之后才会彻底关闭channel，收回channel的资源, 例如：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">c := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">int</span>, <span class="number">10</span>)</span><br><span class="line">c &lt;- <span class="number">1</span></span><br><span class="line">c &lt;- <span class="number">2</span></span><br><span class="line"><span class="built_in">close</span>(c)</span><br><span class="line"><span class="keyword">for</span> i := <span class="keyword">range</span> c &#123;</span><br><span class="line">    fmt.Println(i)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种情况下，还是会打印出1、2之后才结束for循环。</p>
+<h2 id="如何判断channel是否已经关闭"><a href="#如何判断channel是否已经关闭" class="headerlink" title="如何判断channel是否已经关闭"></a>如何判断channel是否已经关闭</h2><p>可以通过如下方式读取到channel状态：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">i, ok := &lt;- channel</span><br></pre></td></tr></table></figure>
+<p><code>i</code>是channel中读取到的值，<code>ok</code>是bool值，表示channel是否关闭，只有一种情况<code>ok</code>为false，就是channel被显示close并且channel内没有数据可以被读取的时候<code>ok</code>才为false</p>
+<p>如果channel内的没有值的话，读取获得的i为空，具体为那种数据类型的空主要看channel最开始怎么声明的，例如：（ch := make(chan int)，空值为0）</p>
+<p><strong>那么我们可不可以通过i的值来判断是否channel已经关闭了呢？</strong></p>
+<p>当然不可以，因为空值也可能是生产者主动发的，所以要使用<code>ok</code>来判断。</p>
 </div>]]></content>
       <categories>
         <category>后端</category>
@@ -1366,62 +1422,6 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>NAT的四种类型</title>
-    <url>/posts/58955/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="NAT的四种类型"><a href="#NAT的四种类型" class="headerlink" title="NAT的四种类型"></a>NAT的四种类型</h1><p>参考文章：</p>
-<p><a href="https://blog.csdn.net/s2603898260/article/details/11875547">NAT的四种分类：全锥形NAT,地址受限锥形NAT,端口受限锥形NAT,对称NAT</a></p>
-<h2 id="Full-cone-NAT（全锥形NAT）"><a href="#Full-cone-NAT（全锥形NAT）" class="headerlink" title="Full cone NAT（全锥形NAT）"></a>Full cone NAT（全锥形NAT）</h2><blockquote>
-<p><strong>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到同一个外网（IP，端口），且任何一个外网主机都可以通过访问映射后的公网地址，实现访问位于内网的主机设备功能。</strong></p>
-<p>外网主机可以主动连接内网主机。</p>
-</blockquote>
-<p><img src="https://image.daoxuan.cc/2025/08/1adccc807281c0afa142ce634a3c7a35.png" alt=""></p>
-<h2 id="Restricted-Cone-NAT（地址受限锥形NAT）"><a href="#Restricted-Cone-NAT（地址受限锥形NAT）" class="headerlink" title="Restricted Cone NAT（地址受限锥形NAT）"></a>Restricted Cone NAT（地址受限锥形NAT）</h2><blockquote>
-<p>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到通过一个外网（IP，端口），但与全锥形不同点在于：生成的映射表项与目的IP有关，只有符合要求的目的IP(要访问的公网服务器IP)才可以通讯。此NAT还有个特点：不能主动连接内网中的主机地址，连接必须由内网地址发起。</p>
-<p>限制比全锥形NAT多了：IP地址限制。</p>
-</blockquote>
-<p>此类型NAT除了与源IP和源端口相关外，还与目的IP有关，只有内网主机主动连接的公网IP才可以与内网中的主机通讯。</p>
-<p><img src="https://image.daoxuan.cc/2025/08/8ae88aeed2b1916a9f759ab9aa812877.png" alt="在这里插入图片描述"></p>
-<h2 id="Port-Restricted-Cone-NAT（端口受限锥形NAT）"><a href="#Port-Restricted-Cone-NAT（端口受限锥形NAT）" class="headerlink" title="Port Restricted Cone NAT（端口受限锥形NAT）"></a>Port Restricted Cone NAT（端口受限锥形NAT）</h2><blockquote>
-<p>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到通过一个外网（IP，端口），但是在地址受限锥形NAT基础上增加了端口的限制。</p>
-<p>地址受限锥形NAT时，只有内网主机主动连接的公网主机才可与之进行通讯，而不用担心端口号是否与请求的端口相同。</p>
-<p>但是端口受限锥形NAT除了IP限制外，增加了端口限制。意思是说：除了之前主动连接了主机的（IP，port1,）可以通讯，其他的（IP，port2）等都不可以与之通讯。此NAT映射与报文的三元组绑定</p>
-</blockquote>
-<p><img src="https://image.daoxuan.cc/2025/08/8543bc0f2da38172dac22217358ad06d.jpeg" alt="在这里插入图片描述"></p>
-<h2 id="Symetric-NAT（对称NAT）"><a href="#Symetric-NAT（对称NAT）" class="headerlink" title="Symetric NAT（对称NAT）"></a>Symetric NAT（对称NAT）</h2><blockquote>
-<p>所有从同一个内网（IP，端口）发送到同一个目的IP和端口的请求都会被映射到同一个IP和端口。换句话说（SIP，Sport, DIP, Dport）只要有一个发生变化都会使用不同的映射条目，即此NAT映射与报文四元组绑定。</p>
-</blockquote>
-<ul>
-<li>SIP: Source IP，源IP地址</li>
-<li>Sport: Source Port，源端口</li>
-<li>DIP: Destination IP，目的IP地址</li>
-<li>Dport: Destination Port，目的端口</li>
-</ul>
-<p><img src="https://image.daoxuan.cc/2025/08/5894c4f46833a9bd0e1c80fb1c1abb32.png" alt="在这里插入图片描述"></p>
-<p><strong>“流量过滤的过程依赖 <code>conntrack</code> 维护的连接状态记录，但实际的过滤行为是由iptables/nftables规则或内核NAT模块根据这些状态执行的。”</strong></p>
-<h4 id="具体流程示例"><a href="#具体流程示例" class="headerlink" title="具体流程示例"></a><strong>具体流程示例</strong></h4><ol>
-<li><strong>内网主机</strong> <code>192.168.1.100</code> 访问 <code>8.8.8.8:80</code>，<code>conntrack</code> 记录状态为 <code>NEW</code>。</li>
-<li><strong>iptables的NAT规则</strong> 在 <code>POSTROUTING</code> 链修改源IP为 <code>1.2.3.4:60000</code>，并更新 <code>conntrack</code>。</li>
-<li><strong>返回包</strong> <code>8.8.8.8:80 → 1.2.3.4:60000</code> 到达时：<ul>
-<li>内核查询 <code>conntrack</code>，发现匹配 <code>ESTABLISHED</code> 状态。</li>
-<li><strong>如果是对称NAT</strong>：进一步检查端口是否匹配会话。</li>
-<li><strong>如果是端口受限锥形NAT</strong>：检查 <code>8.8.8.8:80</code> 是否在记录中。</li>
-</ul>
-</li>
-<li><strong>最终决策</strong>：<ul>
-<li>通过 <code>conntrack</code> 验证后，内核决定是否转发或丢弃数据包。</li>
-</ul>
-</li>
-</ol>
-<h3 id="🌟-总结"><a href="#🌟-总结" class="headerlink" title="🌟 总结"></a>🌟 <strong>总结</strong></h3><ul>
-<li><strong><code>conntrack</code> 是“账本”</strong>：记录谁在和谁通信。</li>
-<li><strong>iptables/内核是“警察”</strong>：根据账本决定是否放行。</li>
-</ul>
-</div>]]></content>
-      <tags>
-        <tag>网络</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>python蓝桥杯刷题笔记</title>
     <url>/posts/55779/</url>
     <content><![CDATA[<div id="postchat_postcontent"><blockquote>
@@ -1531,6 +1531,75 @@ return HttpResponse(book)
 </div>]]></content>
       <tags>
         <tag>mac</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>waf.sb + github page + cloudflare hexo博客部署方案</title>
+    <url>/posts/30621/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>博客放在自己的云服务器上面感觉不够稳，因此还是转回了github page</p>
+<p>具体的github page如何配置网上一堆教程，具体需要注意的是Custom domain不需要设置，设置的话改变的也是一个回源主机名（host），因此不需要填东西。</p>
+<h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2><p>由于cloudflare的顶级域名使用CNAME的时候会使用CNAME展平,相当于顶级域名还是A类型解析， 因此正常的CNAME记录检验会失效。</p>
+<blockquote>
+<ol>
+<li><p><strong>正常CNAME 记录:</strong></p>
+<p>当一个域名配置为CNAME 记录指向另一个域名时，DNS 解析器需要进行多次查询才能最终获取到目标域名的IP 地址。</p>
+</li>
+<li><p><strong>Cloudflare CNAME 展平:</strong></p>
+<p>启用CNAME 展平后，Cloudflare 会在第一次DNS 查询时，直接将CNAME 记录解析为目标域名的IP 地址，而不是返回另一个CNAME 记录。这样客户端就只需要进行一次DNS 查询，从而提高效率。</p>
+</li>
+</ol>
+</blockquote>
+<p>所以我们不用顶级域名，使用blog.daoxuan.cc来部署博客。</p>
+<p>然而之前我一直用的是顶级域名daoxuan.cc部署博客，所以需要配置一个自动跳转。</p>
+<h3 id="解析记录"><a href="#解析记录" class="headerlink" title="解析记录"></a>解析记录</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>名称</th>
+<th>内容</th>
+<th>代理状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>daoxuan(@)</td>
+<td>185.199.110.153</td>
+<td>已代理</td>
+</tr>
+<tr>
+<td>CNAME</td>
+<td>blog</td>
+<td>xxxxx.onwaf.com</td>
+<td>仅DNS</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>@的内容无所谓，但是代理一定要开，因为我们需要用到cf的重定向功能。</p>
+<p>blog配置的是CDN的CNAME记录。</p>
+<h3 id="301重定向"><a href="#301重定向" class="headerlink" title="301重定向"></a>301重定向</h3><ol>
+<li>进入 <strong>Rules</strong> &gt; <strong>Page Rules</strong>。</li>
+<li>点击 <strong>Create Page Rule</strong>，填写以下规则：<ul>
+<li><strong>URL matches</strong>: <code>daoxuan.cc/*</code>（匹配所有 <code>daoxuan.cc</code> 的请求）</li>
+<li><strong>Then the settings are</strong>:<ul>
+<li>选择 <strong>Forwarding URL</strong> &gt; <strong>301 - Permanent Redirect</strong></li>
+<li>目标 URL 填写：<code>https://blog.daoxuan.cc/$1</code>（<code>$1</code> 会保留原始路径）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>点击 <strong>Save and Deploy</strong> 保存规则。</li>
+</ol>
+<p><img src="https://image.daoxuan.cc/2025/08/71480d417c9d249ac5768aabf4da58bf.png" alt="image-20250818133720246"></p>
+<h2 id="CDN"><a href="#CDN" class="headerlink" title="CDN"></a>CDN</h2><p>CDN使用的是waf.sb，速度非常可观。<a href="">白佬推荐</a></p>
+<p>配置就按照blog.daoxuan.cc正常配置，需要注意的是源站使用github.io那个地址，回源主机名也使用这个名字（github的规则如此，如果在github page那里配置了Custom domain，这里的回源host也需要使用Custom domain，如果还使用github.io，github会重定向）</p>
+<h2 id="速度测试"><a href="#速度测试" class="headerlink" title="速度测试"></a>速度测试</h2><p><img src="https://image.daoxuan.cc/2025/08/315507fd491f43a2ef23951815067de0.png" alt="image-20250818133857049"></p>
+<p>速度非常可观。</p>
+</div>]]></content>
+      <tags>
+        <tag>hexo</tag>
       </tags>
   </entry>
   <entry>
@@ -1674,60 +1743,6 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>使用宝塔面板部署django项目</title>
-    <url>/posts/20868/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="使用宝塔面板部署django项目"><a href="#使用宝塔面板部署django项目" class="headerlink" title="使用宝塔面板部署django项目"></a>使用宝塔面板部署django项目</h1><div class="tip cogs"><p>非常emo</p>
-</div>
-<p>爱特程序部现在只剩下三人，为了方便程序部成员使用，写一篇关于部署的教程</p>
-<blockquote>
-<p>欢迎加入爱特工作室</p>
-</blockquote>
-<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><blockquote>
-<p>我使用的服务器是腾讯云服务器，什么服务器倒是无所谓，只需要根据官方文档和你的服务器使用的系统安装宝塔面板即可。</p>
-</blockquote>
-<p>这个是宝塔官网<a href="https://www.bt.cn/new/index.html">宝塔面板 - 简单好用的Linux/Windows服务器运维管理面板 (bt.cn)</a>网上一搜就有其实。</p>
-<h2 id="登录改密"><a href="#登录改密" class="headerlink" title="登录改密"></a>登录改密</h2><p><img src="http://picture.daoxuan.cc/image/202304172157280.png" alt="image-20230417185210940"></p>
-<blockquote>
-<p>安装完之后会显示网址，那个网址一定要记住，访问之后的界面是这样的，用服务器返回给你的账号密码进行登录</p>
-</blockquote>
-<p>当然，因为那个账号密码用起来很不方便可以在登录时候进行改密。</p>
-<blockquote>
-<p>第一次进入之后安装提示会安装一些东西，我们安装体量小的那个。</p>
-</blockquote>
-<p><img src="http://picture.daoxuan.cc/image/202304172157735.png" alt="image-20230417202220060"></p>
-<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>进入软件商店下载Python项目管理器，在Python管理器中需要下载Python</p>
-<blockquote>
-<p>有一些东西需要下载我记不全。</p>
-</blockquote>
-<h2 id="配置数据库"><a href="#配置数据库" class="headerlink" title="配置数据库"></a>配置数据库</h2><p>点击添加数据库，编码utf-8其他的可以和自己本地的一样（这样就不用调settings的设置了）</p>
-<blockquote>
-<p>需要核对一下自己settings里面的数据库设置和自己添加的数据库需要一致。</p>
-</blockquote>
-<p>创建完数据库时候就可以点击导入，然后导入本地的数据库包（.sql）</p>
-<h2 id="在本地生成依赖文件"><a href="#在本地生成依赖文件" class="headerlink" title="在本地生成依赖文件"></a>在本地生成依赖文件</h2><p><code>pip freeze &gt; requirements.txt</code>输入这个命令生成依赖文件<code>requirements.txt</code>查看该文件中的依赖是不是自己这个项目用的，不是的话自己debug，然后改一下依赖的编码格式为utf-8,防止识别不到。</p>
-<h2 id="上传项目压缩包"><a href="#上传项目压缩包" class="headerlink" title="上传项目压缩包"></a>上传项目压缩包</h2><p>上传项目压缩包到/www/wwwroot这个目录下面进行解压（其实到哪里无所谓，习惯上放这里）</p>
-<h2 id="部署项目"><a href="#部署项目" class="headerlink" title="部署项目"></a>部署项目</h2><p>打开之前下载好的Python项目管理器，点击添加项目。路径选择刚刚导入的文件夹，框架选择django，启动方式选择gunicorn，选择一个没有被占用过的端口比如9000；8088之类的，点击安装模块依赖，开机启动，之后就可以点击确定了。</p>
-<blockquote>
-<p>下载完成之后打开项目日志，查看有没有bug，有报错的话可能是依赖包缺少，自行查看下载。</p>
-<p>到这里需要保证数据库的配置是正确的，而且settings有一句这个ALLOWED_HOSTS = []给他改成ALLOWED_HOSTS = [“*”]</p>
-</blockquote>
-<p>然后在Python项目管理器里点击映射，有自己域名的映射自己为这个项目起的域名，没有的话把服务器地址写一下。</p>
-<p>到这里就成功了</p>
-<h2 id="需要自行完善的地方"><a href="#需要自行完善的地方" class="headerlink" title="需要自行完善的地方"></a>需要自行完善的地方</h2><ol>
-<li><p>项目部署的时候设置了端口，这个需要在宝塔面板的”安全“那里，和服务器的“防火墙”那里把你添加的端口放行一下。</p>
-</li>
-<li><p>域名的ssl证书自行配置。</p>
-</li>
-<li><p>数据库的文件可以在Navicat里面按照下图进行导出</p>
-</li>
-</ol>
-<p><img src="http://picture.daoxuan.cc/image/202304172157907.png" alt="image-20230417214005276"></p>
-</div>]]></content>
-      <tags>
-        <tag>django</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>假期主题团日文章</title>
     <url>/posts/6890/</url>
     <content><![CDATA[<div id="postchat_postcontent"><h1 id="个人成长记录"><a href="#个人成长记录" class="headerlink" title="个人成长记录"></a>个人成长记录</h1><p>在海大的这半个学期，我有许多的变化，最大的变化便是—-头发长了（bushi），最大的变化其实是—-我做事情的思维方式发生了改变，初入大学时候的我，喜欢参透规则，做事情喜欢做最重要的那部分，不关注任务完成的完整度，但是在大学中我逐渐懂得，大多数时候，事情做得充实，面面俱到，要比在单单一方面上很出色要强。</p>
@@ -1774,6 +1789,43 @@ return HttpResponse(book)
 </div>]]></content>
       <tags>
         <tag>充电桩</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>关于左值</title>
+    <url>/posts/49774/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h1 id="关于左值"><a href="#关于左值" class="headerlink" title="关于左值"></a>关于左值</h1><details class="folding-tag" ><summary> 引用自小甲鱼的教程 </summary>
+              <div class='content'>
+              <div class="tag link"><a class="link-card" title="Tag Plugins Plus | 什么是lvalue" href="https://fishc.com.cn/thread-69833-1-1.html"><div class="left"><img src="/img/link.png"/></div><div class="right"><p class="text">Tag Plugins Plus | 什么是lvalue</p><p class="url">https://fishc.com.cn/thread-69833-1-1.html</p></div></a></div>
+              </div>
+            </details>
+<blockquote>
+<p>一般来说，当你看到这样的报错时</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Error] lvalue required as left operand of assignment</span><br></pre></td></tr></table></figure>
+<p>就是左值概念不清晰的原因啦</p>
+<p>首先我们引用一下c99的官方文档</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">The name &quot;lvalue&quot; comes originally from the assignment expression E1 = E2, in which the left operand E1 is required to be a (modi&amp;#64257;able) lvalue. It is perhaps better considered as representing an object &quot;locator value&quot;. What is sometimes called &quot;rvalue&quot; is in this International Standard described as the &quot;value of an expression&quot;.</span><br></pre></td></tr></table></figure>
+<div class="tip "><p>当然，装装样子而已啦，还是用汉语叙述：</p>
+</div>
+<p>左值也就是lvalue，更加合理的解释应该是locator value（特定位置的值），rvalue则应该理解为value of an expression（表达式的值）</p>
+<p>以下面的代码为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">        int a = 5;</span><br><span class="line"></span><br><span class="line">        ++(a++);</span><br><span class="line"></span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码是会报错的</p>
+<blockquote>
+<p>如果你认为左值只是赋值运算左边的值，这个错误就无法理解了</p>
+<p>正确的理解是：</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(a++) 是先将变量 a 的值（5）做为整个表达式的值返回，再将 a 自增 1（类似于 a = a + 1）。</span><br><span class="line"></span><br><span class="line">所以这里 ++(a++); 相当于 ++(5), a = a + 1;</span><br><span class="line"></span><br><span class="line">那当然要报错啦，5 是一个常量，当然不能给你 5 = 5 + 1 咯~</span><br></pre></td></tr></table></figure>
+<p>++的作用对象需要是一个用于识别或定位储存位置的表示符（lvalue）</p>
+<h1 id="省流"><a href="#省流" class="headerlink" title="省流"></a>省流</h1><p>C 语言的术语 lvalue 指用于识别或定位一个存储位置的标识符。（注意：左值同时还必须是可改变的）</p>
+<p>其实 rvalue 的发明完全是为了搭配 lvalue，rvalue 你可以理解为 readable value，即任何可读取的值都被认为是右值（非左值）。</p>
+</div>]]></content>
+      <categories>
+        <category>C语言</category>
+      </categories>
+      <tags>
+        <tag>左值</tag>
       </tags>
   </entry>
   <entry>
@@ -1855,40 +1907,57 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>关于左值</title>
-    <url>/posts/49774/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="关于左值"><a href="#关于左值" class="headerlink" title="关于左值"></a>关于左值</h1><details class="folding-tag" ><summary> 引用自小甲鱼的教程 </summary>
-              <div class='content'>
-              <div class="tag link"><a class="link-card" title="Tag Plugins Plus | 什么是lvalue" href="https://fishc.com.cn/thread-69833-1-1.html"><div class="left"><img src="/img/link.png"/></div><div class="right"><p class="text">Tag Plugins Plus | 什么是lvalue</p><p class="url">https://fishc.com.cn/thread-69833-1-1.html</p></div></a></div>
-              </div>
-            </details>
-<blockquote>
-<p>一般来说，当你看到这样的报错时</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Error] lvalue required as left operand of assignment</span><br></pre></td></tr></table></figure>
-<p>就是左值概念不清晰的原因啦</p>
-<p>首先我们引用一下c99的官方文档</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">The name &quot;lvalue&quot; comes originally from the assignment expression E1 = E2, in which the left operand E1 is required to be a (modi&amp;#64257;able) lvalue. It is perhaps better considered as representing an object &quot;locator value&quot;. What is sometimes called &quot;rvalue&quot; is in this International Standard described as the &quot;value of an expression&quot;.</span><br></pre></td></tr></table></figure>
-<div class="tip "><p>当然，装装样子而已啦，还是用汉语叙述：</p>
+    <title>使用宝塔面板部署django项目</title>
+    <url>/posts/20868/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h1 id="使用宝塔面板部署django项目"><a href="#使用宝塔面板部署django项目" class="headerlink" title="使用宝塔面板部署django项目"></a>使用宝塔面板部署django项目</h1><div class="tip cogs"><p>非常emo</p>
 </div>
-<p>左值也就是lvalue，更加合理的解释应该是locator value（特定位置的值），rvalue则应该理解为value of an expression（表达式的值）</p>
-<p>以下面的代码为例：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">        int a = 5;</span><br><span class="line"></span><br><span class="line">        ++(a++);</span><br><span class="line"></span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这段代码是会报错的</p>
+<p>爱特程序部现在只剩下三人，为了方便程序部成员使用，写一篇关于部署的教程</p>
 <blockquote>
-<p>如果你认为左值只是赋值运算左边的值，这个错误就无法理解了</p>
-<p>正确的理解是：</p>
+<p>欢迎加入爱特工作室</p>
 </blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(a++) 是先将变量 a 的值（5）做为整个表达式的值返回，再将 a 自增 1（类似于 a = a + 1）。</span><br><span class="line"></span><br><span class="line">所以这里 ++(a++); 相当于 ++(5), a = a + 1;</span><br><span class="line"></span><br><span class="line">那当然要报错啦，5 是一个常量，当然不能给你 5 = 5 + 1 咯~</span><br></pre></td></tr></table></figure>
-<p>++的作用对象需要是一个用于识别或定位储存位置的表示符（lvalue）</p>
-<h1 id="省流"><a href="#省流" class="headerlink" title="省流"></a>省流</h1><p>C 语言的术语 lvalue 指用于识别或定位一个存储位置的标识符。（注意：左值同时还必须是可改变的）</p>
-<p>其实 rvalue 的发明完全是为了搭配 lvalue，rvalue 你可以理解为 readable value，即任何可读取的值都被认为是右值（非左值）。</p>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><blockquote>
+<p>我使用的服务器是腾讯云服务器，什么服务器倒是无所谓，只需要根据官方文档和你的服务器使用的系统安装宝塔面板即可。</p>
+</blockquote>
+<p>这个是宝塔官网<a href="https://www.bt.cn/new/index.html">宝塔面板 - 简单好用的Linux/Windows服务器运维管理面板 (bt.cn)</a>网上一搜就有其实。</p>
+<h2 id="登录改密"><a href="#登录改密" class="headerlink" title="登录改密"></a>登录改密</h2><p><img src="http://picture.daoxuan.cc/image/202304172157280.png" alt="image-20230417185210940"></p>
+<blockquote>
+<p>安装完之后会显示网址，那个网址一定要记住，访问之后的界面是这样的，用服务器返回给你的账号密码进行登录</p>
+</blockquote>
+<p>当然，因为那个账号密码用起来很不方便可以在登录时候进行改密。</p>
+<blockquote>
+<p>第一次进入之后安装提示会安装一些东西，我们安装体量小的那个。</p>
+</blockquote>
+<p><img src="http://picture.daoxuan.cc/image/202304172157735.png" alt="image-20230417202220060"></p>
+<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>进入软件商店下载Python项目管理器，在Python管理器中需要下载Python</p>
+<blockquote>
+<p>有一些东西需要下载我记不全。</p>
+</blockquote>
+<h2 id="配置数据库"><a href="#配置数据库" class="headerlink" title="配置数据库"></a>配置数据库</h2><p>点击添加数据库，编码utf-8其他的可以和自己本地的一样（这样就不用调settings的设置了）</p>
+<blockquote>
+<p>需要核对一下自己settings里面的数据库设置和自己添加的数据库需要一致。</p>
+</blockquote>
+<p>创建完数据库时候就可以点击导入，然后导入本地的数据库包（.sql）</p>
+<h2 id="在本地生成依赖文件"><a href="#在本地生成依赖文件" class="headerlink" title="在本地生成依赖文件"></a>在本地生成依赖文件</h2><p><code>pip freeze &gt; requirements.txt</code>输入这个命令生成依赖文件<code>requirements.txt</code>查看该文件中的依赖是不是自己这个项目用的，不是的话自己debug，然后改一下依赖的编码格式为utf-8,防止识别不到。</p>
+<h2 id="上传项目压缩包"><a href="#上传项目压缩包" class="headerlink" title="上传项目压缩包"></a>上传项目压缩包</h2><p>上传项目压缩包到/www/wwwroot这个目录下面进行解压（其实到哪里无所谓，习惯上放这里）</p>
+<h2 id="部署项目"><a href="#部署项目" class="headerlink" title="部署项目"></a>部署项目</h2><p>打开之前下载好的Python项目管理器，点击添加项目。路径选择刚刚导入的文件夹，框架选择django，启动方式选择gunicorn，选择一个没有被占用过的端口比如9000；8088之类的，点击安装模块依赖，开机启动，之后就可以点击确定了。</p>
+<blockquote>
+<p>下载完成之后打开项目日志，查看有没有bug，有报错的话可能是依赖包缺少，自行查看下载。</p>
+<p>到这里需要保证数据库的配置是正确的，而且settings有一句这个ALLOWED_HOSTS = []给他改成ALLOWED_HOSTS = [“*”]</p>
+</blockquote>
+<p>然后在Python项目管理器里点击映射，有自己域名的映射自己为这个项目起的域名，没有的话把服务器地址写一下。</p>
+<p>到这里就成功了</p>
+<h2 id="需要自行完善的地方"><a href="#需要自行完善的地方" class="headerlink" title="需要自行完善的地方"></a>需要自行完善的地方</h2><ol>
+<li><p>项目部署的时候设置了端口，这个需要在宝塔面板的”安全“那里，和服务器的“防火墙”那里把你添加的端口放行一下。</p>
+</li>
+<li><p>域名的ssl证书自行配置。</p>
+</li>
+<li><p>数据库的文件可以在Navicat里面按照下图进行导出</p>
+</li>
+</ol>
+<p><img src="http://picture.daoxuan.cc/image/202304172157907.png" alt="image-20230417214005276"></p>
 </div>]]></content>
-      <categories>
-        <category>C语言</category>
-      </categories>
       <tags>
-        <tag>左值</tag>
+        <tag>django</tag>
       </tags>
   </entry>
   <entry>
@@ -2242,44 +2311,6 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>大英散记</title>
-    <url>/posts/64429/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><details class="folding-tag" ><summary> 大英2unit1 </summary>
-              <div class='content'>
-              <details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英文</th></tr></thead><tbody><tr><td>烟雾</td><td><psw>haze</psw></td></tr><tr><td>大麻</td><td><psw>marijuana</psw></td></tr><tr><td>饶有兴味的</td><td><psw>stimulating</psw></td></tr><tr><td>（被视为某个经济体的）国家</td><td><psw>economy</psw></td></tr><tr><td>（大学的）校园</td><td><psw>campus</psw></td></tr><tr><td>示威（活动）</td><td><psw>demonstration</psw></td></tr><tr><td>激进主义</td><td><psw>radicalism</psw></td></tr><tr><td>（美国）州长</td><td><psw>governor</psw></td></tr><tr><td>持不同政见的</td><td><psw>dissident</psw></td></tr><tr><td>思想开明的人</td><td><psw>liberal</psw></td></tr><tr><td>冲突</td><td><psw>clash</psw></td></tr><tr><td>统治集团；建立</td><td><psw>establishment</psw></td></tr><tr><td>情感强烈的</td><td><psw>passionate</psw></td></tr><tr><td>抗议</td><td><psw>protest</psw></td></tr><tr><td>结盟</td><td><psw>alliance</psw></td></tr><tr><td>发起；开始；发动</td><td><psw>launch</psw></td></tr><tr><td>终于</td><td><psw>ultimately</psw></td></tr><tr><td>辞职</td><td><psw>resignation</psw></td></tr><tr><td>激进主义；行动主义</td><td><psw>activism</psw></td></tr><tr><td>成为···的特征</td><td><psw>characterize</psw></td></tr><tr><td>独立公司制作的</td><td><psw>indie</psw></td></tr><tr><td>令人觉得自由的</td><td><psw>liberating</psw></td></tr><tr><td>创造的</td><td><psw>creative</psw></td></tr><tr><td>觉醒；认识；意识</td><td><psw>awakening</psw></td></tr><tr><td>首要的；最重要的</td><td><psw>prime</psw></td></tr><tr><td>愤世嫉俗的；认为人皆自私者</td><td><psw>cynic</psw></td></tr><tr><td>漠然的</td><td><psw>apathetic</psw></td></tr><tr><td>令人陶醉的</td><td><psw>heady</psw></td></tr><tr><td>因素</td><td><psw>factor</psw></td></tr><tr><td>递降地</td><td><psw>descending</psw></td></tr><tr><td>就业；在职</td><td><psw>employment</psw></td></tr><tr><td>胜算；成功的可能性</td><td><psw>prospect</psw></td></tr><tr><td>支付得起</td><td><psw>affordability</psw></td></tr><tr><td>（值得关注的）问题</td><td><psw>issue</psw></td></tr><tr><td>可获得性</td><td><psw>accessibility</psw></td></tr><tr><td>机会</td><td><psw>opportunity</psw></td></tr><tr><td>关系极为密切的</td><td><psw>umbilically</psw></td></tr><tr><td>费解的</td><td><psw>obscure</psw></td></tr><tr><td>极乐</td><td><psw>bliss</psw></td></tr><tr><td>使（组织，活动）难以继续；使某人屈服</td><td><psw>bring sb./sth to their knees</psw></td></tr><tr><td>引起某事（尤指令人不快或出乎意料的事）</td><td><psw>give rise to sth</psw></td></tr><tr><td>与···结盟</td><td><psw>form an alliance with</psw></td></tr><tr><td>引起；导致；造成</td><td><psw>bring about</psw></td></tr><tr><td>不管</td><td><psw>in spite of</psw></td></tr><tr><td>（使）不碰； （使）不靠近</td><td><psw>keep off</psw></td></tr><tr><td>退出活动；退学；退出比赛</td><td><psw>drop out</psw></td></tr><tr><td>递降地</td><td><psw>in descending order</psw></td></tr><tr><td>本质上；本身；就本身而言</td><td><psw>in / of itself</psw></td></tr><tr><td>依靠；依赖</td><td><psw>rely on</psw></td></tr><tr><td>开办；设立</td><td><psw>set up</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 英译汉 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>英文</th><th>翻译</th></tr></thead><tbody><tr><td>get the hang of it</td><td><psw>掌握窍门</psw></td></tr><tr><td>sponsorship</td><td><psw>奖学金</psw></td></tr><tr><td>haze</td><td><psw>烟雾</psw></td></tr><tr><td>marijuana</td><td><psw>大麻</psw></td></tr><tr><td>stimulating</td><td><psw>饶有兴味的</psw></td></tr><tr><td>economy</td><td><psw>（被视为某个经济实体的国家）</psw></td></tr><tr><td>campus</td><td><psw>校园</psw></td></tr><tr><td>demonstration</td><td><psw>示威活动</psw></td></tr><tr><td>radicalism</td><td><psw>激进主义</psw></td></tr><tr><td>governor</td><td><psw>州长</psw></td></tr><tr><td>dissident</td><td><psw>持不同政见的</psw></td></tr><tr><td>liberal</td><td><psw>思想开明的人</psw></td></tr><tr><td>clash</td><td><psw>冲突</psw></td></tr><tr><td>establishment</td><td><psw>建设；统治集团</psw></td></tr><tr><td>passionate</td><td><psw>激昂的</psw></td></tr><tr><td>protest</td><td><psw>抗议</psw></td></tr><tr><td>alliance</td><td><psw>结盟</psw></td></tr><tr><td>launch</td><td><psw>发起</psw></td></tr><tr><td>ultimately</td><td><psw>最终</psw></td></tr><tr><td>resignation</td><td><psw>辞职</psw></td></tr><tr><td>activism</td><td><psw>行动主义</psw></td></tr><tr><td>characterize</td><td><psw>成为···的特征</psw></td></tr><tr><td>indie</td><td><psw>独立公司制作的</psw></td></tr><tr><td>liberating</td><td><psw>令人觉得自由的</psw></td></tr><tr><td>creative</td><td><psw>有创造性的</psw></td></tr><tr><td>awakening</td><td><psw>觉醒</psw></td></tr><tr><td>prime</td><td><psw>首要的</psw></td></tr><tr><td>prison</td><td><psw>监狱</psw></td></tr><tr><td>cynic</td><td><psw>愤世嫉俗的人</psw></td></tr><tr><td>apathetic</td><td><psw>漠然的</psw></td></tr><tr><td>heady</td><td><psw>令人陶醉的</psw></td></tr><tr><td>factor</td><td><psw>因素</psw></td></tr><tr><td>descending</td><td><psw>递降的</psw></td></tr><tr><td>employment</td><td><psw>就业</psw></td></tr><tr><td>prospect</td><td><psw>成功的可能性</psw></td></tr><tr><td>affordability</td><td><psw>支付得起</psw></td></tr><tr><td>issue</td><td><psw>（值得关注的问题）</psw></td></tr><tr><td>accessibility</td><td><psw>可获得性</psw></td></tr><tr><td>opportunity</td><td><psw>机会</psw></td></tr><tr><td>umbilically</td><td><psw>关系极为密切的</psw></td></tr><tr><td>obscure</td><td><psw>费解的</psw></td></tr><tr><td>bliss</td><td><psw>极乐</psw></td></tr><tr><td>bring sb./sth to their knees</td><td><psw>迫使某人屈服</psw></td></tr><tr><td>give rise to sth</td><td><psw>引起某事（尤指令人不快或出人意料的事）</psw></td></tr><tr><td>form an alliance with</td><td><psw>与···结盟</psw></td></tr><tr><td>bring about</td><td><psw>引起</psw></td></tr><tr><td>in spite of</td><td><psw>不管</psw></td></tr><tr><td>keep off</td><td><psw>（使）不碰</psw></td></tr><tr><td>drop out</td><td><psw>退学；退出活动</psw></td></tr></tbody></table></div>              </div>            </details>
-              </div>
-            </details>
-<details class="folding-tag" ><summary> 大英二 unit2 2-1 </summary>
-              <div class='content'>
-              <details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英文</th></tr></thead><tbody><tr><td>过时的；老式的</td><td><psw>old-fishioned</psw></td></tr><tr><td>粗壮的；肥胖的</td><td><psw>bulky</psw></td></tr><tr><td>哀痛</td><td><psw>mourning</psw></td></tr><tr><td>提起；举起</td><td><psw>hoist</psw></td></tr><tr><td>无定形的</td><td><psw>shapeless</psw></td></tr><tr><td>捆；束；包</td><td><psw>bundle</psw></td></tr><tr><td>气喘吁吁</td><td><psw>puff</psw></td></tr><tr><td>呻吟</td><td><psw>moan</psw></td></tr><tr><td>紧张的;担心的；忧虑的</td><td><psw>uneasy</psw></td></tr><tr><td>引起</td><td><psw>arouse</psw></td></tr><tr><td>敢说；大胆表示</td><td><psw>venture</psw></td></tr><tr><td>过度的；过分的</td><td><psw>excessive</psw></td></tr><tr><td>家长的</td><td><psw>parental</psw></td></tr><tr><td>在···之中</td><td><psw>amongst</psw></td></tr><tr><td>安慰</td><td><psw>console</psw></td></tr><tr><td>苦恼；悲伤；忧虑</td><td><psw>distress</psw></td></tr><tr><td>布满血丝的</td><td><psw>bloodshot</psw></td></tr><tr><td>大口喘气</td><td><psw>pant</psw></td></tr><tr><td>鼓起的</td><td><psw>bulging</psw></td></tr><tr><td>喷出</td><td><psw>spurt</psw></td></tr><tr><td>内心的；个人的；隐秘的</td><td><psw>inner</psw></td></tr><tr><td>不受控制的</td><td><psw>uncontrolled</psw></td></tr><tr><td>精力；干劲</td><td><psw>vitality</psw></td></tr><tr><td>（使）变虚弱</td><td><psw>weaken</psw></td></tr><tr><td>反驳；回嘴</td><td><psw>retort</psw></td></tr><tr><td>鹿毛色；浅黄褐色</td><td><psw></psw></td></tr><tr><td>黑紫色的</td><td><psw>livid</psw></td></tr><tr><td>含水的</td><td><psw>watery</psw></td></tr><tr><td>静止的；一动不动的</td><td><psw>motionless</psw></td></tr><tr><td>尖锐的；刺耳的</td><td><psw>shrill</psw></td></tr><tr><td>啜泣；呜咽</td><td><psw>sob</psw></td></tr><tr><td>很可能的</td><td><psw>probable</psw></td></tr><tr><td>使震惊；使大吃一惊</td><td><psw>stun</psw></td></tr><tr><td>（肌肉）紧缩</td><td><psw>contract</psw></td></tr><tr><td>使变形</td><td><psw>distort</psw></td></tr><tr><td>夺走</td><td><psw>snatch</psw></td></tr><tr><td>匆忙；仓促</td><td><psw>haste</psw></td></tr><tr><td>令人痛苦的</td><td><psw>harrowing</psw></td></tr><tr><td>控制不住的</td><td><psw>uncontrollable</psw></td></tr><tr><td>拿走；带走</td><td><psw>take away</psw></td></tr><tr><td>为···送行</td><td><psw>see off</psw></td></tr><tr><td>使某事结束</td><td><psw>give an end to sth</psw></td></tr><tr><td>上升</td><td><psw>rise up</psw></td></tr><tr><td>匆忙地</td><td><psw>in haste</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 英译汉 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>英文</th><th>汉意</th></tr></thead><tbody><tr><td>old-fashioned</td><td><psw>过时的</psw></td></tr><tr><td>bulky</td><td><psw>粗壮的</psw></td></tr><tr><td>mourning</td><td><psw>哀痛</psw></td></tr><tr><td>hoist</td><td><psw>举起</psw></td></tr><tr><td>shapeless</td><td><psw>无形的</psw></td></tr><tr><td>bundle</td><td><psw>捆</psw></td></tr><tr><td>puff</td><td><psw>气喘吁吁</psw></td></tr><tr><td>moan</td><td><psw>呻吟</psw></td></tr><tr><td>uneasy</td><td><psw>焦虑的</psw></td></tr><tr><td>arouse</td><td><psw>激起</psw></td></tr><tr><td>venture</td><td><psw>敢说</psw></td></tr><tr><td>excessive</td><td><psw>过分的</psw></td></tr><tr><td>parental</td><td><psw>家长的</psw></td></tr><tr><td>amongst</td><td><psw>在···之间</psw></td></tr><tr><td>console</td><td><psw>安慰</psw></td></tr><tr><td>distress</td><td><psw>苦恼</psw></td></tr><tr><td>bloodshot</td><td><psw>充满血丝的</psw></td></tr><tr><td>pant</td><td><psw>气喘吁吁</psw></td></tr><tr><td>bulging</td><td><psw>鼓起的</psw></td></tr><tr><td>spurt</td><td><psw>喷出</psw></td></tr><tr><td>inner</td><td><psw>内心的</psw></td></tr><tr><td>uncontrolled</td><td><psw>无法控制的</psw></td></tr><tr><td>vitality</td><td><psw>精力</psw></td></tr><tr><td>weaken</td><td><psw>变虚弱</psw></td></tr><tr><td>retort</td><td><psw>回嘴</psw></td></tr><tr><td>fawn</td><td><psw>鹿毛色</psw></td></tr><tr><td>livid</td><td><psw>黑紫色</psw></td></tr><tr><td>watery</td><td><psw>含水的</psw></td></tr><tr><td>motionless</td><td><psw>不动的</psw></td></tr><tr><td>shrill</td><td><psw>尖锐的</psw></td></tr><tr><td>sob</td><td><psw>啜泣</psw></td></tr><tr><td>probable</td><td><psw>可能</psw></td></tr><tr><td>stun</td><td><psw>震惊</psw></td></tr><tr><td>contract</td><td><psw>紧缩</psw></td></tr><tr><td>distort</td><td><psw>使失真</psw></td></tr><tr><td>snatch</td><td><psw>夺走</psw></td></tr><tr><td>haste</td><td><psw>匆匆</psw></td></tr><tr><td>harrowing</td><td><psw>可怕的</psw></td></tr><tr><td>uncontrollable</td><td><psw>控制不住的</psw></td></tr><tr><td>take away</td><td><psw>拿走</psw></td></tr><tr><td>see off</td><td><psw>为···送行</psw></td></tr><tr><td>put an end to sth</td><td><psw>使某事结束</psw></td></tr><tr><td>rise up</td><td><psw>上升</psw></td></tr><tr><td>in haste</td><td><psw>急忙地</psw></td></tr></tbody></table></div>              </div>            </details>
-              </div>
-            </details>
-<details class="folding-tag" ><summary> 大英二 unit2 2-2 </summary>
-              <div class='content'>
-              <details class="folding-tag" ><summary> 英译汉 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>英语</th><th>汉意</th></tr></thead><tbody><tr><td>empathy</td><td><psw>同情</psw></td></tr><tr><td>crawl</td><td><psw>爬</psw></td></tr><tr><td>teddy</td><td><psw>泰迪熊</psw></td></tr><tr><td>retrieve</td><td><psw>收回</psw></td></tr><tr><td>trace</td><td><psw>追究</psw></td></tr><tr><td>infancy</td><td><psw>婴儿期</psw></td></tr><tr><td>virtually</td><td><psw>实际上</psw></td></tr><tr><td>infant</td><td><psw>婴儿</psw></td></tr><tr><td>response</td><td><psw>回应</psw></td></tr><tr><td>precursor</td><td><psw>先兆</psw></td></tr><tr><td>cursor</td><td><psw>光标</psw></td></tr><tr><td>developmental</td><td><psw>成长的</psw></td></tr><tr><td>sympathetic</td><td><psw>同情的</psw></td></tr><tr><td>disturbance</td><td><psw>干扰</psw></td></tr><tr><td>misery</td><td><psw>痛苦</psw></td></tr><tr><td>confusion</td><td><psw>困惑</psw></td></tr><tr><td>imitate</td><td><psw>模仿</psw></td></tr><tr><td>comprehend</td><td><psw>理解</psw></td></tr><tr><td>mimicry</td><td><psw>模仿能力</psw></td></tr><tr><td>imitation</td><td><psw>模仿</psw></td></tr><tr><td>evoke</td><td><psw>使人想起</psw></td></tr><tr><td>distinct</td><td><psw>有区别的</psw></td></tr><tr><td>toddler</td><td><psw>学步的小孩</psw></td></tr><tr><td>repertoire</td><td><psw>全部技能</psw></td></tr><tr><td>cookie</td><td><psw>饼干</psw></td></tr><tr><td>stroke</td><td><psw>抚摸</psw></td></tr><tr><td>strike</td><td><psw>撞击</psw></td></tr><tr><td>pat</td><td><psw>轻拍</psw></td></tr><tr><td>diverge</td><td><psw>出现分歧</psw></td></tr><tr><td>sensitivity</td><td><psw>敏感</psw></td></tr><tr><td>keenly</td><td><psw>强烈的</psw></td></tr><tr><td>empathic</td><td><psw>有同感的</psw></td></tr><tr><td>discipline</td><td><psw>惩罚</psw></td></tr><tr><td>misbehaviour</td><td><psw>不良举止</psw></td></tr><tr><td>naughty</td><td><psw>淘气的</psw></td></tr><tr><td>apart from</td><td><psw>与···分离</psw></td></tr><tr><td>stem from</td><td><psw>源于</psw></td></tr><tr><td>pull away</td><td><psw>闪避；加速超过；开走</psw></td></tr><tr><td>calm down</td><td><psw>镇静下来</psw></td></tr><tr><td>tune out</td><td><psw>不注意</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英语</th></tr></thead><tbody><tr><td>同感</td><td><psw>empathy</psw></td></tr><tr><td>爬</td><td><psw>crawl</psw></td></tr><tr><td>泰迪熊</td><td><psw>teddy</psw></td></tr><tr><td>收回；取回；重新找回</td><td><psw>retrieve</psw></td></tr><tr><td>追究；追溯</td><td><psw>trace</psw></td></tr><tr><td>婴儿期</td><td><psw>infancy</psw></td></tr><tr><td>差不多;实际上</td><td><psw>virtually</psw></td></tr><tr><td>婴儿</td><td><psw>infant</psw></td></tr><tr><td>反应；回应；响应</td><td><psw>response</psw></td></tr><tr><td>先兆</td><td><psw>percursor</psw></td></tr><tr><td>成长的</td><td><psw>developmental</psw></td></tr><tr><td>同情的</td><td><psw>sympathetic</psw></td></tr><tr><td>干扰</td><td><psw>disturbance</psw></td></tr><tr><td>苦恼</td><td><psw>misery</psw></td></tr><tr><td>混淆；错认</td><td><psw>confusion</psw></td></tr><tr><td>模仿</td><td><psw>imitate</psw></td></tr><tr><td>理解；领会</td><td><psw>comprehend</psw></td></tr><tr><td>模仿；模仿能力</td><td><psw>mimicry</psw></td></tr><tr><td>模仿</td><td><psw>imitation</psw></td></tr><tr><td>使人想起；唤起</td><td><psw>evoke</psw></td></tr><tr><td>有区别的</td><td><psw>distinct</psw></td></tr><tr><td>学步的小孩</td><td><psw>toddler</psw></td></tr><tr><td>全部技能（或才能）</td><td><psw>repertoire</psw></td></tr><tr><td>小甜饼；曲奇饼</td><td><psw>cookie</psw></td></tr><tr><td>轻抚；抚摸</td><td><psw>stroke</psw></td></tr><tr><td>平拍</td><td><psw>pat</psw></td></tr><tr><td>相异</td><td><psw>diverge</psw></td></tr><tr><td>敏感</td><td><psw>sensitivity</psw></td></tr><tr><td>强烈地</td><td><psw>keenly</psw></td></tr><tr><td>有同感的</td><td><psw>empathic</psw></td></tr><tr><td>惩罚</td><td><psw>discipline</psw></td></tr><tr><td>不良行为</td><td><psw>misbehavior</psw></td></tr><tr><td>淘气的</td><td><psw>naughty</psw></td></tr><tr><td>除···之外</td><td><psw>apart from</psw></td></tr><tr><td>源于</td><td><psw>stem from</psw></td></tr><tr><td>闪避；加速超过；走开</td><td><psw>pull away</psw></td></tr><tr><td>平静下来</td><td><psw>clam down</psw></td></tr><tr><td>不注意；不理睬；不过问</td><td><psw>tune out</psw></td></tr></tbody></table></div>              </div>            </details>
-              </div>
-            </details>
-<details class="folding-tag" ><summary> 大英二 unit3 3-1 </summary>
-              <div class='content'>
-              <details class="folding-tag" ><summary> 英译汉 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>英文</th><th>汉意</th></tr></thead><tbody><tr><td>teammate</td><td><psw>队友</psw></td></tr><tr><td>collide</td><td><psw>出现矛盾</psw></td></tr><tr><td>tournament</td><td><psw>锦标赛</psw></td></tr><tr><td>clue</td><td><psw>线索</psw></td></tr><tr><td>pitch</td><td><psw>场所</psw></td></tr><tr><td>madly</td><td><psw>疯狂地</psw></td></tr><tr><td>sheer</td><td><psw>全然的</psw></td></tr><tr><td>hum</td><td><psw>哼</psw></td></tr><tr><td>mournful</td><td><psw>悲痛的</psw></td></tr><tr><td>reminiscent</td><td><psw>回忆往事的</psw></td></tr><tr><td>chorus</td><td><psw>合唱曲</psw></td></tr><tr><td>stand-off</td><td><psw>（战斗的）僵持（状态）</psw></td></tr><tr><td>suspense</td><td><psw>焦虑；悬念</psw></td></tr><tr><td>newcomer</td><td><psw>新手</psw></td></tr><tr><td>mostly</td><td><psw>大多数的</psw></td></tr><tr><td>whack</td><td><psw>重击</psw></td></tr><tr><td>cranium</td><td><psw>头颅</psw></td></tr><tr><td>accidentally</td><td><psw>偶然地</psw></td></tr><tr><td>random</td><td><psw>任意的</psw></td></tr><tr><td>defender</td><td><psw>防守人员</psw></td></tr><tr><td>illustration</td><td><psw>实例</psw></td></tr><tr><td>soar</td><td><psw>猛升</psw></td></tr><tr><td>hairy</td><td><psw>多毛的</psw></td></tr><tr><td>shooter</td><td><psw>射手</psw></td></tr><tr><td>striker</td><td><psw>前锋</psw></td></tr><tr><td>peel</td><td><psw>削···皮</psw></td></tr><tr><td>sprint</td><td><psw>冲刺</psw></td></tr><tr><td>resume</td><td><psw>重新开始</psw></td></tr><tr><td>precision</td><td><psw>精确的</psw></td></tr><tr><td>priority</td><td><psw>优先考虑的事</psw></td></tr><tr><td>periodically</td><td><psw>阶段性的</psw></td></tr><tr><td>writhe</td><td><psw>扭动身体</psw></td></tr><tr><td>massage</td><td><psw>给···按摩</psw></td></tr><tr><td>message</td><td><psw>信息</psw></td></tr><tr><td>phony</td><td><psw>假冒的</psw></td></tr><tr><td>baloney</td><td><psw>胡说八道</psw></td></tr><tr><td>reprimand</td><td><psw>训斥</psw></td></tr><tr><td>strategy</td><td><psw>策略</psw></td></tr><tr><td>mystery</td><td><psw>不可思议的事务</psw></td></tr><tr><td>offside</td><td><psw>越位</psw></td></tr><tr><td>deem</td><td><psw>认为</psw></td></tr><tr><td>roughly</td><td><psw>粗略地</psw></td></tr><tr><td>perplexed</td><td><psw>困惑的</psw></td></tr><tr><td>prefessional</td><td><psw>专业的</psw></td></tr><tr><td>interpretation</td><td><psw>解释</psw></td></tr><tr><td>touchdown</td><td><psw>持球过底线</psw></td></tr><tr><td>referee</td><td><psw>裁判员</psw></td></tr><tr><td>responsible</td><td><psw>负责的</psw></td></tr><tr><td>hopped-up</td><td><psw>兴奋的</psw></td></tr><tr><td>backtalk</td><td><psw>顶嘴</psw></td></tr><tr><td>infraction</td><td><psw>违法</psw></td></tr><tr><td>punch</td><td><psw>揍</psw></td></tr><tr><td>flock</td><td><psw>群集</psw></td></tr><tr><td>blow the whistle on sth</td><td><psw>告发</psw></td></tr><tr><td>back and forth</td><td><psw>来回地</psw></td></tr><tr><td>tend to do</td><td><psw>倾向于做某事</psw></td></tr><tr><td>put a good face on sth</td><td><psw>掩饰某事物</psw></td></tr><tr><td>by chance</td><td><psw>偶然</psw></td></tr><tr><td>off course</td><td><psw>偏离航道</psw></td></tr><tr><td>take the credit for sth</td><td><psw>把···归功于自己</psw></td></tr><tr><td>peel off</td><td><psw>脱去</psw></td></tr><tr><td>tick away</td><td><psw>（时间）滴滴答答地过去</psw></td></tr><tr><td>at a loss for words</td><td><psw>不知道说什么好</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英语</th></tr></thead><tbody><tr><td>队友；同队队员</td><td><psw>teammate</psw></td></tr><tr><td>出现矛盾；发送冲突</td><td><psw>collide</psw></td></tr><tr><td>锦标赛</td><td><psw>tournament</psw></td></tr><tr><td>线索</td><td><psw>clue</psw></td></tr><tr><td>场所</td><td><psw>pitch</psw></td></tr><tr><td>疯狂地</td><td><psw>madly</psw></td></tr><tr><td>纯粹的；全然的</td><td><psw>sheer</psw></td></tr><tr><td>哼（曲子）</td><td><psw>hum</psw></td></tr><tr><td>悲痛的</td><td><psw>mournful</psw></td></tr><tr><td>追忆往事的</td><td><psw>reminiscent</psw></td></tr><tr><td>合唱曲</td><td><psw>chorus</psw></td></tr><tr><td>（战斗的）僵持（状态）</td><td><psw>stand-off</psw></td></tr><tr><td>焦虑</td><td><psw>suspense</psw></td></tr><tr><td>新手</td><td><psw>newcomer</psw></td></tr><tr><td>通常</td><td><psw>mostly</psw></td></tr><tr><td>重击</td><td><psw>whack</psw></td></tr><tr><td>头颅</td><td><psw>cranium</psw></td></tr><tr><td>偶然地</td><td><psw>accidently</psw></td></tr><tr><td>随机的</td><td><psw>random</psw></td></tr><tr><td>防守人员</td><td><psw>defender</psw></td></tr><tr><td>实例</td><td><psw>illustration</psw></td></tr><tr><td>猛升</td><td><psw>soar</psw></td></tr><tr><td>多毛的</td><td><psw>hairy</psw></td></tr><tr><td>射手</td><td><psw>shooter</psw></td></tr><tr><td>前锋</td><td><psw>striker</psw></td></tr><tr><td>削皮</td><td><psw>peel</psw></td></tr><tr><td>冲刺</td><td><psw>sprint</psw></td></tr><tr><td>重新开始</td><td><psw>resume</psw></td></tr><tr><td>精确的</td><td><psw>precision</psw></td></tr><tr><td>优先考虑的事</td><td><psw>priority</psw></td></tr><tr><td>阶段性地</td><td><psw>periodically</psw></td></tr><tr><td>翻滚</td><td><psw>writhe</psw></td></tr><tr><td>给···按摩</td><td><psw>massage</psw></td></tr><tr><td>伪造的</td><td><psw>phony</psw></td></tr><tr><td>胡说八道</td><td><psw>baloney</psw></td></tr><tr><td>训斥</td><td><psw>reprimend</psw></td></tr><tr><td>策略</td><td><psw>strategy</psw></td></tr><tr><td>不可思议的事物</td><td><psw>mystery</psw></td></tr><tr><td>越位</td><td><psw>offside</psw></td></tr><tr><td>认为</td><td><psw>deem</psw></td></tr><tr><td>粗略地</td><td><psw>roughly</psw></td></tr><tr><td>困惑的</td><td><psw>perplexed</psw></td></tr><tr><td>专业的</td><td><psw>professional</psw></td></tr><tr><td>解释</td><td><psw>interpretation</psw></td></tr><tr><td>持球过底线</td><td><psw>touchdown</psw></td></tr><tr><td>裁判员</td><td><psw>referee</psw></td></tr><tr><td>负责···的</td><td><psw>responsible</psw></td></tr><tr><td>兴奋的</td><td><psw>hopped-up</psw></td></tr><tr><td>顶嘴</td><td><psw>backtalk</psw></td></tr><tr><td>违法</td><td><psw>infraction</psw></td></tr><tr><td>猛击</td><td><psw>punch</psw></td></tr><tr><td>群集</td><td><psw>flock</psw></td></tr><tr><td>告发</td><td><psw>blow the whistle on sth</psw></td></tr><tr><td>来来回回</td><td><psw>back and forth</psw></td></tr><tr><td>倾向于做某事</td><td><psw>tend to do sth</psw></td></tr><tr><td>掩饰某事物</td><td><psw>put a good face on sth</psw></td></tr><tr><td>偶然</td><td><psw>by chance</psw></td></tr><tr><td>偏离航向</td><td><psw>off course</psw></td></tr><tr><td>把···归功于自己</td><td><psw>take the credit for sth</psw></td></tr><tr><td>脱去</td><td><psw>peel off</psw></td></tr><tr><td>时间滴滴答答地过去</td><td><psw>tick away</psw></td></tr><tr><td>不知道说什么好</td><td><psw>at a loss for word</psw></td></tr></tbody></table></div>              </div>            </details>
-              </div>
-            </details>
-<details class="folding-tag" ><summary> 大英二 unit2 3-2 </summary>
-              <div class='content'>
-              <details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英语</th></tr></thead><tbody><tr><td>轻柔地</td><td><psw>gently</psw></td></tr><tr><td>照亮</td><td><psw>illuminate</psw></td></tr><tr><td>震耳欲聋的</td><td><psw>deafening</psw></td></tr><tr><td>挑逗性地</td><td><psw>tantalisingly</psw></td></tr><tr><td>肾上腺素</td><td><psw>adrenaline</psw></td></tr><tr><td>使人异常高兴的</td><td><psw>exhilarating</psw></td></tr><tr><td>极其恐怖的</td><td><psw>terrifying</psw></td></tr><tr><td>保证</td><td><psw>ensure</psw></td></tr><tr><td>镇定的</td><td><psw>composed</psw></td></tr><tr><td>锦标赛</td><td><psw>championship</psw></td></tr><tr><td>挥动</td><td><psw>flutter</psw></td></tr><tr><td>联合的</td><td><psw>unified</psw></td></tr><tr><td>招致（不快之事）</td><td><psw>incur</psw></td></tr><tr><td>直言不讳的</td><td><psw>vocal</psw></td></tr><tr><td>表演者</td><td><psw>performer</psw></td></tr><tr><td>压力</td><td><psw>strain</psw></td></tr><tr><td>使黯然失色</td><td><psw>eclipse</psw></td></tr><tr><td>筋疲力尽</td><td><psw>exhaustion</psw></td></tr><tr><td>艰苦的</td><td><psw>grueling</psw></td></tr><tr><td>疲劳</td><td><psw>fatigue</psw></td></tr><tr><td>喊叫声</td><td><psw>roar</psw></td></tr><tr><td>激励</td><td><psw>boost</psw></td></tr><tr><td>谢天谢地</td><td><psw>thankfully</psw></td></tr><tr><td>耐力</td><td><psw>stamina</psw></td></tr><tr><td>筋疲力尽的</td><td><psw>exhausted</psw></td></tr><tr><td>记分牌</td><td><psw>scoreboard</psw></td></tr><tr><td>解说</td><td><psw>commentary</psw></td></tr><tr><td>刺痛感</td><td><psw>tingle</psw></td></tr><tr><td>在高处的</td><td><psw>aloft</psw></td></tr><tr><td>大量的某物</td><td><psw>a sea of sth</psw></td></tr><tr><td>排除（干扰）</td><td><psw>shut out</psw></td></tr><tr><td>接手</td><td><psw>take over</psw></td></tr><tr><td>跟上</td><td><psw>keep up with</psw></td></tr><tr><td>渐渐地引向</td><td><psw>lead up to</psw></td></tr><tr><td>忍住</td><td><psw>fight back</psw></td></tr><tr><td>领跑</td><td><psw>set the pace</psw></td></tr><tr><td>坚守</td><td><psw>hold out</psw></td></tr><tr><td>倒数</td><td><psw>count down</psw></td></tr><tr><td>考虑到某事物</td><td><psw>bear sth in mind</psw></td></tr><tr><td>成功</td><td><psw>make it</psw></td></tr><tr><td>错过机会</td><td><psw>miss out</psw></td></tr><tr><td>感觉；觉得</td><td><psw>feel like</psw></td></tr></tbody></table></div>              </div>            </details>
-              </div>
-            </details>
-<details class="folding-tag" ><summary> 大英二 unit4 </summary>
-              <div class='content'>
-              <details class="folding-tag" ><summary> 4-1 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英文</th></tr></thead><tbody><tr><td>令人钦佩地</td><td><psw>impressively</psw></td></tr><tr><td>令人难忘；令人注目</td><td><psw>impressiveness</psw></td></tr><tr><td>习惯性的</td><td><psw>habitual</psw></td></tr><tr><td>寒冷的</td><td><psw>chilly</psw></td></tr><tr><td>一阵强风</td><td><psw>gust</psw></td></tr><tr><td>转动</td><td><psw>twirl</psw></td></tr><tr><td>复杂精细的</td><td><psw>intricate</psw></td></tr><tr><td>巧妙的</td><td><psw>artful</psw></td></tr><tr><td>警觉地</td><td><psw>watchful</psw></td></tr><tr><td>向下</td><td><psw>adown</psw></td></tr><tr><td>温和的</td><td><psw>pacific</psw></td></tr><tr><td>主干道</td><td><psw>thoroughfare</psw></td></tr><tr><td>强健的</td><td><psw>stalwart</psw></td></tr><tr><td>昂首阔步</td><td><psw>swagger</psw></td></tr><tr><td>看守者</td><td><psw>guardian</psw></td></tr><tr><td>附近</td><td><psw>vicinity</psw></td></tr><tr><td>在中间（的）</td><td><psw>midway</psw></td></tr><tr><td>门道</td><td><psw>doorway</psw></td></tr><tr><td>黑暗</td><td><psw>darkened</psw></td></tr><tr><td>金属器具</td><td><psw>hardware</psw></td></tr><tr><td>未点燃的</td><td><psw>unlighted</psw></td></tr><tr><td>令人安心的</td><td><psw>reassuring</psw></td></tr><tr><td>令人安心地</td><td><psw>reassuringly</psw></td></tr><tr><td>伤痕</td><td><psw>scar</psw></td></tr><tr><td>眉毛</td><td><psw>eyebrow</psw></td></tr><tr><td>围巾针</td><td><psw>scarfpin</psw></td></tr><tr><td>好友</td><td><psw>chum</psw></td></tr><tr><td>（尤指说话者喜欢的）男人</td><td><psw>chap</psw></td></tr><tr><td>命运</td><td><psw>destiny</psw></td></tr><tr><td>（需要对付的）事情</td><td><psw>proposition</psw></td></tr><tr><td>赶紧行动</td><td><psw>hustle</psw></td></tr><tr><td>忠实的</td><td><psw>staunch</psw></td></tr><tr><td>缺乏创造力的苦干者</td><td><psw>plodder</psw></td></tr><tr><td>机智</td><td><psw>wits</psw></td></tr><tr><td>剃须刀</td><td><psw>razor</psw></td></tr><tr><td>小雨</td><td><psw>drizzle</psw></td></tr><tr><td>激动的</td><td><psw>astir</psw></td></tr><tr><td>令人忧郁地</td><td><psw>dismally</psw></td></tr><tr><td>荒唐</td><td><psw>absurdity</psw></td></tr><tr><td>怀疑地</td><td><psw>doubtfully</psw></td></tr><tr><td>祈求上帝保佑</td><td><psw>bless</psw></td></tr><tr><td>呼喊</td><td><psw>exclaim</psw></td></tr><tr><td>朋友</td><td><psw>buddy</psw></td></tr><tr><td>一定程度上</td><td><psw>moderately</psw></td></tr><tr><td>自负</td><td><psw>egotism</psw></td></tr><tr><td>湮没</td><td><psw>submerge</psw></td></tr><tr><td>刺眼的光</td><td><psw>glare</psw></td></tr><tr><td>同时地</td><td><psw>simultaneously</psw></td></tr><tr><td>盯视</td><td><psw>gaze</psw></td></tr><tr><td>哈巴狗</td><td><psw>pug</psw></td></tr><tr><td>合理的</td><td><psw>sensible</psw></td></tr><tr><td>巡警</td><td><psw>patrolman</psw></td></tr><tr><td>为了做样子</td><td><psw>for show</psw></td></tr><tr><td>几乎</td><td><psw>well nigh</psw></td></tr><tr><td>失去···的线索</td><td><psw>lose track of</psw></td></tr><tr><td>突然露面</td><td><psw>turn up</psw></td></tr><tr><td>拿出</td><td><psw>pull out</psw></td></tr><tr><td>墨守成规</td><td><psw>in a groove</psw></td></tr><tr><td>拜访</td><td><psw>come around</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 4-2 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英文</th></tr></thead><tbody><tr><td>眉题</td><td><psw>strapline</psw></td></tr><tr><td>欺骗</td><td><psw>deception</psw></td></tr><tr><td>假冒</td><td><psw>impersonate</psw></td></tr><tr><td>伪造</td><td><psw>forge</psw></td></tr><tr><td>伪造罪</td><td><psw>forgery</psw></td></tr><tr><td>虚构的</td><td><psw>fictional</psw></td></tr><tr><td>诈骗犯</td><td><psw>fraudster</psw></td></tr><tr><td>拘留</td><td><psw>custody</psw></td></tr><tr><td>顾问服务公司</td><td><psw>consultancy</psw></td></tr><tr><td>诈骗</td><td><psw>fraud</psw></td></tr><tr><td>聚集点</td><td><psw>pickup</psw></td></tr><tr><td>切碎</td><td><psw>shred</psw></td></tr><tr><td>垃圾</td><td><psw>trash</psw></td></tr><tr><td>一美元</td><td><psw>buck</psw></td></tr><tr><td>匿名的</td><td><psw>anonymous</psw></td></tr><tr><td>思维方式</td><td><psw>mindset</psw></td></tr><tr><td>普通的</td><td><psw>commonplace</psw></td></tr><tr><td>生育高峰期出生的人</td><td><psw>baby boomer</psw></td></tr><tr><td>圆珠笔</td><td><psw>ballpoint</psw></td></tr><tr><td>家庭的</td><td><psw>household</psw></td></tr><tr><td>预防</td><td><psw>precaution</psw></td></tr><tr><td>凝胶</td><td><psw>gel</psw></td></tr><tr><td>非法入侵（他人的计算机系统）</td><td><psw>hack</psw></td></tr><tr><td>钱包</td><td><psw>pocketbook</psw></td></tr><tr><td>记载</td><td><psw>log</psw></td></tr><tr><td>机会主义的</td><td><psw>opportunistic</psw></td></tr><tr><td>取消</td><td><psw>cancel</psw></td></tr><tr><td>偿还</td><td><psw>pay back</psw></td></tr><tr><td>依赖</td><td><psw>count on</psw></td></tr><tr><td>采取预防措施</td><td><psw>take precautions</psw></td></tr><tr><td>快速阅读</td><td><psw>look through</psw></td></tr><tr><td>撕毁</td><td><psw>tear up</psw></td></tr><tr><td>退出</td><td><psw>log off</psw></td></tr></tbody></table></div>              </div>            </details>
-              </div>
-            </details>
-</div>]]></content>
-      <tags>
-        <tag>English</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>如何在django中使用富文本编辑器</title>
     <url>/posts/36714/</url>
     <content><![CDATA[<div id="postchat_postcontent"><p>[TOC]</p>
@@ -2399,35 +2430,6 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       </tags>
   </entry>
   <entry>
-    <title>如何通过链接实现QQ聊天和加好友</title>
-    <url>/posts/54218/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="如何通过链接实现QQ聊天和加好友"><a href="#如何通过链接实现QQ聊天和加好友" class="headerlink" title="如何通过链接实现QQ聊天和加好友"></a>如何通过链接实现QQ聊天和加好友</h1><blockquote>
-<p>强制聊天链接：</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tencent://Message/?Uin=3434055686&amp;websiteName=www.oicqzone.com&amp;Menu=yes</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>强制加好友链接：</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=2872983273&amp;fuin=3434055686&amp;website=www.oicqzone.com</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>uin 是被加的一方，fuin是主动加的一方</p>
-</blockquote>
-<ul>
-<li>你可以去掉fuin，把2872983273换成你自己的就可以啦</li>
-</ul>
-<blockquote>
-<p>可以在网页里添加跳转代码，打开网页自动添加好友哦。</p>
-</blockquote>
-<ul>
-<li>以下代码需要添加在head里</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0; url=tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=34340555686&amp;website=www.oicqzone.com&quot;&gt;</span><br></pre></td></tr></table></figure>
-</div>]]></content>
-      <tags>
-        <tag>加好友</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>年终总结</title>
     <url>/posts/50092/</url>
     <content><![CDATA[<div id="postchat_postcontent"></div>]]></content>
@@ -2501,12 +2503,41 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       </tags>
   </entry>
   <entry>
-    <title>检验密码强度python</title>
-    <url>/posts/16342/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">check_password</span>(<span class="params">self, password</span>):</span><br><span class="line">    score = <span class="number">0</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    一、密码长度:</span></span><br><span class="line"><span class="string">        5 分: 小于等于 4 个字符</span></span><br><span class="line"><span class="string">        10 分: 5 到 7 字符</span></span><br><span class="line"><span class="string">        25 分: 大于等于 8 个字符</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        二、字母:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0 分: 没有字母</span></span><br><span class="line"><span class="string">        10 分: 全都是小（大）写字母20 分: 大小写混合字母</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        三、数字:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0分: 没有数字</span></span><br><span class="line"><span class="string">        10分: 1 个数字</span></span><br><span class="line"><span class="string">        20分: 大于等于 3个数字</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        四、符号:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0分: 没有符号</span></span><br><span class="line"><span class="string">        10分: 1个符号</span></span><br><span class="line"><span class="string">        25分: 大于1个符号</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        五、奖励:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        2分: 字母和数字</span></span><br><span class="line"><span class="string">        3分: 字母、数字和符号</span></span><br><span class="line"><span class="string">        5分: 大小写字母、数字和符号</span></span><br><span class="line"><span class="string">    :param password: 密码</span></span><br><span class="line"><span class="string">    :return: 分数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 长度</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(password) &lt;= <span class="number">4</span>:</span><br><span class="line">        score += <span class="number">5</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="number">5</span> &lt;= <span class="built_in">len</span>(password) &lt;= <span class="number">7</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">25</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 字母</span></span><br><span class="line">    <span class="keyword">if</span> password.isalpha():</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> password.islower() <span class="keyword">or</span> password.isupper():</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">20</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 数字</span></span><br><span class="line">    <span class="keyword">if</span> password.isdigit():</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt;= <span class="number">3</span>:</span><br><span class="line">        score += <span class="number">20</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 符号</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalnum()]) == <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) == <span class="number">1</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">25</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 奖励</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalpha()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">2</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalpha()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>(</span><br><span class="line">            [i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">3</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.islower()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isupper()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>(</span><br><span class="line">            [i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">5</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> score</span><br></pre></td></tr></table></figure>
+    <title>大英散记</title>
+    <url>/posts/64429/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><details class="folding-tag" ><summary> 大英2unit1 </summary>
+              <div class='content'>
+              <details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英文</th></tr></thead><tbody><tr><td>烟雾</td><td><psw>haze</psw></td></tr><tr><td>大麻</td><td><psw>marijuana</psw></td></tr><tr><td>饶有兴味的</td><td><psw>stimulating</psw></td></tr><tr><td>（被视为某个经济体的）国家</td><td><psw>economy</psw></td></tr><tr><td>（大学的）校园</td><td><psw>campus</psw></td></tr><tr><td>示威（活动）</td><td><psw>demonstration</psw></td></tr><tr><td>激进主义</td><td><psw>radicalism</psw></td></tr><tr><td>（美国）州长</td><td><psw>governor</psw></td></tr><tr><td>持不同政见的</td><td><psw>dissident</psw></td></tr><tr><td>思想开明的人</td><td><psw>liberal</psw></td></tr><tr><td>冲突</td><td><psw>clash</psw></td></tr><tr><td>统治集团；建立</td><td><psw>establishment</psw></td></tr><tr><td>情感强烈的</td><td><psw>passionate</psw></td></tr><tr><td>抗议</td><td><psw>protest</psw></td></tr><tr><td>结盟</td><td><psw>alliance</psw></td></tr><tr><td>发起；开始；发动</td><td><psw>launch</psw></td></tr><tr><td>终于</td><td><psw>ultimately</psw></td></tr><tr><td>辞职</td><td><psw>resignation</psw></td></tr><tr><td>激进主义；行动主义</td><td><psw>activism</psw></td></tr><tr><td>成为···的特征</td><td><psw>characterize</psw></td></tr><tr><td>独立公司制作的</td><td><psw>indie</psw></td></tr><tr><td>令人觉得自由的</td><td><psw>liberating</psw></td></tr><tr><td>创造的</td><td><psw>creative</psw></td></tr><tr><td>觉醒；认识；意识</td><td><psw>awakening</psw></td></tr><tr><td>首要的；最重要的</td><td><psw>prime</psw></td></tr><tr><td>愤世嫉俗的；认为人皆自私者</td><td><psw>cynic</psw></td></tr><tr><td>漠然的</td><td><psw>apathetic</psw></td></tr><tr><td>令人陶醉的</td><td><psw>heady</psw></td></tr><tr><td>因素</td><td><psw>factor</psw></td></tr><tr><td>递降地</td><td><psw>descending</psw></td></tr><tr><td>就业；在职</td><td><psw>employment</psw></td></tr><tr><td>胜算；成功的可能性</td><td><psw>prospect</psw></td></tr><tr><td>支付得起</td><td><psw>affordability</psw></td></tr><tr><td>（值得关注的）问题</td><td><psw>issue</psw></td></tr><tr><td>可获得性</td><td><psw>accessibility</psw></td></tr><tr><td>机会</td><td><psw>opportunity</psw></td></tr><tr><td>关系极为密切的</td><td><psw>umbilically</psw></td></tr><tr><td>费解的</td><td><psw>obscure</psw></td></tr><tr><td>极乐</td><td><psw>bliss</psw></td></tr><tr><td>使（组织，活动）难以继续；使某人屈服</td><td><psw>bring sb./sth to their knees</psw></td></tr><tr><td>引起某事（尤指令人不快或出乎意料的事）</td><td><psw>give rise to sth</psw></td></tr><tr><td>与···结盟</td><td><psw>form an alliance with</psw></td></tr><tr><td>引起；导致；造成</td><td><psw>bring about</psw></td></tr><tr><td>不管</td><td><psw>in spite of</psw></td></tr><tr><td>（使）不碰； （使）不靠近</td><td><psw>keep off</psw></td></tr><tr><td>退出活动；退学；退出比赛</td><td><psw>drop out</psw></td></tr><tr><td>递降地</td><td><psw>in descending order</psw></td></tr><tr><td>本质上；本身；就本身而言</td><td><psw>in / of itself</psw></td></tr><tr><td>依靠；依赖</td><td><psw>rely on</psw></td></tr><tr><td>开办；设立</td><td><psw>set up</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 英译汉 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>英文</th><th>翻译</th></tr></thead><tbody><tr><td>get the hang of it</td><td><psw>掌握窍门</psw></td></tr><tr><td>sponsorship</td><td><psw>奖学金</psw></td></tr><tr><td>haze</td><td><psw>烟雾</psw></td></tr><tr><td>marijuana</td><td><psw>大麻</psw></td></tr><tr><td>stimulating</td><td><psw>饶有兴味的</psw></td></tr><tr><td>economy</td><td><psw>（被视为某个经济实体的国家）</psw></td></tr><tr><td>campus</td><td><psw>校园</psw></td></tr><tr><td>demonstration</td><td><psw>示威活动</psw></td></tr><tr><td>radicalism</td><td><psw>激进主义</psw></td></tr><tr><td>governor</td><td><psw>州长</psw></td></tr><tr><td>dissident</td><td><psw>持不同政见的</psw></td></tr><tr><td>liberal</td><td><psw>思想开明的人</psw></td></tr><tr><td>clash</td><td><psw>冲突</psw></td></tr><tr><td>establishment</td><td><psw>建设；统治集团</psw></td></tr><tr><td>passionate</td><td><psw>激昂的</psw></td></tr><tr><td>protest</td><td><psw>抗议</psw></td></tr><tr><td>alliance</td><td><psw>结盟</psw></td></tr><tr><td>launch</td><td><psw>发起</psw></td></tr><tr><td>ultimately</td><td><psw>最终</psw></td></tr><tr><td>resignation</td><td><psw>辞职</psw></td></tr><tr><td>activism</td><td><psw>行动主义</psw></td></tr><tr><td>characterize</td><td><psw>成为···的特征</psw></td></tr><tr><td>indie</td><td><psw>独立公司制作的</psw></td></tr><tr><td>liberating</td><td><psw>令人觉得自由的</psw></td></tr><tr><td>creative</td><td><psw>有创造性的</psw></td></tr><tr><td>awakening</td><td><psw>觉醒</psw></td></tr><tr><td>prime</td><td><psw>首要的</psw></td></tr><tr><td>prison</td><td><psw>监狱</psw></td></tr><tr><td>cynic</td><td><psw>愤世嫉俗的人</psw></td></tr><tr><td>apathetic</td><td><psw>漠然的</psw></td></tr><tr><td>heady</td><td><psw>令人陶醉的</psw></td></tr><tr><td>factor</td><td><psw>因素</psw></td></tr><tr><td>descending</td><td><psw>递降的</psw></td></tr><tr><td>employment</td><td><psw>就业</psw></td></tr><tr><td>prospect</td><td><psw>成功的可能性</psw></td></tr><tr><td>affordability</td><td><psw>支付得起</psw></td></tr><tr><td>issue</td><td><psw>（值得关注的问题）</psw></td></tr><tr><td>accessibility</td><td><psw>可获得性</psw></td></tr><tr><td>opportunity</td><td><psw>机会</psw></td></tr><tr><td>umbilically</td><td><psw>关系极为密切的</psw></td></tr><tr><td>obscure</td><td><psw>费解的</psw></td></tr><tr><td>bliss</td><td><psw>极乐</psw></td></tr><tr><td>bring sb./sth to their knees</td><td><psw>迫使某人屈服</psw></td></tr><tr><td>give rise to sth</td><td><psw>引起某事（尤指令人不快或出人意料的事）</psw></td></tr><tr><td>form an alliance with</td><td><psw>与···结盟</psw></td></tr><tr><td>bring about</td><td><psw>引起</psw></td></tr><tr><td>in spite of</td><td><psw>不管</psw></td></tr><tr><td>keep off</td><td><psw>（使）不碰</psw></td></tr><tr><td>drop out</td><td><psw>退学；退出活动</psw></td></tr></tbody></table></div>              </div>            </details>
+              </div>
+            </details>
+<details class="folding-tag" ><summary> 大英二 unit2 2-1 </summary>
+              <div class='content'>
+              <details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英文</th></tr></thead><tbody><tr><td>过时的；老式的</td><td><psw>old-fishioned</psw></td></tr><tr><td>粗壮的；肥胖的</td><td><psw>bulky</psw></td></tr><tr><td>哀痛</td><td><psw>mourning</psw></td></tr><tr><td>提起；举起</td><td><psw>hoist</psw></td></tr><tr><td>无定形的</td><td><psw>shapeless</psw></td></tr><tr><td>捆；束；包</td><td><psw>bundle</psw></td></tr><tr><td>气喘吁吁</td><td><psw>puff</psw></td></tr><tr><td>呻吟</td><td><psw>moan</psw></td></tr><tr><td>紧张的;担心的；忧虑的</td><td><psw>uneasy</psw></td></tr><tr><td>引起</td><td><psw>arouse</psw></td></tr><tr><td>敢说；大胆表示</td><td><psw>venture</psw></td></tr><tr><td>过度的；过分的</td><td><psw>excessive</psw></td></tr><tr><td>家长的</td><td><psw>parental</psw></td></tr><tr><td>在···之中</td><td><psw>amongst</psw></td></tr><tr><td>安慰</td><td><psw>console</psw></td></tr><tr><td>苦恼；悲伤；忧虑</td><td><psw>distress</psw></td></tr><tr><td>布满血丝的</td><td><psw>bloodshot</psw></td></tr><tr><td>大口喘气</td><td><psw>pant</psw></td></tr><tr><td>鼓起的</td><td><psw>bulging</psw></td></tr><tr><td>喷出</td><td><psw>spurt</psw></td></tr><tr><td>内心的；个人的；隐秘的</td><td><psw>inner</psw></td></tr><tr><td>不受控制的</td><td><psw>uncontrolled</psw></td></tr><tr><td>精力；干劲</td><td><psw>vitality</psw></td></tr><tr><td>（使）变虚弱</td><td><psw>weaken</psw></td></tr><tr><td>反驳；回嘴</td><td><psw>retort</psw></td></tr><tr><td>鹿毛色；浅黄褐色</td><td><psw></psw></td></tr><tr><td>黑紫色的</td><td><psw>livid</psw></td></tr><tr><td>含水的</td><td><psw>watery</psw></td></tr><tr><td>静止的；一动不动的</td><td><psw>motionless</psw></td></tr><tr><td>尖锐的；刺耳的</td><td><psw>shrill</psw></td></tr><tr><td>啜泣；呜咽</td><td><psw>sob</psw></td></tr><tr><td>很可能的</td><td><psw>probable</psw></td></tr><tr><td>使震惊；使大吃一惊</td><td><psw>stun</psw></td></tr><tr><td>（肌肉）紧缩</td><td><psw>contract</psw></td></tr><tr><td>使变形</td><td><psw>distort</psw></td></tr><tr><td>夺走</td><td><psw>snatch</psw></td></tr><tr><td>匆忙；仓促</td><td><psw>haste</psw></td></tr><tr><td>令人痛苦的</td><td><psw>harrowing</psw></td></tr><tr><td>控制不住的</td><td><psw>uncontrollable</psw></td></tr><tr><td>拿走；带走</td><td><psw>take away</psw></td></tr><tr><td>为···送行</td><td><psw>see off</psw></td></tr><tr><td>使某事结束</td><td><psw>give an end to sth</psw></td></tr><tr><td>上升</td><td><psw>rise up</psw></td></tr><tr><td>匆忙地</td><td><psw>in haste</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 英译汉 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>英文</th><th>汉意</th></tr></thead><tbody><tr><td>old-fashioned</td><td><psw>过时的</psw></td></tr><tr><td>bulky</td><td><psw>粗壮的</psw></td></tr><tr><td>mourning</td><td><psw>哀痛</psw></td></tr><tr><td>hoist</td><td><psw>举起</psw></td></tr><tr><td>shapeless</td><td><psw>无形的</psw></td></tr><tr><td>bundle</td><td><psw>捆</psw></td></tr><tr><td>puff</td><td><psw>气喘吁吁</psw></td></tr><tr><td>moan</td><td><psw>呻吟</psw></td></tr><tr><td>uneasy</td><td><psw>焦虑的</psw></td></tr><tr><td>arouse</td><td><psw>激起</psw></td></tr><tr><td>venture</td><td><psw>敢说</psw></td></tr><tr><td>excessive</td><td><psw>过分的</psw></td></tr><tr><td>parental</td><td><psw>家长的</psw></td></tr><tr><td>amongst</td><td><psw>在···之间</psw></td></tr><tr><td>console</td><td><psw>安慰</psw></td></tr><tr><td>distress</td><td><psw>苦恼</psw></td></tr><tr><td>bloodshot</td><td><psw>充满血丝的</psw></td></tr><tr><td>pant</td><td><psw>气喘吁吁</psw></td></tr><tr><td>bulging</td><td><psw>鼓起的</psw></td></tr><tr><td>spurt</td><td><psw>喷出</psw></td></tr><tr><td>inner</td><td><psw>内心的</psw></td></tr><tr><td>uncontrolled</td><td><psw>无法控制的</psw></td></tr><tr><td>vitality</td><td><psw>精力</psw></td></tr><tr><td>weaken</td><td><psw>变虚弱</psw></td></tr><tr><td>retort</td><td><psw>回嘴</psw></td></tr><tr><td>fawn</td><td><psw>鹿毛色</psw></td></tr><tr><td>livid</td><td><psw>黑紫色</psw></td></tr><tr><td>watery</td><td><psw>含水的</psw></td></tr><tr><td>motionless</td><td><psw>不动的</psw></td></tr><tr><td>shrill</td><td><psw>尖锐的</psw></td></tr><tr><td>sob</td><td><psw>啜泣</psw></td></tr><tr><td>probable</td><td><psw>可能</psw></td></tr><tr><td>stun</td><td><psw>震惊</psw></td></tr><tr><td>contract</td><td><psw>紧缩</psw></td></tr><tr><td>distort</td><td><psw>使失真</psw></td></tr><tr><td>snatch</td><td><psw>夺走</psw></td></tr><tr><td>haste</td><td><psw>匆匆</psw></td></tr><tr><td>harrowing</td><td><psw>可怕的</psw></td></tr><tr><td>uncontrollable</td><td><psw>控制不住的</psw></td></tr><tr><td>take away</td><td><psw>拿走</psw></td></tr><tr><td>see off</td><td><psw>为···送行</psw></td></tr><tr><td>put an end to sth</td><td><psw>使某事结束</psw></td></tr><tr><td>rise up</td><td><psw>上升</psw></td></tr><tr><td>in haste</td><td><psw>急忙地</psw></td></tr></tbody></table></div>              </div>            </details>
+              </div>
+            </details>
+<details class="folding-tag" ><summary> 大英二 unit2 2-2 </summary>
+              <div class='content'>
+              <details class="folding-tag" ><summary> 英译汉 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>英语</th><th>汉意</th></tr></thead><tbody><tr><td>empathy</td><td><psw>同情</psw></td></tr><tr><td>crawl</td><td><psw>爬</psw></td></tr><tr><td>teddy</td><td><psw>泰迪熊</psw></td></tr><tr><td>retrieve</td><td><psw>收回</psw></td></tr><tr><td>trace</td><td><psw>追究</psw></td></tr><tr><td>infancy</td><td><psw>婴儿期</psw></td></tr><tr><td>virtually</td><td><psw>实际上</psw></td></tr><tr><td>infant</td><td><psw>婴儿</psw></td></tr><tr><td>response</td><td><psw>回应</psw></td></tr><tr><td>precursor</td><td><psw>先兆</psw></td></tr><tr><td>cursor</td><td><psw>光标</psw></td></tr><tr><td>developmental</td><td><psw>成长的</psw></td></tr><tr><td>sympathetic</td><td><psw>同情的</psw></td></tr><tr><td>disturbance</td><td><psw>干扰</psw></td></tr><tr><td>misery</td><td><psw>痛苦</psw></td></tr><tr><td>confusion</td><td><psw>困惑</psw></td></tr><tr><td>imitate</td><td><psw>模仿</psw></td></tr><tr><td>comprehend</td><td><psw>理解</psw></td></tr><tr><td>mimicry</td><td><psw>模仿能力</psw></td></tr><tr><td>imitation</td><td><psw>模仿</psw></td></tr><tr><td>evoke</td><td><psw>使人想起</psw></td></tr><tr><td>distinct</td><td><psw>有区别的</psw></td></tr><tr><td>toddler</td><td><psw>学步的小孩</psw></td></tr><tr><td>repertoire</td><td><psw>全部技能</psw></td></tr><tr><td>cookie</td><td><psw>饼干</psw></td></tr><tr><td>stroke</td><td><psw>抚摸</psw></td></tr><tr><td>strike</td><td><psw>撞击</psw></td></tr><tr><td>pat</td><td><psw>轻拍</psw></td></tr><tr><td>diverge</td><td><psw>出现分歧</psw></td></tr><tr><td>sensitivity</td><td><psw>敏感</psw></td></tr><tr><td>keenly</td><td><psw>强烈的</psw></td></tr><tr><td>empathic</td><td><psw>有同感的</psw></td></tr><tr><td>discipline</td><td><psw>惩罚</psw></td></tr><tr><td>misbehaviour</td><td><psw>不良举止</psw></td></tr><tr><td>naughty</td><td><psw>淘气的</psw></td></tr><tr><td>apart from</td><td><psw>与···分离</psw></td></tr><tr><td>stem from</td><td><psw>源于</psw></td></tr><tr><td>pull away</td><td><psw>闪避；加速超过；开走</psw></td></tr><tr><td>calm down</td><td><psw>镇静下来</psw></td></tr><tr><td>tune out</td><td><psw>不注意</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英语</th></tr></thead><tbody><tr><td>同感</td><td><psw>empathy</psw></td></tr><tr><td>爬</td><td><psw>crawl</psw></td></tr><tr><td>泰迪熊</td><td><psw>teddy</psw></td></tr><tr><td>收回；取回；重新找回</td><td><psw>retrieve</psw></td></tr><tr><td>追究；追溯</td><td><psw>trace</psw></td></tr><tr><td>婴儿期</td><td><psw>infancy</psw></td></tr><tr><td>差不多;实际上</td><td><psw>virtually</psw></td></tr><tr><td>婴儿</td><td><psw>infant</psw></td></tr><tr><td>反应；回应；响应</td><td><psw>response</psw></td></tr><tr><td>先兆</td><td><psw>percursor</psw></td></tr><tr><td>成长的</td><td><psw>developmental</psw></td></tr><tr><td>同情的</td><td><psw>sympathetic</psw></td></tr><tr><td>干扰</td><td><psw>disturbance</psw></td></tr><tr><td>苦恼</td><td><psw>misery</psw></td></tr><tr><td>混淆；错认</td><td><psw>confusion</psw></td></tr><tr><td>模仿</td><td><psw>imitate</psw></td></tr><tr><td>理解；领会</td><td><psw>comprehend</psw></td></tr><tr><td>模仿；模仿能力</td><td><psw>mimicry</psw></td></tr><tr><td>模仿</td><td><psw>imitation</psw></td></tr><tr><td>使人想起；唤起</td><td><psw>evoke</psw></td></tr><tr><td>有区别的</td><td><psw>distinct</psw></td></tr><tr><td>学步的小孩</td><td><psw>toddler</psw></td></tr><tr><td>全部技能（或才能）</td><td><psw>repertoire</psw></td></tr><tr><td>小甜饼；曲奇饼</td><td><psw>cookie</psw></td></tr><tr><td>轻抚；抚摸</td><td><psw>stroke</psw></td></tr><tr><td>平拍</td><td><psw>pat</psw></td></tr><tr><td>相异</td><td><psw>diverge</psw></td></tr><tr><td>敏感</td><td><psw>sensitivity</psw></td></tr><tr><td>强烈地</td><td><psw>keenly</psw></td></tr><tr><td>有同感的</td><td><psw>empathic</psw></td></tr><tr><td>惩罚</td><td><psw>discipline</psw></td></tr><tr><td>不良行为</td><td><psw>misbehavior</psw></td></tr><tr><td>淘气的</td><td><psw>naughty</psw></td></tr><tr><td>除···之外</td><td><psw>apart from</psw></td></tr><tr><td>源于</td><td><psw>stem from</psw></td></tr><tr><td>闪避；加速超过；走开</td><td><psw>pull away</psw></td></tr><tr><td>平静下来</td><td><psw>clam down</psw></td></tr><tr><td>不注意；不理睬；不过问</td><td><psw>tune out</psw></td></tr></tbody></table></div>              </div>            </details>
+              </div>
+            </details>
+<details class="folding-tag" ><summary> 大英二 unit3 3-1 </summary>
+              <div class='content'>
+              <details class="folding-tag" ><summary> 英译汉 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>英文</th><th>汉意</th></tr></thead><tbody><tr><td>teammate</td><td><psw>队友</psw></td></tr><tr><td>collide</td><td><psw>出现矛盾</psw></td></tr><tr><td>tournament</td><td><psw>锦标赛</psw></td></tr><tr><td>clue</td><td><psw>线索</psw></td></tr><tr><td>pitch</td><td><psw>场所</psw></td></tr><tr><td>madly</td><td><psw>疯狂地</psw></td></tr><tr><td>sheer</td><td><psw>全然的</psw></td></tr><tr><td>hum</td><td><psw>哼</psw></td></tr><tr><td>mournful</td><td><psw>悲痛的</psw></td></tr><tr><td>reminiscent</td><td><psw>回忆往事的</psw></td></tr><tr><td>chorus</td><td><psw>合唱曲</psw></td></tr><tr><td>stand-off</td><td><psw>（战斗的）僵持（状态）</psw></td></tr><tr><td>suspense</td><td><psw>焦虑；悬念</psw></td></tr><tr><td>newcomer</td><td><psw>新手</psw></td></tr><tr><td>mostly</td><td><psw>大多数的</psw></td></tr><tr><td>whack</td><td><psw>重击</psw></td></tr><tr><td>cranium</td><td><psw>头颅</psw></td></tr><tr><td>accidentally</td><td><psw>偶然地</psw></td></tr><tr><td>random</td><td><psw>任意的</psw></td></tr><tr><td>defender</td><td><psw>防守人员</psw></td></tr><tr><td>illustration</td><td><psw>实例</psw></td></tr><tr><td>soar</td><td><psw>猛升</psw></td></tr><tr><td>hairy</td><td><psw>多毛的</psw></td></tr><tr><td>shooter</td><td><psw>射手</psw></td></tr><tr><td>striker</td><td><psw>前锋</psw></td></tr><tr><td>peel</td><td><psw>削···皮</psw></td></tr><tr><td>sprint</td><td><psw>冲刺</psw></td></tr><tr><td>resume</td><td><psw>重新开始</psw></td></tr><tr><td>precision</td><td><psw>精确的</psw></td></tr><tr><td>priority</td><td><psw>优先考虑的事</psw></td></tr><tr><td>periodically</td><td><psw>阶段性的</psw></td></tr><tr><td>writhe</td><td><psw>扭动身体</psw></td></tr><tr><td>massage</td><td><psw>给···按摩</psw></td></tr><tr><td>message</td><td><psw>信息</psw></td></tr><tr><td>phony</td><td><psw>假冒的</psw></td></tr><tr><td>baloney</td><td><psw>胡说八道</psw></td></tr><tr><td>reprimand</td><td><psw>训斥</psw></td></tr><tr><td>strategy</td><td><psw>策略</psw></td></tr><tr><td>mystery</td><td><psw>不可思议的事务</psw></td></tr><tr><td>offside</td><td><psw>越位</psw></td></tr><tr><td>deem</td><td><psw>认为</psw></td></tr><tr><td>roughly</td><td><psw>粗略地</psw></td></tr><tr><td>perplexed</td><td><psw>困惑的</psw></td></tr><tr><td>prefessional</td><td><psw>专业的</psw></td></tr><tr><td>interpretation</td><td><psw>解释</psw></td></tr><tr><td>touchdown</td><td><psw>持球过底线</psw></td></tr><tr><td>referee</td><td><psw>裁判员</psw></td></tr><tr><td>responsible</td><td><psw>负责的</psw></td></tr><tr><td>hopped-up</td><td><psw>兴奋的</psw></td></tr><tr><td>backtalk</td><td><psw>顶嘴</psw></td></tr><tr><td>infraction</td><td><psw>违法</psw></td></tr><tr><td>punch</td><td><psw>揍</psw></td></tr><tr><td>flock</td><td><psw>群集</psw></td></tr><tr><td>blow the whistle on sth</td><td><psw>告发</psw></td></tr><tr><td>back and forth</td><td><psw>来回地</psw></td></tr><tr><td>tend to do</td><td><psw>倾向于做某事</psw></td></tr><tr><td>put a good face on sth</td><td><psw>掩饰某事物</psw></td></tr><tr><td>by chance</td><td><psw>偶然</psw></td></tr><tr><td>off course</td><td><psw>偏离航道</psw></td></tr><tr><td>take the credit for sth</td><td><psw>把···归功于自己</psw></td></tr><tr><td>peel off</td><td><psw>脱去</psw></td></tr><tr><td>tick away</td><td><psw>（时间）滴滴答答地过去</psw></td></tr><tr><td>at a loss for words</td><td><psw>不知道说什么好</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英语</th></tr></thead><tbody><tr><td>队友；同队队员</td><td><psw>teammate</psw></td></tr><tr><td>出现矛盾；发送冲突</td><td><psw>collide</psw></td></tr><tr><td>锦标赛</td><td><psw>tournament</psw></td></tr><tr><td>线索</td><td><psw>clue</psw></td></tr><tr><td>场所</td><td><psw>pitch</psw></td></tr><tr><td>疯狂地</td><td><psw>madly</psw></td></tr><tr><td>纯粹的；全然的</td><td><psw>sheer</psw></td></tr><tr><td>哼（曲子）</td><td><psw>hum</psw></td></tr><tr><td>悲痛的</td><td><psw>mournful</psw></td></tr><tr><td>追忆往事的</td><td><psw>reminiscent</psw></td></tr><tr><td>合唱曲</td><td><psw>chorus</psw></td></tr><tr><td>（战斗的）僵持（状态）</td><td><psw>stand-off</psw></td></tr><tr><td>焦虑</td><td><psw>suspense</psw></td></tr><tr><td>新手</td><td><psw>newcomer</psw></td></tr><tr><td>通常</td><td><psw>mostly</psw></td></tr><tr><td>重击</td><td><psw>whack</psw></td></tr><tr><td>头颅</td><td><psw>cranium</psw></td></tr><tr><td>偶然地</td><td><psw>accidently</psw></td></tr><tr><td>随机的</td><td><psw>random</psw></td></tr><tr><td>防守人员</td><td><psw>defender</psw></td></tr><tr><td>实例</td><td><psw>illustration</psw></td></tr><tr><td>猛升</td><td><psw>soar</psw></td></tr><tr><td>多毛的</td><td><psw>hairy</psw></td></tr><tr><td>射手</td><td><psw>shooter</psw></td></tr><tr><td>前锋</td><td><psw>striker</psw></td></tr><tr><td>削皮</td><td><psw>peel</psw></td></tr><tr><td>冲刺</td><td><psw>sprint</psw></td></tr><tr><td>重新开始</td><td><psw>resume</psw></td></tr><tr><td>精确的</td><td><psw>precision</psw></td></tr><tr><td>优先考虑的事</td><td><psw>priority</psw></td></tr><tr><td>阶段性地</td><td><psw>periodically</psw></td></tr><tr><td>翻滚</td><td><psw>writhe</psw></td></tr><tr><td>给···按摩</td><td><psw>massage</psw></td></tr><tr><td>伪造的</td><td><psw>phony</psw></td></tr><tr><td>胡说八道</td><td><psw>baloney</psw></td></tr><tr><td>训斥</td><td><psw>reprimend</psw></td></tr><tr><td>策略</td><td><psw>strategy</psw></td></tr><tr><td>不可思议的事物</td><td><psw>mystery</psw></td></tr><tr><td>越位</td><td><psw>offside</psw></td></tr><tr><td>认为</td><td><psw>deem</psw></td></tr><tr><td>粗略地</td><td><psw>roughly</psw></td></tr><tr><td>困惑的</td><td><psw>perplexed</psw></td></tr><tr><td>专业的</td><td><psw>professional</psw></td></tr><tr><td>解释</td><td><psw>interpretation</psw></td></tr><tr><td>持球过底线</td><td><psw>touchdown</psw></td></tr><tr><td>裁判员</td><td><psw>referee</psw></td></tr><tr><td>负责···的</td><td><psw>responsible</psw></td></tr><tr><td>兴奋的</td><td><psw>hopped-up</psw></td></tr><tr><td>顶嘴</td><td><psw>backtalk</psw></td></tr><tr><td>违法</td><td><psw>infraction</psw></td></tr><tr><td>猛击</td><td><psw>punch</psw></td></tr><tr><td>群集</td><td><psw>flock</psw></td></tr><tr><td>告发</td><td><psw>blow the whistle on sth</psw></td></tr><tr><td>来来回回</td><td><psw>back and forth</psw></td></tr><tr><td>倾向于做某事</td><td><psw>tend to do sth</psw></td></tr><tr><td>掩饰某事物</td><td><psw>put a good face on sth</psw></td></tr><tr><td>偶然</td><td><psw>by chance</psw></td></tr><tr><td>偏离航向</td><td><psw>off course</psw></td></tr><tr><td>把···归功于自己</td><td><psw>take the credit for sth</psw></td></tr><tr><td>脱去</td><td><psw>peel off</psw></td></tr><tr><td>时间滴滴答答地过去</td><td><psw>tick away</psw></td></tr><tr><td>不知道说什么好</td><td><psw>at a loss for word</psw></td></tr></tbody></table></div>              </div>            </details>
+              </div>
+            </details>
+<details class="folding-tag" ><summary> 大英二 unit2 3-2 </summary>
+              <div class='content'>
+              <details class="folding-tag" ><summary> 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英语</th></tr></thead><tbody><tr><td>轻柔地</td><td><psw>gently</psw></td></tr><tr><td>照亮</td><td><psw>illuminate</psw></td></tr><tr><td>震耳欲聋的</td><td><psw>deafening</psw></td></tr><tr><td>挑逗性地</td><td><psw>tantalisingly</psw></td></tr><tr><td>肾上腺素</td><td><psw>adrenaline</psw></td></tr><tr><td>使人异常高兴的</td><td><psw>exhilarating</psw></td></tr><tr><td>极其恐怖的</td><td><psw>terrifying</psw></td></tr><tr><td>保证</td><td><psw>ensure</psw></td></tr><tr><td>镇定的</td><td><psw>composed</psw></td></tr><tr><td>锦标赛</td><td><psw>championship</psw></td></tr><tr><td>挥动</td><td><psw>flutter</psw></td></tr><tr><td>联合的</td><td><psw>unified</psw></td></tr><tr><td>招致（不快之事）</td><td><psw>incur</psw></td></tr><tr><td>直言不讳的</td><td><psw>vocal</psw></td></tr><tr><td>表演者</td><td><psw>performer</psw></td></tr><tr><td>压力</td><td><psw>strain</psw></td></tr><tr><td>使黯然失色</td><td><psw>eclipse</psw></td></tr><tr><td>筋疲力尽</td><td><psw>exhaustion</psw></td></tr><tr><td>艰苦的</td><td><psw>grueling</psw></td></tr><tr><td>疲劳</td><td><psw>fatigue</psw></td></tr><tr><td>喊叫声</td><td><psw>roar</psw></td></tr><tr><td>激励</td><td><psw>boost</psw></td></tr><tr><td>谢天谢地</td><td><psw>thankfully</psw></td></tr><tr><td>耐力</td><td><psw>stamina</psw></td></tr><tr><td>筋疲力尽的</td><td><psw>exhausted</psw></td></tr><tr><td>记分牌</td><td><psw>scoreboard</psw></td></tr><tr><td>解说</td><td><psw>commentary</psw></td></tr><tr><td>刺痛感</td><td><psw>tingle</psw></td></tr><tr><td>在高处的</td><td><psw>aloft</psw></td></tr><tr><td>大量的某物</td><td><psw>a sea of sth</psw></td></tr><tr><td>排除（干扰）</td><td><psw>shut out</psw></td></tr><tr><td>接手</td><td><psw>take over</psw></td></tr><tr><td>跟上</td><td><psw>keep up with</psw></td></tr><tr><td>渐渐地引向</td><td><psw>lead up to</psw></td></tr><tr><td>忍住</td><td><psw>fight back</psw></td></tr><tr><td>领跑</td><td><psw>set the pace</psw></td></tr><tr><td>坚守</td><td><psw>hold out</psw></td></tr><tr><td>倒数</td><td><psw>count down</psw></td></tr><tr><td>考虑到某事物</td><td><psw>bear sth in mind</psw></td></tr><tr><td>成功</td><td><psw>make it</psw></td></tr><tr><td>错过机会</td><td><psw>miss out</psw></td></tr><tr><td>感觉；觉得</td><td><psw>feel like</psw></td></tr></tbody></table></div>              </div>            </details>
+              </div>
+            </details>
+<details class="folding-tag" ><summary> 大英二 unit4 </summary>
+              <div class='content'>
+              <details class="folding-tag" ><summary> 4-1 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英文</th></tr></thead><tbody><tr><td>令人钦佩地</td><td><psw>impressively</psw></td></tr><tr><td>令人难忘；令人注目</td><td><psw>impressiveness</psw></td></tr><tr><td>习惯性的</td><td><psw>habitual</psw></td></tr><tr><td>寒冷的</td><td><psw>chilly</psw></td></tr><tr><td>一阵强风</td><td><psw>gust</psw></td></tr><tr><td>转动</td><td><psw>twirl</psw></td></tr><tr><td>复杂精细的</td><td><psw>intricate</psw></td></tr><tr><td>巧妙的</td><td><psw>artful</psw></td></tr><tr><td>警觉地</td><td><psw>watchful</psw></td></tr><tr><td>向下</td><td><psw>adown</psw></td></tr><tr><td>温和的</td><td><psw>pacific</psw></td></tr><tr><td>主干道</td><td><psw>thoroughfare</psw></td></tr><tr><td>强健的</td><td><psw>stalwart</psw></td></tr><tr><td>昂首阔步</td><td><psw>swagger</psw></td></tr><tr><td>看守者</td><td><psw>guardian</psw></td></tr><tr><td>附近</td><td><psw>vicinity</psw></td></tr><tr><td>在中间（的）</td><td><psw>midway</psw></td></tr><tr><td>门道</td><td><psw>doorway</psw></td></tr><tr><td>黑暗</td><td><psw>darkened</psw></td></tr><tr><td>金属器具</td><td><psw>hardware</psw></td></tr><tr><td>未点燃的</td><td><psw>unlighted</psw></td></tr><tr><td>令人安心的</td><td><psw>reassuring</psw></td></tr><tr><td>令人安心地</td><td><psw>reassuringly</psw></td></tr><tr><td>伤痕</td><td><psw>scar</psw></td></tr><tr><td>眉毛</td><td><psw>eyebrow</psw></td></tr><tr><td>围巾针</td><td><psw>scarfpin</psw></td></tr><tr><td>好友</td><td><psw>chum</psw></td></tr><tr><td>（尤指说话者喜欢的）男人</td><td><psw>chap</psw></td></tr><tr><td>命运</td><td><psw>destiny</psw></td></tr><tr><td>（需要对付的）事情</td><td><psw>proposition</psw></td></tr><tr><td>赶紧行动</td><td><psw>hustle</psw></td></tr><tr><td>忠实的</td><td><psw>staunch</psw></td></tr><tr><td>缺乏创造力的苦干者</td><td><psw>plodder</psw></td></tr><tr><td>机智</td><td><psw>wits</psw></td></tr><tr><td>剃须刀</td><td><psw>razor</psw></td></tr><tr><td>小雨</td><td><psw>drizzle</psw></td></tr><tr><td>激动的</td><td><psw>astir</psw></td></tr><tr><td>令人忧郁地</td><td><psw>dismally</psw></td></tr><tr><td>荒唐</td><td><psw>absurdity</psw></td></tr><tr><td>怀疑地</td><td><psw>doubtfully</psw></td></tr><tr><td>祈求上帝保佑</td><td><psw>bless</psw></td></tr><tr><td>呼喊</td><td><psw>exclaim</psw></td></tr><tr><td>朋友</td><td><psw>buddy</psw></td></tr><tr><td>一定程度上</td><td><psw>moderately</psw></td></tr><tr><td>自负</td><td><psw>egotism</psw></td></tr><tr><td>湮没</td><td><psw>submerge</psw></td></tr><tr><td>刺眼的光</td><td><psw>glare</psw></td></tr><tr><td>同时地</td><td><psw>simultaneously</psw></td></tr><tr><td>盯视</td><td><psw>gaze</psw></td></tr><tr><td>哈巴狗</td><td><psw>pug</psw></td></tr><tr><td>合理的</td><td><psw>sensible</psw></td></tr><tr><td>巡警</td><td><psw>patrolman</psw></td></tr><tr><td>为了做样子</td><td><psw>for show</psw></td></tr><tr><td>几乎</td><td><psw>well nigh</psw></td></tr><tr><td>失去···的线索</td><td><psw>lose track of</psw></td></tr><tr><td>突然露面</td><td><psw>turn up</psw></td></tr><tr><td>拿出</td><td><psw>pull out</psw></td></tr><tr><td>墨守成规</td><td><psw>in a groove</psw></td></tr><tr><td>拜访</td><td><psw>come around</psw></td></tr></tbody></table></div>              </div>            </details><details class="folding-tag" ><summary> 4-2 汉译英 </summary>              <div class='content'>              <div class="table-container"><table><thead><tr><th>汉意</th><th>英文</th></tr></thead><tbody><tr><td>眉题</td><td><psw>strapline</psw></td></tr><tr><td>欺骗</td><td><psw>deception</psw></td></tr><tr><td>假冒</td><td><psw>impersonate</psw></td></tr><tr><td>伪造</td><td><psw>forge</psw></td></tr><tr><td>伪造罪</td><td><psw>forgery</psw></td></tr><tr><td>虚构的</td><td><psw>fictional</psw></td></tr><tr><td>诈骗犯</td><td><psw>fraudster</psw></td></tr><tr><td>拘留</td><td><psw>custody</psw></td></tr><tr><td>顾问服务公司</td><td><psw>consultancy</psw></td></tr><tr><td>诈骗</td><td><psw>fraud</psw></td></tr><tr><td>聚集点</td><td><psw>pickup</psw></td></tr><tr><td>切碎</td><td><psw>shred</psw></td></tr><tr><td>垃圾</td><td><psw>trash</psw></td></tr><tr><td>一美元</td><td><psw>buck</psw></td></tr><tr><td>匿名的</td><td><psw>anonymous</psw></td></tr><tr><td>思维方式</td><td><psw>mindset</psw></td></tr><tr><td>普通的</td><td><psw>commonplace</psw></td></tr><tr><td>生育高峰期出生的人</td><td><psw>baby boomer</psw></td></tr><tr><td>圆珠笔</td><td><psw>ballpoint</psw></td></tr><tr><td>家庭的</td><td><psw>household</psw></td></tr><tr><td>预防</td><td><psw>precaution</psw></td></tr><tr><td>凝胶</td><td><psw>gel</psw></td></tr><tr><td>非法入侵（他人的计算机系统）</td><td><psw>hack</psw></td></tr><tr><td>钱包</td><td><psw>pocketbook</psw></td></tr><tr><td>记载</td><td><psw>log</psw></td></tr><tr><td>机会主义的</td><td><psw>opportunistic</psw></td></tr><tr><td>取消</td><td><psw>cancel</psw></td></tr><tr><td>偿还</td><td><psw>pay back</psw></td></tr><tr><td>依赖</td><td><psw>count on</psw></td></tr><tr><td>采取预防措施</td><td><psw>take precautions</psw></td></tr><tr><td>快速阅读</td><td><psw>look through</psw></td></tr><tr><td>撕毁</td><td><psw>tear up</psw></td></tr><tr><td>退出</td><td><psw>log off</psw></td></tr></tbody></table></div>              </div>            </details>
+              </div>
+            </details>
 </div>]]></content>
       <tags>
-        <tag>python</tag>
+        <tag>English</tag>
       </tags>
   </entry>
   <entry>
@@ -2627,6 +2658,68 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
 </div>]]></content>
       <tags>
         <tag>有趣的知识</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>阿里云CDN加速之重定向次数过多</title>
+    <url>/posts/25087/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><div class="tip cogs"><p>阿里云CDN加速之重定向次数过多</p>
+</div>
+<details class="folding-tag" ><summary> 参考教程 </summary>
+              <div class='content'>
+              <div class="tag link"><a class="link-card" title="Tag Plugins Plus | CDN访问异常篇之重定向的次数过多-阿里云开发者社区 (aliyun.com)]" href="https://developer.aliyun.com/article/749187"><div class="left"><img src="http://picture.daoxuan.cc/image/202301292351979.jpg"/></div><div class="right"><p class="text">Tag Plugins Plus | CDN访问异常篇之重定向的次数过多-阿里云开发者社区 (aliyun.com)]</p><p class="url">https://developer.aliyun.com/article/749187</p></div></a></div>
+              </div>
+            </details>
+<h1 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h1><p>配置了阿里云CDN或者全站加速后，使用浏览器进行访问，出现如下错误提示。</p>
+<p>XXX.XXX.XXX 将您重定向的次数过多。<br>尝试清除 Cookie.<br>ERR_TOO_MANY_REDIRECTS<img src="https://picture.daoxuan.cc/image/202301301232473.webp" alt=""></p>
+<h1 id="问题原因"><a href="#问题原因" class="headerlink" title="问题原因"></a>问题原因</h1><p>源站开启了HTTP重定向至HTTPS的功能，并且CDN控制台上配置的回源端口为80。在这种情况下，由于CDN回源端口为80，客户端无论是通过HTTP还是HTTPS访问CDN加速域名时，CDN在回源的时候都是使用HTTP请求源站，此时会触发源站的HTTPS强制跳转逻辑，然后源站会要求CDN重新发送一个HTTPS的请求，但是CDN回源的时候仍然会发送HTTP回源请求，然后再进行跳转，以此类推，就会出现反复重定向问题，最终导致出现报错。</p>
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p><img src="https://picture.daoxuan.cc/image/202301301232228.webp" alt=""></p>
+<p>将端口改为433</p>
+</div>]]></content>
+      <categories>
+        <category>网站</category>
+      </categories>
+      <tags>
+        <tag>CDN</tag>
+        <tag>重定向次数过多</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何通过链接实现QQ聊天和加好友</title>
+    <url>/posts/54218/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h1 id="如何通过链接实现QQ聊天和加好友"><a href="#如何通过链接实现QQ聊天和加好友" class="headerlink" title="如何通过链接实现QQ聊天和加好友"></a>如何通过链接实现QQ聊天和加好友</h1><blockquote>
+<p>强制聊天链接：</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tencent://Message/?Uin=3434055686&amp;websiteName=www.oicqzone.com&amp;Menu=yes</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>强制加好友链接：</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=2872983273&amp;fuin=3434055686&amp;website=www.oicqzone.com</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>uin 是被加的一方，fuin是主动加的一方</p>
+</blockquote>
+<ul>
+<li>你可以去掉fuin，把2872983273换成你自己的就可以啦</li>
+</ul>
+<blockquote>
+<p>可以在网页里添加跳转代码，打开网页自动添加好友哦。</p>
+</blockquote>
+<ul>
+<li>以下代码需要添加在head里</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0; url=tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=34340555686&amp;website=www.oicqzone.com&quot;&gt;</span><br></pre></td></tr></table></figure>
+</div>]]></content>
+      <tags>
+        <tag>加好友</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>检验密码强度python</title>
+    <url>/posts/16342/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">check_password</span>(<span class="params">self, password</span>):</span><br><span class="line">    score = <span class="number">0</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    一、密码长度:</span></span><br><span class="line"><span class="string">        5 分: 小于等于 4 个字符</span></span><br><span class="line"><span class="string">        10 分: 5 到 7 字符</span></span><br><span class="line"><span class="string">        25 分: 大于等于 8 个字符</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        二、字母:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0 分: 没有字母</span></span><br><span class="line"><span class="string">        10 分: 全都是小（大）写字母20 分: 大小写混合字母</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        三、数字:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0分: 没有数字</span></span><br><span class="line"><span class="string">        10分: 1 个数字</span></span><br><span class="line"><span class="string">        20分: 大于等于 3个数字</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        四、符号:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0分: 没有符号</span></span><br><span class="line"><span class="string">        10分: 1个符号</span></span><br><span class="line"><span class="string">        25分: 大于1个符号</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        五、奖励:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        2分: 字母和数字</span></span><br><span class="line"><span class="string">        3分: 字母、数字和符号</span></span><br><span class="line"><span class="string">        5分: 大小写字母、数字和符号</span></span><br><span class="line"><span class="string">    :param password: 密码</span></span><br><span class="line"><span class="string">    :return: 分数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 长度</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(password) &lt;= <span class="number">4</span>:</span><br><span class="line">        score += <span class="number">5</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="number">5</span> &lt;= <span class="built_in">len</span>(password) &lt;= <span class="number">7</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">25</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 字母</span></span><br><span class="line">    <span class="keyword">if</span> password.isalpha():</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> password.islower() <span class="keyword">or</span> password.isupper():</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">20</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 数字</span></span><br><span class="line">    <span class="keyword">if</span> password.isdigit():</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt;= <span class="number">3</span>:</span><br><span class="line">        score += <span class="number">20</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 符号</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalnum()]) == <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) == <span class="number">1</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">25</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 奖励</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalpha()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">2</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalpha()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>(</span><br><span class="line">            [i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">3</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.islower()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isupper()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>(</span><br><span class="line">            [i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">5</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> score</span><br></pre></td></tr></table></figure>
+</div>]]></content>
+      <tags>
+        <tag>python</tag>
       </tags>
   </entry>
   <entry>
@@ -2896,99 +2989,6 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
 </div>]]></content>
       <tags>
         <tag>性能</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>阿里云CDN加速之重定向次数过多</title>
-    <url>/posts/25087/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><div class="tip cogs"><p>阿里云CDN加速之重定向次数过多</p>
-</div>
-<details class="folding-tag" ><summary> 参考教程 </summary>
-              <div class='content'>
-              <div class="tag link"><a class="link-card" title="Tag Plugins Plus | CDN访问异常篇之重定向的次数过多-阿里云开发者社区 (aliyun.com)]" href="https://developer.aliyun.com/article/749187"><div class="left"><img src="http://picture.daoxuan.cc/image/202301292351979.jpg"/></div><div class="right"><p class="text">Tag Plugins Plus | CDN访问异常篇之重定向的次数过多-阿里云开发者社区 (aliyun.com)]</p><p class="url">https://developer.aliyun.com/article/749187</p></div></a></div>
-              </div>
-            </details>
-<h1 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h1><p>配置了阿里云CDN或者全站加速后，使用浏览器进行访问，出现如下错误提示。</p>
-<p>XXX.XXX.XXX 将您重定向的次数过多。<br>尝试清除 Cookie.<br>ERR_TOO_MANY_REDIRECTS<img src="https://picture.daoxuan.cc/image/202301301232473.webp" alt=""></p>
-<h1 id="问题原因"><a href="#问题原因" class="headerlink" title="问题原因"></a>问题原因</h1><p>源站开启了HTTP重定向至HTTPS的功能，并且CDN控制台上配置的回源端口为80。在这种情况下，由于CDN回源端口为80，客户端无论是通过HTTP还是HTTPS访问CDN加速域名时，CDN在回源的时候都是使用HTTP请求源站，此时会触发源站的HTTPS强制跳转逻辑，然后源站会要求CDN重新发送一个HTTPS的请求，但是CDN回源的时候仍然会发送HTTP回源请求，然后再进行跳转，以此类推，就会出现反复重定向问题，最终导致出现报错。</p>
-<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p><img src="https://picture.daoxuan.cc/image/202301301232228.webp" alt=""></p>
-<p>将端口改为433</p>
-</div>]]></content>
-      <categories>
-        <category>网站</category>
-      </categories>
-      <tags>
-        <tag>CDN</tag>
-        <tag>重定向次数过多</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>waf.sb + github page + cloudflare hexo博客部署方案</title>
-    <url>/posts/30621/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>博客放在自己的云服务器上面感觉不够稳，因此还是转回了github page</p>
-<p>具体的github page如何配置网上一堆教程，具体需要注意的是Custom domain不需要设置，设置的话改变的也是一个回源主机名（host），因此不需要填东西。</p>
-<h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2><p>由于cloudflare的顶级域名使用CNAME的时候会使用CNAME展平,相当于顶级域名还是A类型解析， 因此正常的CNAME记录检验会失效。</p>
-<blockquote>
-<ol>
-<li><p><strong>正常CNAME 记录:</strong></p>
-<p>当一个域名配置为CNAME 记录指向另一个域名时，DNS 解析器需要进行多次查询才能最终获取到目标域名的IP 地址。</p>
-</li>
-<li><p><strong>Cloudflare CNAME 展平:</strong></p>
-<p>启用CNAME 展平后，Cloudflare 会在第一次DNS 查询时，直接将CNAME 记录解析为目标域名的IP 地址，而不是返回另一个CNAME 记录。这样客户端就只需要进行一次DNS 查询，从而提高效率。</p>
-</li>
-</ol>
-</blockquote>
-<p>所以我们不用顶级域名，使用blog.daoxuan.cc来部署博客。</p>
-<p>然而之前我一直用的是顶级域名daoxuan.cc部署博客，所以需要配置一个自动跳转。</p>
-<h3 id="解析记录"><a href="#解析记录" class="headerlink" title="解析记录"></a>解析记录</h3><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>类型</th>
-<th>名称</th>
-<th>内容</th>
-<th>代理状态</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>A</td>
-<td>daoxuan(@)</td>
-<td>185.199.110.153</td>
-<td>已代理</td>
-</tr>
-<tr>
-<td>CNAME</td>
-<td>blog</td>
-<td>xxxxx.onwaf.com</td>
-<td>仅DNS</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>@的内容无所谓，但是代理一定要开，因为我们需要用到cf的重定向功能。</p>
-<p>blog配置的是CDN的CNAME记录。</p>
-<h3 id="301重定向"><a href="#301重定向" class="headerlink" title="301重定向"></a>301重定向</h3><ol>
-<li>进入 <strong>Rules</strong> &gt; <strong>Page Rules</strong>。</li>
-<li>点击 <strong>Create Page Rule</strong>，填写以下规则：<ul>
-<li><strong>URL matches</strong>: <code>daoxuan.cc/*</code>（匹配所有 <code>daoxuan.cc</code> 的请求）</li>
-<li><strong>Then the settings are</strong>:<ul>
-<li>选择 <strong>Forwarding URL</strong> &gt; <strong>301 - Permanent Redirect</strong></li>
-<li>目标 URL 填写：<code>https://blog.daoxuan.cc/$1</code>（<code>$1</code> 会保留原始路径）</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>点击 <strong>Save and Deploy</strong> 保存规则。</li>
-</ol>
-<p><img src="https://image.daoxuan.cc/2025/08/71480d417c9d249ac5768aabf4da58bf.png" alt="image-20250818133720246"></p>
-<h2 id="CDN"><a href="#CDN" class="headerlink" title="CDN"></a>CDN</h2><p>CDN使用的是waf.sb，速度非常可观。<a href="">白佬推荐</a></p>
-<p>配置就按照blog.daoxuan.cc正常配置，需要注意的是源站使用github.io那个地址，回源主机名也使用这个名字（github的规则如此，如果在github page那里配置了Custom domain，这里的回源host也需要使用Custom domain，如果还使用github.io，github会重定向）</p>
-<h2 id="速度测试"><a href="#速度测试" class="headerlink" title="速度测试"></a>速度测试</h2><p><img src="https://image.daoxuan.cc/2025/08/315507fd491f43a2ef23951815067de0.png" alt="image-20250818133857049"></p>
-<p>速度非常可观。</p>
-</div>]]></content>
-      <tags>
-        <tag>hexo</tag>
       </tags>
   </entry>
 </search>

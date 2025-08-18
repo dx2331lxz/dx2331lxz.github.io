@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2025-08-18T05:39:33.430Z</updated>
+  <updated>2025-08-18T05:49:26.418Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://daoxuan.cc/posts/30621/"/>
     <id>https://daoxuan.cc/posts/30621/</id>
     <published>2025-08-17T10:54:44.000Z</published>
-    <updated>2025-08-18T05:39:33.430Z</updated>
+    <updated>2025-08-18T05:49:26.418Z</updated>
     
     <content type="html"><![CDATA[<div id="postchat_postcontent"><h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>博客放在自己的云服务器上面感觉不够稳，因此还是转回了github page</p><p>具体的github page如何配置网上一堆教程，具体需要注意的是Custom domain不需要设置，设置的话改变的也是一个回源主机名（host），因此不需要填东西。</p><h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2><p>由于cloudflare的顶级域名使用CNAME的时候会使用CNAME展平,相当于顶级域名还是A类型解析， 因此正常的CNAME记录检验会失效。</p><blockquote><ol><li><p><strong>正常CNAME 记录:</strong></p><p>当一个域名配置为CNAME 记录指向另一个域名时，DNS 解析器需要进行多次查询才能最终获取到目标域名的IP 地址。</p></li><li><p><strong>Cloudflare CNAME 展平:</strong></p><p>启用CNAME 展平后，Cloudflare 会在第一次DNS 查询时，直接将CNAME 记录解析为目标域名的IP 地址，而不是返回另一个CNAME 记录。这样客户端就只需要进行一次DNS 查询，从而提高效率。</p></li></ol></blockquote><p>所以我们不用顶级域名，使用blog.daoxuan.cc来部署博客。</p><p>然而之前我一直用的是顶级域名daoxuan.cc部署博客，所以需要配置一个自动跳转。</p><h3 id="解析记录"><a href="#解析记录" class="headerlink" title="解析记录"></a>解析记录</h3><div class="table-container"><table><thead><tr><th>类型</th><th>名称</th><th>内容</th><th>代理状态</th></tr></thead><tbody><tr><td>A</td><td>daoxuan(@)</td><td>185.199.110.153</td><td>已代理</td></tr><tr><td>CNAME</td><td>blog</td><td>xxxxx.onwaf.com</td><td>仅DNS</td></tr></tbody></table></div><p>@的内容无所谓，但是代理一定要开，因为我们需要用到cf的重定向功能。</p><p>blog配置的是CDN的CNAME记录。</p><h3 id="301重定向"><a href="#301重定向" class="headerlink" title="301重定向"></a>301重定向</h3><ol><li>进入 <strong>Rules</strong> &gt; <strong>Page Rules</strong>。</li><li>点击 <strong>Create Page Rule</strong>，填写以下规则：<ul><li><strong>URL matches</strong>: <code>daoxuan.cc/*</code>（匹配所有 <code>daoxuan.cc</code> 的请求）</li><li><strong>Then the settings are</strong>:<ul><li>选择 <strong>Forwarding URL</strong> &gt; <strong>301 - Permanent Redirect</strong></li><li>目标 URL 填写：<code>https://blog.daoxuan.cc/$1</code>（<code>$1</code> 会保留原始路径）</li></ul></li></ul></li><li>点击 <strong>Save and Deploy</strong> 保存规则。</li></ol><p><img src="https://image.daoxuan.cc/2025/08/71480d417c9d249ac5768aabf4da58bf.png" alt="image-20250818133720246"></p><h2 id="CDN"><a href="#CDN" class="headerlink" title="CDN"></a>CDN</h2><p>CDN使用的是waf.sb，速度非常可观。<a href="">白佬推荐</a></p><p>配置就按照blog.daoxuan.cc正常配置，需要注意的是源站使用github.io那个地址，回源主机名也使用这个名字（github的规则如此，如果在github page那里配置了Custom domain，这里的回源host也需要使用Custom domain，如果还使用github.io，github会重定向）</p><h2 id="速度测试"><a href="#速度测试" class="headerlink" title="速度测试"></a>速度测试</h2><p><img src="https://image.daoxuan.cc/2025/08/315507fd491f43a2ef23951815067de0.png" alt="image-20250818133857049"></p><p>速度非常可观。</p></div>]]></content>
     
