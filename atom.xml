@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2025-09-04T06:08:15.101Z</updated>
+  <updated>2026-03-02T08:52:53.563Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -15,6 +15,28 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>内网穿透单个服务快捷实现记录</title>
+    <link href="https://daoxuan.cc/posts/25626/"/>
+    <id>https://daoxuan.cc/posts/25626/</id>
+    <published>2026-03-02T08:40:38.000Z</published>
+    <updated>2026-03-02T08:52:53.563Z</updated>
+    
+    <content type="html"><![CDATA[<div id="postchat_postcontent"><h1 id="内网穿透单个服务快捷实现记录"><a href="#内网穿透单个服务快捷实现记录" class="headerlink" title="内网穿透单个服务快捷实现记录"></a>内网穿透单个服务快捷实现记录</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[你的Docker容器(内网)]               [跳板机(云服务器)]                      [外网用户]</span><br><span class="line">    |                                      |                                      |</span><br><span class="line">    | 容器内业务服务(如8080端口)             | SSH服务端                             |</span><br><span class="line">    | 容器内安装autossh                      | (配置GatewayPorts=yes)                |</span><br><span class="line">    |    ↓                                  |    ↓                                 |</span><br><span class="line">    | autossh建立反向隧道                     | 监听0.0.0.0:8080                      |</span><br><span class="line">    | -R 8080:localhost:8080 ---------------&gt;| (公网可直接访问)                       |</span><br><span class="line">    |                                      |    ↓                                 |</span><br><span class="line">    |                                      | 外网用户访问:                          |</span><br><span class="line">    |                                      | curl http://云服务器IP:8080            |</span><br><span class="line">    |                                      | ✅ 直接成功                            |</span><br></pre></td></tr></table></figure><h2 id="内网机器"><a href="#内网机器" class="headerlink" title="内网机器"></a>内网机器</h2><h3 id="安装autossh"><a href="#安装autossh" class="headerlink" title="安装autossh"></a>安装autossh</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get update &amp;&amp; apt-get install -y autossh openssh-client</span><br></pre></td></tr></table></figure><h3 id="配置-SSH-免密登录到跳板机"><a href="#配置-SSH-免密登录到跳板机" class="headerlink" title="配置 SSH 免密登录到跳板机"></a>配置 SSH 免密登录到跳板机</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 1. 生成SSH密钥对</span><br><span class="line">ssh-keygen -t rsa -b 4096</span><br><span class="line"># 一路回车使用默认路径</span><br><span class="line"></span><br><span class="line"># 2. 将公钥复制到跳板机</span><br><span class="line">ssh-copy-id root@&lt;你的云服务器IP&gt;</span><br><span class="line"></span><br><span class="line"># 3. 测试免密登录（第一次连接需要确认指纹）</span><br><span class="line">ssh root@&lt;你的云服务器IP&gt;</span><br><span class="line"># 应该直接登录成功，不需要输入密码</span><br></pre></td></tr></table></figure><h3 id="在容器内运行autossh"><a href="#在容器内运行autossh" class="headerlink" title="在容器内运行autossh"></a>在容器内运行autossh</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 用autossh（-M 0 表示禁用内置监控端口，使用SSH的保活机制）</span><br><span class="line">autossh -M 0 -fNTR 8080:localhost:8080 root@&lt;你的云服务器IP&gt;</span><br></pre></td></tr></table></figure><p><strong>命令参数说明</strong>：</p><ul><li><code>-M 0</code>：禁用 autossh 的监控端口，改用 SSH 的 <code>ServerAliveInterval</code> 和 <code>ServerAliveCountMax</code> 机制保活 </li><li><code>-f</code>：后台运行</li><li><code>-N</code>：不执行远程命令，只建隧道</li><li><code>-T</code>：禁用伪终端分配</li><li><code>-R 8080:localhost:8080</code>：反向隧道，将跳板机的8080端口转发到容器内的8080端口</li></ul><h2 id="跳板机"><a href="#跳板机" class="headerlink" title="跳板机"></a>跳板机</h2><blockquote><p>确保跳板机有公网ip</p></blockquote><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 查看端口监听情况</span><br><span class="line">netstat -tulnp | grep 8080</span><br><span class="line"># 应该看到 0.0.0.0:8080 在监听，而不是 127.0.0.1:8080</span><br><span class="line"></span><br><span class="line"># 如果只看到127.0.0.1，需要检查跳板机的sshd_config</span><br><span class="line"># 确保设置了 GatewayPorts yes</span><br></pre></td></tr></table></figure><p>应该看到这样的输出</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      409690/sshd: root</span><br><span class="line">tcp6       0      0 :::8080                  :::*                    LISTEN      409690/sshd: root</span><br></pre></td></tr></table></figure><p>如果没有，杀死原有的autossh进程，重新建立隧道</p></div>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;div id=&quot;postchat_postcontent&quot;&gt;&lt;h1 id=&quot;内网穿透单个服务快捷实现记录&quot;&gt;&lt;a href=&quot;#内网穿透单个服务快捷实现记录&quot; class=&quot;headerlink&quot; title=&quot;内网穿透单个服务快捷实现记录&quot;&gt;&lt;/a&gt;内网穿透单个服务快捷实现记</summary>
+      
+    
+    
+    
+    
+    <category term="内网穿透" scheme="https://daoxuan.cc/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/"/>
+    
+  </entry>
   
   <entry>
     <title>我被资本做局了</title>
