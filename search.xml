@@ -3211,4 +3211,27 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
         <tag>重定向次数过多</tag>
       </tags>
   </entry>
+  <entry>
+    <title>openclaw通过cloudflare ai gateway解决openrouter的模型区域访问受限</title>
+    <url>/posts/20296/</url>
+    <content><![CDATA[<div id="postchat_postcontent"><h2 id="开启ai-gateway"><a href="#开启ai-gateway" class="headerlink" title="开启ai gateway"></a>开启ai gateway</h2><blockquote>
+<p>查看文档获得官方说明<a href="https://developers.cloudflare.com/ai-gateway/get-started/">https://developers.cloudflare.com/ai-gateway/get-started/</a></p>
+</blockquote>
+<h3 id="获得accountId"><a href="#获得accountId" class="headerlink" title="获得accountId"></a>获得accountId</h3><p>访问<a href="https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/得到账户ID">https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/得到账户ID</a></p>
+<h3 id="开通ai-gateway"><a href="#开通ai-gateway" class="headerlink" title="开通ai gateway"></a>开通ai gateway</h3><p>原教程中，给出了一种申请<strong>Cloudflare API 令牌</strong>发送请求的方式自动配置，不过我更喜欢手动开启</p>
+<p>访问<a href="https://dash.cloudflare.com/?to=/:account/ai/ai-gateway，拉到页面最下面点击Create">https://dash.cloudflare.com/?to=/:account/ai/ai-gateway，拉到页面最下面点击Create</a> gateway</p>
+<p>名称随便起一个英文的就好，不用太长，会应用到访问url中</p>
+<p>注意：已验证的网关这个选项记得关掉，不然的话你需要在访问时候配置身份令牌，没有就会报错</p>
+<p>HTTP 401: [{“code”:2009,”message”:”Unauthorized”}]，省事一点还是关掉</p>
+<p>到现在，ai gateway这边就配置完事了</p>
+<h2 id="openclaw配置openrouter"><a href="#openclaw配置openrouter" class="headerlink" title="openclaw配置openrouter"></a>openclaw配置openrouter</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;models&quot;: &#123;</span><br><span class="line">    &quot;mode&quot;: &quot;merge&quot;,</span><br><span class="line">    &quot;providers&quot;: &#123;</span><br><span class="line">      &quot;openrouter&quot;: &#123;</span><br><span class="line">        &quot;baseUrl&quot;: &quot;https://gateway.ai.cloudflare.com/v1/&#123;account_id&#125;/&#123;gateway_id&#125;/openrouter&quot;,</span><br><span class="line">        &quot;apiKey&quot;: &quot;sk-or-v1-xxxxba6f8d3f&quot;,</span><br><span class="line">        &quot;api&quot;: &quot;openai-completions&quot;,</span><br><span class="line">        &quot;models&quot;: [</span><br><span class="line">          &#123;</span><br><span class="line">            &quot;id&quot;: &quot;google/gemini-3-flash-preview&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;google/gemini-3-flash-preview&quot;,</span><br><span class="line">            &quot;reasoning&quot;: false,</span><br><span class="line">            &quot;input&quot;: [</span><br><span class="line">              &quot;text&quot;</span><br><span class="line">            ],</span><br><span class="line">            &quot;contextWindow&quot;: 128000,</span><br><span class="line">            &quot;maxTokens&quot;: 16384</span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            &quot;id&quot;: &quot;nvidia/nemotron-3-super-120b-a12b:free&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;nvidia/nemotron-3-super-120b-a12b:free&quot;,</span><br><span class="line">            &quot;reasoning&quot;: false,</span><br><span class="line">            &quot;input&quot;: [</span><br><span class="line">              &quot;text&quot;</span><br><span class="line">            ],</span><br><span class="line">            &quot;contextWindow&quot;: 128000,</span><br><span class="line">            &quot;maxTokens&quot;: 16384</span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>这里accout_id、gateway_id我们刚刚已经有了，apiKey就是openrouter的apiKey</p>
+<p>最后配置一下agent的模型使用就OK了</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;agents&quot;: &#123;</span><br><span class="line">    &quot;defaults&quot;: &#123;</span><br><span class="line">      &quot;model&quot;: &#123;</span><br><span class="line">        &quot;primary&quot;: &quot;openrouter/nvidia/nemotron-3-super-120b-a12b:free&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;models&quot;: &#123;</span><br><span class="line">        &quot;openrouter/google/gemini-3-flash-preview&quot;: &#123;&#125;,</span><br><span class="line">        &quot;openrouter/nvidia/nemotron-3-super-120b-a12b:free&quot;: &#123;&#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;workspace&quot;: &quot;/home/dx2331lxz/.openclaw/workspace&quot;,</span><br><span class="line">      &quot;compaction&quot;: &#123;</span><br><span class="line">        &quot;mode&quot;: &quot;safeguard&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;maxConcurrent&quot;: 4,</span><br><span class="line">      &quot;subagents&quot;: &#123;</span><br><span class="line">        &quot;maxConcurrent&quot;: 8</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>配置完成记得重启一下网关</p>
+</div>]]></content>
+      <tags>
+        <tag>openclaw</tag>
+      </tags>
+  </entry>
 </search>
