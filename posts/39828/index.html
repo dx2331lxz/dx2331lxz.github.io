@@ -175,7 +175,7 @@ document.addEventListener('pjax:complete', () => {
 
 setTimeout(() => {
     preloader.endLoading();
-}, 5000);</script><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fa-solid fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">互动</div><div class="author-content-item-title">最新评论<a class="recent-comment-more" href="/recentcomments/" title="最近评论"><i class="solitude fa-solid fa-circle-chevron-right"></i></a></div></div><div class="console_recentcomments"><script pjax="">(async () => {
+}, 5000);</script><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fa-solid fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">互动</div><div class="author-content-item-title">最新评论<a class="recent-comment-more" href="/recentcomments/" title="最近评论"><i class="solitude fa-solid fa-circle-chevron-right"></i></a></div></div><div class="console_recentcomments"><script pjax>(async () => {
     document.querySelector('.console-card .console_recentcomments').textContent = `加载中...`
     const emojiReg = /<img class="tk-owo-emotion" [^>]+>/g
     let cache = utils.saveToLocal.get('twikoo-recent-comments-console')
@@ -265,13 +265,13 @@ setTimeout(() => {
 <li>使用vscode通道走本地的代理环境</li>
 </ol>
 <h3 id="使用终端的代理环境"><a href="#使用终端的代理环境" class="headerlink" title="使用终端的代理环境"></a>使用终端的代理环境</h3><p>这种情况依然分为两种解法，第一种较为简单，使用ssh在远程连接的时候<strong>将远程主机的端口映射到本地</strong>：</p>
-<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -R 7890:localhost:7890 user@remote-host</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -R 7890:localhost:7890 user@remote-host</span><br></pre></td></tr></table></figure>
 <p>注意：这个7890是clash的惯用的代理端口，具体需要查看你的clash</p>
 <p>然后在vscode的设置中设置Proxy和Proxy Support</p>
 <p><img src= "" data-lazy-src="/Users/luxiuzhe/Library/Application Support/typora-user-images/image-20260415215738220.png" alt="image-20260415215738220"></p>
 <ul>
 <li><p>设置了Proxy之后，vscode的网络请求就会使用代理地址了。如果不设置的话，就需要在~/.bashrc中添加：</p>
-<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># Proxy settings</span><br><span class="line">export http_proxy=http://127.0.0.1:7890</span><br><span class="line">export https_proxy=http://127.0.0.1:7890</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># Proxy settings</span><br><span class="line">export http_proxy=http://127.0.0.1:7890</span><br><span class="line">export https_proxy=http://127.0.0.1:7890</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>Proxy Support和Use Local Proxy Configuration这个设置息息相关，这点我们下面来讲，对于使用终端代理，这里最合适的设置就是设置为on</p>
 </li>
@@ -298,12 +298,12 @@ setTimeout(() => {
 </blockquote>
 <p>需要使用copilot api这个项目：<a target="_blank" rel="noopener" href="https://github.com/ericc-ch/copilot-api">https://github.com/ericc-ch/copilot-api</a></p>
 <p>使用下面的命令启动反代</p>
-<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 npx copilot-api@latest start --claude-code --proxy-env</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 npx copilot-api@latest start --claude-code --proxy-env</span><br></pre></td></tr></table></figure>
 <p>你会选择一大一小两个模型，大模型选择sonnet或者opus，小模型选一个免费的就行。</p>
 <p>然后你会得到一个可以直接使用的文本，脚本会直接放到你的剪切版上，类似这样：</p>
-<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export ANTHROPIC_BASE_URL=http://localhost:4141 ANTHROPIC_AUTH_TOKEN=dummy </span><br><span class="line">ANTHROPIC_MODEL=claude-opus-4.6 ANTHROPIC_DEFAULT_SONNET_MODEL=claude-opus-4.6 ANTHROPIC_SMALL_FAST_MODEL=gpt-5-mini ANTHROPIC_DEFAULT_HAIKU_MODEL=gpt-5-mini DISABLE_NON_ESSENTIAL_MODEL_CALLS=1 CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 &amp;&amp; claude</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export ANTHROPIC_BASE_URL=http://localhost:4141 ANTHROPIC_AUTH_TOKEN=dummy </span><br><span class="line">ANTHROPIC_MODEL=claude-opus-4.6 ANTHROPIC_DEFAULT_SONNET_MODEL=claude-opus-4.6 ANTHROPIC_SMALL_FAST_MODEL=gpt-5-mini ANTHROPIC_DEFAULT_HAIKU_MODEL=gpt-5-mini DISABLE_NON_ESSENTIAL_MODEL_CALLS=1 CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 &amp;&amp; claude</span><br></pre></td></tr></table></figure>
 <p>但是我们主要是使用vscode上面的claude，因此需要转换成下面的形式：</p>
-<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">{</span><br><span class="line">  "env": {</span><br><span class="line">    "ANTHROPIC_BASE_URL": "http://localhost:4141",</span><br><span class="line">    "ANTHROPIC_AUTH_TOKEN": "dummy",</span><br><span class="line">    "ANTHROPIC_MODEL": "claude-opus-4.6",</span><br><span class="line">    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-opus-4.6",</span><br><span class="line">    "ANTHROPIC_SMALL_FAST_MODEL": "gpt-5-mini",</span><br><span class="line">    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-mini",</span><br><span class="line">    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",</span><br><span class="line">    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"</span><br><span class="line">  }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;env&quot;: &#123;</span><br><span class="line">    &quot;ANTHROPIC_BASE_URL&quot;: &quot;http://localhost:4141&quot;,</span><br><span class="line">    &quot;ANTHROPIC_AUTH_TOKEN&quot;: &quot;dummy&quot;,</span><br><span class="line">    &quot;ANTHROPIC_MODEL&quot;: &quot;claude-opus-4.6&quot;,</span><br><span class="line">    &quot;ANTHROPIC_DEFAULT_SONNET_MODEL&quot;: &quot;claude-opus-4.6&quot;,</span><br><span class="line">    &quot;ANTHROPIC_SMALL_FAST_MODEL&quot;: &quot;gpt-5-mini&quot;,</span><br><span class="line">    &quot;ANTHROPIC_DEFAULT_HAIKU_MODEL&quot;: &quot;gpt-5-mini&quot;,</span><br><span class="line">    &quot;DISABLE_NON_ESSENTIAL_MODEL_CALLS&quot;: &quot;1&quot;,</span><br><span class="line">    &quot;CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC&quot;: &quot;1&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>设置～/.claude/setting.json为上面的内容，这样无论是终端的claude还是vscode都能用，claude会去这个文件中读取配置。</p>
 <p>然后就可以开始爽用claude code了。</p>
 <p>因为这个方案使用的是终端的代理，没有vscode网络环境的事情，因此不会出问题。</p>
@@ -455,40 +455,7 @@ document.addEventListener('pjax:error', (e) => {
     if (e.request.status === 404) {
         pjax.loadUrl('/404.html')
     }
-})</script><!-- google adsense--><!-- search--><div id="algolia-search"><div class="search-dialog"><div class="algolia-navbar"><div class="search-dialog__title" id="algolia-search-title">搜索</div><div class="algolia-tips"><i class="solitude fab fa-algolia"></i><span class="algolia-tips-text">Algolia</span></div><span class="search-close-button"><i class="solitude fa-solid fa-xmark"></i></span></div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><div id="search-results"><div id="algolia-hits"></div></div><div id="algolia-tips"><div id="algolia-pagination"></div><div id="algolia-stats"></div></div></div><div id="search-mask"></div></div><script src="/js/search/algolia.js?v=2.1.12"></script><!-- Tianli-Talk--><!-- music--><div class="needEndHide" id="nav-music"><div id="nav-music-hoverTips" onclick="sco.musicToggle()">音乐已暂停</div><meting-js id="4969303681" server="netease" type="playlist" mutex="true" preload="none" theme="var(--efu-main)" data-lrctype="0" order="random" volume="0.8"></meting-js></div><!-- hexo injector body_end start --><script async="" src="//at.alicdn.com/t/font_2032782_8d5kxvn09md.js"></script><!-- hexo injector body_end end -->
-    <link rel="stylesheet" href="https://ai.tianli0.top/static/public/postChatUser_summary.min.css">
-    <script>
-        let tianliGPT_key = 'S-7RSG8BVLCX0L7HOP';
-        let tianliGPT_postSelector = '#postchat_postcontent';
-        let tianliGPT_Title = '文章摘要';
-        let tianliGPT_postURL = '*/posts/*';
-        let tianliGPT_blacklist = '';
-        let tianliGPT_wordLimit = '1000';
-        let tianliGPT_typingAnimate = true;
-        let tianliGPT_theme = 'default';
-        var postChatConfig = {
-          backgroundColor: "#3e86f6",
-          bottom: "16px",
-          left: "16px",
-          fill: "#FFFFFF",
-          width: "44px",
-          frameWidth: "375px",
-          frameHeight: "600px",
-          defaultInput: true,
-          upLoadWeb: true,
-          showInviteLink: true,
-          userTitle: "PostChat",
-          userDesc: "如果你对网站的内容有任何疑问，可以来问我哦～",
-          addButton: true,
-          beginningText: "这篇文章介绍了",
-          userIcon: "https://ai.tianli0.top/static/img/PostChat.webp",
-          userMode: "magic",
-          defaultChatQuestions: ["你好","你是谁"],
-          defaultSearchQuestions: ["视频压缩","设计"]
-        };
-    </script>
-    <script data-postchat_key="S-7RSG8BVLCX0L7HOP" src="https://ai.tianli0.top/static/public/tianli_gpt.min.js"></script>
-  </body></html>
+})</script><!-- google adsense--><!-- search--><div id="algolia-search"><div class="search-dialog"><div class="algolia-navbar"><div class="search-dialog__title" id="algolia-search-title">搜索</div><div class="algolia-tips"><i class="solitude fab fa-algolia"></i><span class="algolia-tips-text">Algolia</span></div><span class="search-close-button"><i class="solitude fa-solid fa-xmark"></i></span></div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><div id="search-results"><div id="algolia-hits"></div></div><div id="algolia-tips"><div id="algolia-pagination"></div><div id="algolia-stats"></div></div></div><div id="search-mask"></div></div><script src="/js/search/algolia.js?v=2.1.12"></script><!-- Tianli-Talk--><!-- music--><div class="needEndHide" id="nav-music"><div id="nav-music-hoverTips" onclick="sco.musicToggle()">音乐已暂停</div><meting-js id="4969303681" server="netease" type="playlist" mutex="true" preload="none" theme="var(--efu-main)" data-lrctype="0" order="random" volume="0.8"></meting-js></div><!-- hexo injector body_end start --><script async src="//at.alicdn.com/t/font_2032782_8d5kxvn09md.js"></script><!-- hexo injector body_end end --></body></html>
         <script>
             const posts = ["posts/39828/","posts/35461/","posts/52161/","posts/20296/","posts/25626/","posts/43834/","posts/14971/","posts/23147/","posts/30621/","posts/58955/","posts/59863/","posts/39530/","posts/48977/","posts/25443/","posts/48193/","posts/12233/","posts/8583/","posts/13888/","posts/9118/","posts/50029/","posts/20760/","posts/45899/","posts/31606/","posts/54641/","posts/63511/","posts/14505/","posts/27467/","posts/5430/","posts/51950/","posts/3200/","posts/26473/","posts/52000/","posts/16342/","posts/44613/","posts/9815/","posts/64064/","posts/55779/","posts/16961/","posts/64089/","posts/10030/","posts/59715/","posts/58914/","posts/64135/","posts/55030/","posts/53297/","posts/55622/","posts/20868/","posts/64429/","posts/49711/","posts/46458/","posts/22520/","posts/371/","posts/54468/","posts/30117/","posts/20439/","posts/49774/","posts/12972/","posts/25087/","posts/6890/","posts/50092/","posts/54218/","posts/2500/","posts/12709/","posts/undefined/","posts/65143/","posts/36714/","posts/41761/","posts/22678/","posts/24059/"];
             function toRandomPost() {

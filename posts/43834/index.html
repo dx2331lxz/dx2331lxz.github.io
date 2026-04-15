@@ -175,7 +175,7 @@ document.addEventListener('pjax:complete', () => {
 
 setTimeout(() => {
     preloader.endLoading();
-}, 5000);</script><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fa-solid fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">互动</div><div class="author-content-item-title">最新评论<a class="recent-comment-more" href="/recentcomments/" title="最近评论"><i class="solitude fa-solid fa-circle-chevron-right"></i></a></div></div><div class="console_recentcomments"><script pjax="">(async () => {
+}, 5000);</script><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fa-solid fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">互动</div><div class="author-content-item-title">最新评论<a class="recent-comment-more" href="/recentcomments/" title="最近评论"><i class="solitude fa-solid fa-circle-chevron-right"></i></a></div></div><div class="console_recentcomments"><script pjax>(async () => {
     document.querySelector('.console-card .console_recentcomments').textContent = `加载中...`
     const emojiReg = /<img class="tk-owo-emotion" [^>]+>/g
     let cache = utils.saveToLocal.get('twikoo-recent-comments-console')
@@ -259,7 +259,7 @@ setTimeout(() => {
 </blockquote>
 <p>如题目所讲诉的一样，我被资本做局了，现在每每想起事情来龙去脉，总有一股积郁涌上心头。唉～</p>
 <p>事情要从23年的大一暑假说起，青岛某有限公司的一个人（后续统一称甲方）联系上了我们社团，想要做一个有关充电桩的项目。项目要求是，需要做充电桩硬件，充电桩后端，充电桩小程序，小程序方面还想要有微信小程序和支付宝小程序、需要一个配套的后台。因为我们对嵌入式确实不是很懂，所以不打算做硬件。剩下的这些需求在一番讨价还价之后定为3w，项目最开始给1w，剩下的随着项目进度给。值得一提的是（划重点），项目没有签订合同，纸质版和电子版合同都没有。最开始打的1w定金，给予的备注是实习劳务费用。</p>
-<p><img src= "" data-lazy-src="https://image.daoxuan.cc/2025/09/588a797f63632de28b29c01df3e6362b.png" alt="image-20250904130519324" style="zoom:25%;"></p>
+<p><img src= "" data-lazy-src="https://image.daoxuan.cc/2025/09/588a797f63632de28b29c01df3e6362b.png" alt="image-20250904130519324" style="zoom:25%;" /></p>
 <p>团队一共两人，我是做后端，另一个朋友做前端，在大二期间，这个项目快速推进，软件层面的需求近乎完工，因为有些功能需要对接硬件才能完成，例如充电收费需要收多少钱，需要硬件给出数据。除了这类功能，其他的功能几乎完工。</p>
 <p>完事具备，只欠硬件。问题也由此开始。</p>
 <p>最开始的硬件，甲方找了一个做硬件的人去做，然后就发现打电话找不到人，慢慢的就彻底联系不上，最后就吹了，从这时开始，整个项目开始了长达34个月的空窗期，甲方没有在联系新的硬件，自然也没有联系我们，这个期间我多次联系甲方，都没有得到什么结果，让我一度认为项目吹了，不了了之。</p>
@@ -274,7 +274,7 @@ setTimeout(() => {
 <li>甲方因为没有合同，甲方总是要求做一些额外的工作，他说自己这方面啥也不会，所以让我们这边做例如给域名注册，域名备案，小程序备案之类的之前谈工作内容时候从来没说过的工作。</li>
 <li>还是因为他他妈的啥也不懂，但是特别有参与感，正常写项目，定方案，调试，不都是和技术人员协商么，他不是，他当中间人，先听硬件这边说一下什么方案，怎么解决，感觉自己听懂了，然后转述给我这边。然后我和他讨论技术细节（我他妈也是个脑残，和他讨论什么技术），感觉就不在一个频道，啥也讨论不出来，比如前两天（多的案例我也记不住），讨论报文问题（图见下方），他说可以先搞一个vin码启动的方式启动充电桩（vin码是汽车的唯一编码，可以和用户绑定），这样就不用刷卡了，我看了一下报文要求很疑惑，这个vin启动是0x03方式，那为什么报文里面还是会有物理卡号这8个字节。为什么还需要上传，很显然报文里面没有写使用0x03启动时候物理卡号置为零，或者就干脆不传这8个字节，然而他一直在和我说，物理卡和vin启动是两种方式，还强调了物理卡启动是刷IC卡。我他妈能不知道么，我问的是为什么报文里面还有这个物理卡东西。他根本就不懂，最后近乎吵起来。</li>
 </ol>
-<p><img src= "" data-lazy-src="https://image.daoxuan.cc/2025/09/f51c93cd2e310fe2a2dacfa2f6833cec.png" alt="image-20250904133143101" style="zoom: 67%;"></p>
+<p><img src= "" data-lazy-src="https://image.daoxuan.cc/2025/09/f51c93cd2e310fe2a2dacfa2f6833cec.png" alt="image-20250904133143101" style="zoom: 67%;" /></p>
 <ol>
 <li>还是得在重说一遍，甲方不懂技术，当中间人这个工作方式，巨傻逼，巨抽象。艹，你妈的。</li>
 <li>第四点了，甲方是真不拿我当外人，有事没事一个语音电话打过来，也不说什么事情发个微信先。你要是急我可以理解，你他妈晚上10点给我打语音电话几个意思，我草泥马的。我干脆不接，傻逼。</li>
@@ -283,8 +283,8 @@ setTimeout(() => {
 </ol>
 <p>昨天咨询了一下公益法律援助，这里点赞12348和青岛黄岛区的法律援助，真心不错，回复也很及时，态度也很好，爱了。说了情况之后，她说可以直接硬拖，不用管这个甲方了。我放心的和甲方说我不干了。在这个基础上聊天时候才发现，他为什么没有用人家的那一整套充电桩，他说买了之后没人维护，你妈的，合着你觉得我们这个项目写完能给你维护是吧，我他妈从大一开始干，干到你妈的研一，还要不要脸啊。</p>
 <p>晚上时候又打电话，说尾款的事情。</p>
-<p><img src= "" data-lazy-src="https://image.daoxuan.cc/2025/09/fda7ad3c702bd16fa41b5c8f4bef6210.png" alt="image-20250904135534276" style="zoom:50%;"></p>
-<p><img src= "" data-lazy-src="https://image.daoxuan.cc/2025/09/740d1392853e40bff705dee40c043b44.png" alt="image-20250904135624554" style="zoom:50%;"></p>
+<p><img src= "" data-lazy-src="https://image.daoxuan.cc/2025/09/fda7ad3c702bd16fa41b5c8f4bef6210.png" alt="image-20250904135534276" style="zoom:50%;" /></p>
+<p><img src= "" data-lazy-src="https://image.daoxuan.cc/2025/09/740d1392853e40bff705dee40c043b44.png" alt="image-20250904135624554" style="zoom:50%;" /></p>
 <p>很显然，就算我们俩不跑路接着干，尾款不知道猴年马月。</p>
 <p>唉</p>
 <p>算是一个真的非常深刻且惨痛的教训。所以说干外包就是各种傻逼事情，磨你的心气。为了防止说我故意诋毁某公司形象，我就不点名了。我希望分享出来大家可以引以为戒，遇到这种不对劲的活，千万别接。</p>
@@ -437,40 +437,7 @@ document.addEventListener('pjax:error', (e) => {
     if (e.request.status === 404) {
         pjax.loadUrl('/404.html')
     }
-})</script><!-- google adsense--><!-- search--><div id="algolia-search"><div class="search-dialog"><div class="algolia-navbar"><div class="search-dialog__title" id="algolia-search-title">搜索</div><div class="algolia-tips"><i class="solitude fab fa-algolia"></i><span class="algolia-tips-text">Algolia</span></div><span class="search-close-button"><i class="solitude fa-solid fa-xmark"></i></span></div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><div id="search-results"><div id="algolia-hits"></div></div><div id="algolia-tips"><div id="algolia-pagination"></div><div id="algolia-stats"></div></div></div><div id="search-mask"></div></div><script src="/js/search/algolia.js?v=2.1.12"></script><!-- Tianli-Talk--><!-- music--><div class="needEndHide" id="nav-music"><div id="nav-music-hoverTips" onclick="sco.musicToggle()">音乐已暂停</div><meting-js id="4969303681" server="netease" type="playlist" mutex="true" preload="none" theme="var(--efu-main)" data-lrctype="0" order="random" volume="0.8"></meting-js></div><!-- hexo injector body_end start --><script async="" src="//at.alicdn.com/t/font_2032782_8d5kxvn09md.js"></script><!-- hexo injector body_end end -->
-    <link rel="stylesheet" href="https://ai.tianli0.top/static/public/postChatUser_summary.min.css">
-    <script>
-        let tianliGPT_key = 'S-7RSG8BVLCX0L7HOP';
-        let tianliGPT_postSelector = '#postchat_postcontent';
-        let tianliGPT_Title = '文章摘要';
-        let tianliGPT_postURL = '*/posts/*';
-        let tianliGPT_blacklist = '';
-        let tianliGPT_wordLimit = '1000';
-        let tianliGPT_typingAnimate = true;
-        let tianliGPT_theme = 'default';
-        var postChatConfig = {
-          backgroundColor: "#3e86f6",
-          bottom: "16px",
-          left: "16px",
-          fill: "#FFFFFF",
-          width: "44px",
-          frameWidth: "375px",
-          frameHeight: "600px",
-          defaultInput: true,
-          upLoadWeb: true,
-          showInviteLink: true,
-          userTitle: "PostChat",
-          userDesc: "如果你对网站的内容有任何疑问，可以来问我哦～",
-          addButton: true,
-          beginningText: "这篇文章介绍了",
-          userIcon: "https://ai.tianli0.top/static/img/PostChat.webp",
-          userMode: "magic",
-          defaultChatQuestions: ["你好","你是谁"],
-          defaultSearchQuestions: ["视频压缩","设计"]
-        };
-    </script>
-    <script data-postchat_key="S-7RSG8BVLCX0L7HOP" src="https://ai.tianli0.top/static/public/tianli_gpt.min.js"></script>
-  </body></html>
+})</script><!-- google adsense--><!-- search--><div id="algolia-search"><div class="search-dialog"><div class="algolia-navbar"><div class="search-dialog__title" id="algolia-search-title">搜索</div><div class="algolia-tips"><i class="solitude fab fa-algolia"></i><span class="algolia-tips-text">Algolia</span></div><span class="search-close-button"><i class="solitude fa-solid fa-xmark"></i></span></div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><div id="search-results"><div id="algolia-hits"></div></div><div id="algolia-tips"><div id="algolia-pagination"></div><div id="algolia-stats"></div></div></div><div id="search-mask"></div></div><script src="/js/search/algolia.js?v=2.1.12"></script><!-- Tianli-Talk--><!-- music--><div class="needEndHide" id="nav-music"><div id="nav-music-hoverTips" onclick="sco.musicToggle()">音乐已暂停</div><meting-js id="4969303681" server="netease" type="playlist" mutex="true" preload="none" theme="var(--efu-main)" data-lrctype="0" order="random" volume="0.8"></meting-js></div><!-- hexo injector body_end start --><script async src="//at.alicdn.com/t/font_2032782_8d5kxvn09md.js"></script><!-- hexo injector body_end end --></body></html>
         <script>
             const posts = ["posts/39828/","posts/35461/","posts/52161/","posts/20296/","posts/25626/","posts/43834/","posts/14971/","posts/23147/","posts/30621/","posts/58955/","posts/59863/","posts/39530/","posts/48977/","posts/25443/","posts/48193/","posts/12233/","posts/8583/","posts/13888/","posts/9118/","posts/50029/","posts/20760/","posts/45899/","posts/31606/","posts/54641/","posts/63511/","posts/14505/","posts/27467/","posts/5430/","posts/51950/","posts/3200/","posts/26473/","posts/52000/","posts/16342/","posts/44613/","posts/9815/","posts/64064/","posts/55779/","posts/16961/","posts/64089/","posts/10030/","posts/59715/","posts/58914/","posts/64135/","posts/55030/","posts/53297/","posts/55622/","posts/20868/","posts/64429/","posts/49711/","posts/46458/","posts/22520/","posts/371/","posts/54468/","posts/30117/","posts/20439/","posts/49774/","posts/12972/","posts/25087/","posts/6890/","posts/50092/","posts/54218/","posts/2500/","posts/12709/","posts/undefined/","posts/65143/","posts/36714/","posts/41761/","posts/22678/","posts/24059/"];
             function toRandomPost() {
