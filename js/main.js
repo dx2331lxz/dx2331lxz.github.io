@@ -61,10 +61,10 @@ const scrollFn = () => {
   window.addEventListener('scroll', (e) => {
     throttledScroll(e);
     if (window.scrollY === 0) {
-        $header.classList.remove('nav-fixed', 'nav-visible');
-        if ($rightside) {
-          $rightside.style.cssText = "opacity: ''; transform: ''";
-        }
+      $header.classList.remove('nav-fixed', 'nav-visible');
+      if ($rightside) {
+        $rightside.style.cssText = "opacity: ''; transform: ''";
+      }
     }
   });
 };
@@ -496,15 +496,15 @@ const addHighlight = () => {
   const $isShowTool = highlight.enable || copy || expand || limit;
   const expandClass = expand ? '' : 'closed';
   const $syntaxHighlight = syntax === 'highlight.js' ? document.querySelectorAll('figure.highlight') : document.querySelectorAll('pre[class*="language-"]');
-  
+
   if (!(($isShowTool || limit) && $syntaxHighlight.length)) return;
 
   const copyEle = copy ? `<i class="solitude fas fa-copy copy-button"></i>` : '<i></i>';
   const expandEle = `<i class="solitude fas fa-angle-down expand"></i>`;
   const limitEle = limit ? `<i class="solitude fas fa-angles-down"></i>` : '<i></i>';
-  
+
   const alertInfo = (ele, text) => utils.snackbarShow(text, false, 2000);
-  
+
   const copyFn = (e) => {
     const $buttonParent = e.parentNode;
     $buttonParent.classList.add('copy-true');
@@ -697,10 +697,11 @@ class tabs {
     if (!post_date) return;
     const ex = Math.ceil((new Date().getTime() - new Date(post_date.getAttribute('datetime')).getTime()) / 1000 / 60 / 60 / 24);
     if (expire.time > ex) return;
+    const articleContainer = document.querySelector('.article-container, #article-container');
+    if (!articleContainer || articleContainer.querySelector('.expire')) return;
     const ele = document.createElement('div');
     ele.className = 'expire';
-    ele.innerHTML = `<i class="solitude fas fa-circle-exclamation"></i>${expire.text_prev}${-(expire.time - ex)}${expire.text_next}`;
-    const articleContainer = document.getElementById('article-container');
+    ele.innerHTML = `<i class="solitude fas fa-circle-exclamation"></i>${expire.text_prev}${ex - expire.time}${expire.text_next}`;
     articleContainer.insertAdjacentElement(expire.position === 'top' ? 'afterbegin' : 'beforeend', ele);
   }
 }
