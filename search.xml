@@ -3673,7 +3673,7 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
   <entry>
     <title>copilot网络问题解决方案</title>
     <url>/posts/39828/</url>
-    <content><![CDATA[<div id="postchat_postcontent"><h1 id="copilot网络问题解决方案"><a href="#copilot网络问题解决方案" class="headerlink" title="copilot网络问题解决方案"></a>copilot网络问题解决方案</h1><blockquote>
+    <content><![CDATA[<h1 id="copilot网络问题解决方案"><a href="#copilot网络问题解决方案" class="headerlink" title="copilot网络问题解决方案"></a>copilot网络问题解决方案</h1><blockquote>
 <p>最近遇到了很多使用copilot发现买了pro+之后使用不了claude模型的情况。遂写一篇博客记录与copilot有关的网络问题，如果你是本地使用的话非常简单，挂个梯子就行，但是大多数时候是vscode远程连接使用，因此便需要进行一些配置</p>
 </blockquote>
 <h2 id="问题根因以及解决方法论"><a href="#问题根因以及解决方法论" class="headerlink" title="问题根因以及解决方法论"></a>问题根因以及解决方法论</h2><p>问题的根本原因是没有使用梯子，claude对本地ip进行了限制，导致无法使用。</p>
@@ -3687,7 +3687,7 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh -R 7890:localhost:7890 user@remote-host</span><br></pre></td></tr></table></figure>
 <p>注意：这个7890是clash的惯用的代理端口，具体需要查看你的clash</p>
 <p>然后在vscode的设置中设置Proxy和Proxy Support</p>
-<p><img src="/Users/luxiuzhe/Library/Application Support/typora-user-images/image-20260415215738220.png" alt="image-20260415215738220"></p>
+<p><img src="https://image.daoxuan.cc/2026/04/400d24ef816fc6c00660c20e2aaa1bcf.png" alt="image-20260415215738220"></p>
 <ul>
 <li><p>设置了Proxy之后，vscode的网络请求就会使用代理地址了。如果不设置的话，就需要在~/.bashrc中添加：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Proxy settings</span><br><span class="line">export http_proxy=http://127.0.0.1:7890</span><br><span class="line">export https_proxy=http://127.0.0.1:7890</span><br></pre></td></tr></table></figure>
@@ -3705,7 +3705,7 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
 <li><p>代理软件是否开启了局域网可以使用，这个需要打开，打开了没有啥坏处</p>
 </li>
 <li><p>在输出中查看copilot日志，去AI和浏览器中搜索，经验上来讲，这里AI大多数意识不到你的具体场景，还是在浏览器中直接搜索更高效</p>
-<p><img src="/Users/luxiuzhe/Library/Application Support/typora-user-images/image-20260415224618870.png" alt="image-20260415224618870"></p>
+<p><img src="https://image.daoxuan.cc/2026/04/6a6844da2f22a8ec96845b337049a013.png" alt="image-20260415224618870"></p>
 </li>
 </ol>
 <blockquote>
@@ -3726,7 +3726,7 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
 <p>设置～/.claude/setting.json为上面的内容，这样无论是终端的claude还是vscode都能用，claude会去这个文件中读取配置。</p>
 <p>然后就可以开始爽用claude code了。</p>
 <p>因为这个方案使用的是终端的代理，没有vscode网络环境的事情，因此不会出问题。</p>
-</div>]]></content>
+]]></content>
       <tags>
         <tag>copilot</tag>
         <tag>claude</tag>
