@@ -170,6 +170,8 @@ const sco = {
     const $rmText = document.querySelector('#menu-music-toggle span');
     const $rmIcon = document.querySelector('#menu-music-toggle i');
 
+    if (!$music) return;
+
     this.musicPlaying = !this.musicPlaying;
     $music.classList.toggle("playing", this.musicPlaying);
     $music.classList.toggle("stretch", this.musicPlaying);
@@ -180,7 +182,7 @@ const sco = {
       $rmIcon.className = this.musicPlaying ? 'solitude fas fa-pause' : 'solitude fas fa-play';
     }
 
-    if (isMeting) {
+    if (isMeting && $meting?.aplayer) {
       this.musicPlaying ? $meting.aplayer.play() : $meting.aplayer.pause();
     }
   },
