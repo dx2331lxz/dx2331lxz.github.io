@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2026-04-15T15:36:26.286Z</updated>
+  <updated>2026-06-17T03:33:16.278Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>chatgpt手机号注册的账号绑定邮箱出现错误：出错了，请重试</title>
+    <link href="https://daoxuan.cc/posts/28864/"/>
+    <id>https://daoxuan.cc/posts/28864/</id>
+    <published>2026-06-17T03:25:44.000Z</published>
+    <updated>2026-06-17T03:33:16.278Z</updated>
+    
+    <content type="html"><![CDATA[<p>发现日期：2026年6月17日</p><p>今天在购买印度成品plus账号的时候遇到了问题，不绑定邮箱，只用手机注册的账号是无法使用codex的，因此我在设置页面点击账户绑定邮箱，却发现提示：出错了，请重试。</p><p><img src="/Users/luxiuzhe/Library/Application Support/typora-user-images/image-20260617112037492.png" alt="image-20260617112037492"></p><p>我尝试了更换代理节点、使用无痕浏览器等方式都没有任何作用。</p><h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>在正常进行codex授权登录的时候，会出现输入账号密码之后让我们绑定邮箱的界面，在这个界面里面输入邮箱就可以正常发送电子邮件，并且正常绑定邮箱了。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>我个人认为这是openai的小bug，不知道什么时候就修复了。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;发现日期：2026年6月17日&lt;/p&gt;
+&lt;p&gt;今天在购买印度成品plus账号的时候遇到了问题，不绑定邮箱，只用手机注册的账号是无法使用codex的，因此我在设置页面点击账户绑定邮箱，却发现提示：出错了，请重试。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/Users/luxiuzh</summary>
+      
+    
+    
+    
+    
+    <category term="chatgpt" scheme="https://daoxuan.cc/tags/chatgpt/"/>
+    
+  </entry>
   
   <entry>
     <title>copilot网络问题解决方案</title>
