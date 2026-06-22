@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2026-06-17T06:41:47.461Z</updated>
+  <updated>2026-06-22T06:52:01.770Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://daoxuan.cc/posts/28864/"/>
     <id>https://daoxuan.cc/posts/28864/</id>
     <published>2026-06-17T03:25:44.000Z</published>
-    <updated>2026-06-17T06:41:47.461Z</updated>
+    <updated>2026-06-22T06:52:01.770Z</updated>
     
     <content type="html"><![CDATA[<p>发现日期：2026年6月17日</p><p>今天在购买印度成品plus账号的时候遇到了问题，不绑定邮箱，只用手机注册的账号是无法使用codex的，因此我在设置页面点击账户绑定邮箱，却发现提示：出错了，请重试。</p><p><img src="https://image.daoxuan.cc/2026/06/512a4baf35e8f06dbb56274b54330572.png" alt="image-20260617112037492"></p><p>我尝试了更换代理节点、使用无痕浏览器等方式都没有任何作用。</p><h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>在正常进行codex授权登录的时候，会出现输入账号密码之后让我们绑定邮箱的界面，在这个界面里面输入邮箱就可以正常发送电子邮件，并且正常绑定邮箱了。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>我个人认为这是openai的小bug，不知道什么时候就修复了。</p>]]></content>
     
@@ -36,7 +36,7 @@
     
     
     
-    <category term="chatgpt" scheme="https://daoxuan.cc/tags/chatgpt/"/>
+    <category term="ChatGPT" scheme="https://daoxuan.cc/tags/chatgpt/"/>
     
   </entry>
   
@@ -1575,7 +1575,7 @@
     <link href="https://daoxuan.cc/posts/24979/"/>
     <id>https://daoxuan.cc/posts/24979/</id>
     <published>2023-01-05T14:31:33.000Z</published>
-    <updated>2026-06-22T03:58:53.643Z</updated>
+    <updated>2026-06-22T04:02:08.675Z</updated>
     
     <content type="html"><![CDATA[<p>[TOC]</p><h1 id="PicGo-七牛云-Typora"><a href="#PicGo-七牛云-Typora" class="headerlink" title="PicGo + 七牛云 + Typora"></a>PicGo + 七牛云 + Typora</h1><h2 id="1-创建七牛云账号"><a href="#1-创建七牛云账号" class="headerlink" title="1. 创建七牛云账号"></a>1. 创建七牛云账号</h2><p><img src="https://picture.daoxuan.cc/image/202301301225888.webp" alt=""></p><p><a href="https://www.qiniu.com/">七牛云官网</a></p><h2 id="2-创建桶"><a href="#2-创建桶" class="headerlink" title="2. 创建桶"></a>2. 创建桶</h2><ul><li>注册完账号就可以</li><li>新建桶</li></ul><p><img src="https://picture.daoxuan.cc/image/202301301231308.webp" alt=""></p><ul><li><img src="https://picture.daoxuan.cc/image/202301301228587.webp" alt="202301111734207"></li></ul><blockquote><p>选择好离自己近一些的储存位置，把访问控制设置为公开。</p></blockquote><ul><li>点击设置的储存空间名称就可以看到七牛云临时提供的测试域名</li></ul><p><img src="https://image.daoxuan.cc/image/202301301229611.webp" alt=""></p><blockquote><p>这个域名暂时可以使用一个月，不过建议绑定自己的域名。</p></blockquote><ul><li>点击密钥管理，查看个人密钥</li></ul><p><img src="https://picture.daoxuan.cc/image/202301301230502.webp" alt="202301111734652"></p><h2 id="3-配置PicGo"><a href="#3-配置PicGo" class="headerlink" title="3. 配置PicGo"></a>3. 配置PicGo</h2><ol><li><a href="https://github.com/Molunerfinn/PicGo/releases">PicGo官方下载</a></li><li><p><a href="https://daoxuan.lanzout.com/inclq0k78pfg">PicGo快速下载链接</a></p></li><li><p><img src="https://picture.daoxuan.cc/image/202301301230805.webp" alt=""></p></li></ol><blockquote><p>AccessKey和SecretKey分别是刚才记录的个人密钥的AK和SK</p><p>Bucket填写创建的桶的名字</p><p>访问网址填写七牛云赠送的网址（个人有域名就填写自己的）</p><p>储存区域填写请访问该网址查看<a href="https://developer.qiniu.com/kodo/1671/region-endpoint-fq">存储区域<em>产品简介</em>对象存储 - 七牛开发者中心 (qiniu.com)</a></p></blockquote><ul><li>找到和自己的储存区域相对应的区域ID进行填写</li></ul><p>后两项可以不填</p><ul><li>进行完这些就可以上传图片检查一些是否成功</li></ul><h2 id="配置Typora"><a href="#配置Typora" class="headerlink" title="配置Typora"></a>配置Typora</h2><p><a href="https://daoxuan.lanzout.com/b041ndthi">Typora快速下载</a>密码:3u7c</p><p><img src="https://picture.daoxuan.cc/image/202301301230277.webp" alt="202301111734036"></p><blockquote><p>调节最下面的设置PIcGo路径为自己安装的路径，其他的按照图上自行配置。</p><p>再加上PicGo中快捷键的设置便可以快捷上传写博客了。</p></blockquote><p><img src="https://picture.daoxuan.cc/image/202301301230286.webp" alt=""></p><blockquote><p>记得在还要设置使用内置剪切板上传（在PicGo中）</p></blockquote>]]></content>
     
@@ -1704,7 +1704,7 @@
     <link href="https://daoxuan.cc/posts/24059/"/>
     <id>https://daoxuan.cc/posts/24059/</id>
     <published>2022-12-10T06:27:36.000Z</published>
-    <updated>2024-12-08T16:00:51.000Z</updated>
+    <updated>2026-06-22T06:52:01.770Z</updated>
     
     <content type="html"><![CDATA[<p>[TOC]</p><blockquote><p>首先注意，应使用Microsoft Edge浏览器或者谷歌浏览器，使用Firefox的话需要自己探索。</p></blockquote><h1 id="如何在浏览器中布置自己的ChatGPT"><a href="#如何在浏览器中布置自己的ChatGPT" class="headerlink" title="如何在浏览器中布置自己的ChatGPT"></a>如何在浏览器中布置自己的ChatGPT</h1><h2 id="1-首先打开浏览器扩展页面"><a href="#1-首先打开浏览器扩展页面" class="headerlink" title="1. 首先打开浏览器扩展页面"></a>1. 首先打开浏览器扩展页面</h2><ol><li>点击管理扩展</li></ol><p><img src="http://picture.daoxuan.cc/image/202301301242928.webp" alt=""></p><ol><li>点击开发者模式</li></ol><h2 id="2-下载扩展"><a href="#2-下载扩展" class="headerlink" title="2. 下载扩展"></a>2. 下载扩展</h2><p>通过以下方式自主选择下载</p><ol><li>github: <a href="https://github.com/josStorer/chat-gpt-search-engine-extension/releases/tag/v1.2.0">https://github.com/josStorer/chat-gpt-search-engine-extension/releases/tag/v1.2.0</a></li><li><a href="https://pan.baidu.com/s/1MnFJTDIatyIIPr5kUMWsAw?pwd=1111">https://pan.baidu.com/s/1MnFJTDIatyIIPr5kUMWsAw?pwd=1111</a><br>提取码：1111</li></ol><blockquote><p>注意：我们这里下载的版本如果是1.2.0则符合要求，如果是1.1.0的话只能在Google上使用。</p></blockquote><h2 id="3-安装扩展"><a href="#3-安装扩展" class="headerlink" title="3. 安装扩展"></a>3. 安装扩展</h2><ol><li>下载时候有提示，根据提示直接安装至浏览器（用浏览器自带的扩展商店）</li><li>如果直接下载的压缩包，无需解压，直接拖拽至这个界面，即可完成。</li></ol><blockquote><p>记得关闭开发者模式，更加安全。</p></blockquote><h2 id="最后看看效果"><a href="#最后看看效果" class="headerlink" title="最后看看效果"></a>最后看看效果</h2><p><img src="http://picture.daoxuan.cc/image/202301301242902.webp" alt=""></p>]]></content>
     
@@ -1721,7 +1721,7 @@
     
     
     
-    <category term="ChatGPT" scheme="https://daoxuan.cc/tags/ChatGPT/"/>
+    <category term="ChatGPT" scheme="https://daoxuan.cc/tags/chatgpt/"/>
     
   </entry>
   
