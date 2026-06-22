@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+const initAlgoliaSearch = () => {
     const $searchMask = document.getElementById("search-mask");
     const $searchDialog = document.querySelector("#algolia-search .search-dialog");
 
@@ -179,4 +179,10 @@ document.addEventListener("DOMContentLoaded", function () {
     search.on("render", () => {
         window.pjax.refresh(document.getElementById("algolia-hits"));
     });
-});
+};
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAlgoliaSearch, { once: true });
+} else {
+    initAlgoliaSearch();
+}

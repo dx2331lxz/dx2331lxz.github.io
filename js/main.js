@@ -171,6 +171,10 @@ const sco = {
     const $rmIcon = document.querySelector('#menu-music-toggle i');
 
     if (!$music) return;
+    if (isMeting && !$meting?.aplayer && window.loadCapsuleMusic) {
+      window.loadCapsuleMusic().then(() => this.musicToggle(true));
+      return;
+    }
 
     this.musicPlaying = !this.musicPlaying;
     $music.classList.toggle("playing", this.musicPlaying);
