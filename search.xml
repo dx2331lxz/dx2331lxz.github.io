@@ -3747,4 +3747,24 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
         <tag>English</tag>
       </tags>
   </entry>
+  <entry>
+    <title>YouMind AI 提示词库</title>
+    <url>/posts/11103/</url>
+    <content><![CDATA[<h2 id="YouMind-AI-提示词库"><a href="#YouMind-AI-提示词库" class="headerlink" title="YouMind AI 提示词库"></a>YouMind AI 提示词库</h2><blockquote>
+<p>全球最大的免费 AI 提示词库，覆盖图像、视频和网页提示词。持续追踪最新模型，每日上新。</p>
+</blockquote>
+<p>本来我是想要找一个学习AI生图提示词的网站，找到了这个宝藏提示词库：<a href="https://youmind.com/zh-CN/prompts">Youmind AI 提示词资料库</a></p>
+<p>这里的提示词不是给一个万能模板，我觉得没有所谓的银弹。万能模板只起到学习的作用。</p>
+<p>这个网站的提示词是由很多的案例构成的，并且案例里面还表明了可以自由替换的部分。比如：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">将上传的照片转换为逼真的世界杯球场球迷场景。将人物自然地置于大型国际赛事中座无虚席的足球场内，身处数千名球迷之中。该人物应身穿 &#123;argument name=&quot;country&quot; default=&quot;你所在国家&quot;&#125; 的国家队官方球衣，坐在或站在同样支持该国家的球迷中间。在保持人物面部特征、发型和可辨识特征的同时，营造出逼真的体育纪实摄影效果。捕捉世界杯现场比赛的兴奋感、情绪和氛围，展现真实的球场座位、人群、旗帜、围巾、球队配色以及比赛日的活力。主体应自然地融入人群，仿佛由专业体育摄影师在真实比赛中拍摄。运用逼真的光影、浅景深、自然的表情以及纪实风格的体育摄影手法。图像应具有真实感、电影质感、高度细节，且与在国际足球赛事中拍摄的真实照片无异。超逼真、专业摄影、真实的互动、地道的球迷文化、自然的衣物褶皱、逼真的球场环境、高细节、8k 画质。比例 4:5</span><br></pre></td></tr></table></figure>
+<p>这里的你所在的国家，就是可以进行替换的部分。</p>
+<p>因为是国外的网站，并且上传提示词的用户全球都有，因此你也可以找到很多成人化的提示词, 你可以选择放到grok里面加以修饰，哈哈。比如：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">主题：&#123;argument name=&quot;theme&quot; default=&quot;海边日落&quot;&#125;</span><br><span class="line"></span><br><span class="line">人物/表情：&#123;argument name=&quot;person&quot; default=&quot;20 多岁的女性&quot;&#125;。明亮的象牙米白色皮肤，质感细腻，肤色自然粉嫩。脸颊、鼻尖、肩膀和锁骨处有柔和的高光，保留了自然的皮肤纹理，没有过度修图。优雅的日系娃娃妆容，淡玫瑰粉色腮红，香槟米色与粉棕色眼影，长而纤细的睫毛，自然的卧蚕，浅棕色眉毛，半透明的粉米色唇彩。双眼中有清晰的小眼神光。温柔地微笑，直视镜头。</span><br><span class="line"></span><br><span class="line">服装/姿势：浅奶油米色露肩套装。上衣采用透明雪纺袖设计，胸前有精致的系带和细褶边，剪裁贴合身体自然线条。下装为配套的裹身式迷你裙，腰间有柔软的丝带系结。右手轻轻触碰耳边的头发，左手自然地放在木桌边缘。身体略微向画面左侧转动，仅上半身转向镜头。一条腿向前伸展，使坐姿重心自然，并产生接触感。</span><br><span class="line"></span><br><span class="line">背景/光影：日式海边咖啡馆的木质露台，让人联想到 &#123;argument name=&quot;location&quot; default=&quot;江之岛地区&quot;&#125;。左后方是日落和海面波光，远处有小型灯塔和海边城市景观。右后方是木质咖啡馆外观、温暖的灯笼、绿植和一块项目。桌上放着一杯透明塑料杯装的冰茶，配有黑色吸管、圆形咖啡馆标志，杯中映出冰块和柠檬的倒影。日落光线从左后方低角度射入，将发丝轮廓、肩膀、脸颊、锁骨以及玻璃上的水珠染成金色。阴影向右下方拉长，来自海面的柔和反射光微微提亮了皮肤和衣物上的阴影。</span><br><span class="line"></span><br><span class="line">构图/相机：竖构图，包含上半身至大腿的中景人像。主体位于画面中心偏右，面部靠近上方三分法构图线。桌子和手部位于左下角，背景留出充足的海景和日落空间。以略低于视角的角度自然拍摄，具有 35mm 等效焦距的轻微广角感。焦点清晰地落在面部和上半身，背景轻微虚化，但足以感知江之岛咖啡馆的氛围。</span><br><span class="line"></span><br><span class="line">质感/风格：写实的日式摄影风格。皮肤光滑但保留了毛孔和细微阴影，非塑料感。头发为明亮的奶茶灰棕色，带有轻薄的空气刘海，脸部周围有层次剪裁，长度中长至肩下。发梢向内自然卷曲，细致地表现出自然的束感、细腻的高光、柔和的光泽以及少许碎发。温暖的色调如同日落胶片照片，对比度柔和，带有细腻的颗粒感。</span><br><span class="line"></span><br><span class="line">负面提示：不自然的面部或目光、过度美颜、服装故障、多指或缺指、肢体融合、关节畸形、饮料或吸管扭曲、乱码文字、标志破损、透视不自然、阴影与光源不一致、背景过度扭曲、多余人物、水印。</span><br></pre></td></tr></table></figure>
+<p><img src="https://image.daoxuan.cc/2026/07/23c693956315a10ad33bfd48e47269a5.png" alt="https___cms-assets.youmind.com_media_1783241286668_nwktxf_HMSDJ_3aMAAplzR-900x900"></p>
+<p>也有生成视频的提示词，我觉得网站很不错，可以学习到很多东西。不过提示词只是网站的一部分功能，主打的是类似之前Manus这样的产品。不过我不是很需要就是了。</p>
+]]></content>
+      <tags>
+        <tag>AI</tag>
+      </tags>
+  </entry>
 </search>
