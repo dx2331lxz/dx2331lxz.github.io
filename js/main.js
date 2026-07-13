@@ -171,7 +171,7 @@ const sco = {
     if (isMeting && !$meting?.aplayer && window.loadCapsuleMusic) {
       if (!this.musicTogglePromise) {
         this.musicTogglePromise = window.loadCapsuleMusic()
-          .then(() => this.resetCapsuleMusicState())
+          .then(() => this.musicToggle(true))
           .catch(() => this.resetCapsuleMusicState())
           .finally(() => {
             this.musicTogglePromise = null;

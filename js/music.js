@@ -1,10 +1,12 @@
 class MusicPlayer {
   constructor() {
     this.storageKey = 'solitude-music-source';
-    this.playerTimeout = 20000;
+    this.playerTimeout = 15000;
     this.host = document.getElementById('Music-page');
+    this.sourcePanel = document.getElementById('Music-source-panel');
     this.switchElement = document.getElementById('Music-source-switch');
     this.statusElement = document.getElementById('Music-source-status');
+    this.helpElement = document.getElementById('Music-source-help');
     this.loadingElement = document.querySelector('.Music-loading');
     this.backgroundElement = document.getElementById('Music-bg');
     this.sourceButtons = [];
@@ -19,10 +21,12 @@ class MusicPlayer {
 
     this.handleKeydown = this.handleKeydown.bind(this);
     this.handleSourceClick = this.handleSourceClick.bind(this);
+    this.handlePanelClick = this.handlePanelClick.bind(this);
     this.handleLyricsClick = this.handleLyricsClick.bind(this);
     this.handleLoadedData = this.handleLoadedData.bind(this);
     this.handleTimeUpdate = this.lrcUpdate.bind(this);
     this.handlePjaxSend = this.destroy.bind(this);
+    this.handleViewportResize = this.updateViewportHeight.bind(this);
 
     this.init();
   }
@@ -31,33 +35,35 @@ class MusicPlayer {
     if (!this.host) return;
 
     window.pauseCapsuleMusic?.();
-    document.documentElement.style.setProperty('--vh', `${window.innerHeight}px`);
-    this.initialMeting = this.getMetingElement();
-    this.playerAttributes = this.getPlayerAttributes(this.initialMeting);
-    this.config = this.getMusicConfig(this.initialMeting);
+    this.updateViewportHeight();
+    this.config = this.getMusicConfig();
+    this.playerAttributes = this.getPlayerAttributes(this.config.player);
     this.sourceButtons = Array.from(document.querySelectorAll('#Music-source-switch [data-music-source]'));
-    this.currentSource = this.findElementSource(this.initialMeting) || this.config.defaultSource;
+    this.currentSource = this.config.defaultSource;
 
     document.addEventListener('keydown', this.handleKeydown);
     window.addEventListener('pjax:send', this.handlePjaxSend, { once: true });
+    window.addEventListener('resize', this.handleViewportResize, { passive: true });
+    window.visualViewport?.addEventListener('resize', this.handleViewportResize, { passive: true });
+    this.sourcePanel?.addEventListener('click', this.handlePanelClick);
     this.sourceButtons.forEach(button => button.addEventListener('click', this.handleSourceClick));
 
     const savedSource = this.getSavedSource();
-    const initialSource = savedSource || this.config.defaultSource;
+    const initialSource = savedSource || this.config.initialSource || this.config.defaultSource;
     this.loadSource(initialSource, {
-      existingElement: this.findElementSource(this.initialMeting) === initialSource ? this.initialMeting : null,
       previousSource: this.currentSource,
       isInitial: true
     });
   }
 
-  getMusicConfig(initialMeting) {
+  getMusicConfig() {
     const globalConfig = window.SOLITUDE_MUSIC_CONFIG || {};
     const sources = {};
 
     Object.entries(globalConfig.sources || {}).forEach(([key, source]) => {
       if (!source || source.id == null || !source.server || !source.type) return;
       sources[key] = {
+        ...source,
         label: source.label || key,
         server: String(source.server),
         type: String(source.type),
@@ -65,30 +71,33 @@ class MusicPlayer {
       };
     });
 
-    if (!Object.keys(sources).length && initialMeting) {
-      const key = globalConfig.defaultSource || initialMeting.getAttribute('server') || 'default';
-      sources[key] = {
-        label: initialMeting.getAttribute('server') || key,
-        server: initialMeting.getAttribute('server'),
-        type: initialMeting.getAttribute('type'),
-        id: initialMeting.getAttribute('id')
-      };
-    }
-
     const sourceKeys = Object.keys(sources);
     const defaultSource = sources[globalConfig.defaultSource]
       ? globalConfig.defaultSource
       : sourceKeys[0];
 
-    return { defaultSource, sources };
+    return {
+      api: globalConfig.api || window.meting_api,
+      cacheTtl: Number(globalConfig.cacheTtl) || 600000,
+      defaultSource,
+      initialSource: sources[globalConfig.initialSource] ? globalConfig.initialSource : defaultSource,
+      player: globalConfig.player || {},
+      sources,
+      reverse: globalConfig.reverse === true
+    };
   }
 
-  getPlayerAttributes(meting) {
-    if (!meting) return {};
-    return Array.from(meting.attributes).reduce((attributes, attribute) => {
-      attributes[attribute.name] = attribute.value;
+  getPlayerAttributes(playerConfig) {
+    return Object.entries(playerConfig || {}).reduce((attributes, [name, value]) => {
+      if (value == null) return attributes;
+      attributes[name] = String(value);
       return attributes;
     }, {});
+  }
+
+  updateViewportHeight() {
+    const height = window.visualViewport?.height || window.innerHeight;
+    document.documentElement.style.setProperty('--vh', `${height}px`);
   }
 
   getSavedSource() {
@@ -137,25 +146,56 @@ class MusicPlayer {
     this.loadSource(source, { previousSource: this.currentSource });
   }
 
+  handlePanelClick(event) {
+    event.stopPropagation();
+  }
+
   async loadSource(source, options = {}) {
     if (this.destroyed || !this.config.sources[source]) return;
 
     const previousSource = options.previousSource;
     const generation = ++this.generation;
+    let replacedPlayer = false;
     this.cancelPendingWait();
     this.setLoadingState(source);
+    this.getPageAPlayer()?.pause();
 
     try {
-      const meting = options.existingElement || this.replaceMetingElement(source);
-      const aplayer = await this.waitForAPlayer(meting, generation);
+      const playlist = await this.getPlaylist(source);
       if (this.destroyed || generation !== this.generation) return;
 
+      const meting = this.replaceMetingElement(source, playlist);
+      replacedPlayer = true;
+      const loadedPlayer = await this.waitForAPlayer(meting, generation);
+      if (this.destroyed || generation !== this.generation) return;
+
+      const aplayer = this.ensurePlaylistOrder(meting, loadedPlayer);
       this.activatePlayer(aplayer);
       this.commitSource(source, { persist: !options.isInitial });
     } catch (error) {
-      if (this.destroyed || generation !== this.generation || error.name === 'AbortError') return;
+      if (this.destroyed || generation !== this.generation) return;
 
       console.error(`[Music] Failed to load ${source}:`, error);
+      const currentMeting = this.getMetingElement();
+      const canKeepPreviousPlayer = !replacedPlayer
+        && previousSource
+        && this.findElementSource(currentMeting) === previousSource
+        && currentMeting?.aplayer;
+
+      if (canKeepPreviousPlayer) {
+        this.playerReady = true;
+        this.currentSource = previousSource;
+        this.setActiveState(previousSource);
+        this.updateSourceHelp(previousSource);
+        this.setStatus(
+          `${this.getSourceLabel(source)}加载失败，已保留${this.getSourceLabel(previousSource)}`,
+          'error'
+        );
+        this.markSourceError(source);
+        this.setLoadingVisible(false);
+        return;
+      }
+
       if (previousSource && previousSource !== source && this.config.sources[previousSource]) {
         await this.restoreSource(previousSource, source, generation);
       } else {
@@ -166,14 +206,19 @@ class MusicPlayer {
 
   async restoreSource(previousSource, failedSource, generation) {
     try {
-      const meting = this.replaceMetingElement(previousSource);
-      const aplayer = await this.waitForAPlayer(meting, generation);
+      const playlist = await this.getPlaylist(previousSource);
       if (this.destroyed || generation !== this.generation) return;
 
+      const meting = this.replaceMetingElement(previousSource, playlist);
+      const loadedPlayer = await this.waitForAPlayer(meting, generation);
+      if (this.destroyed || generation !== this.generation) return;
+
+      const aplayer = this.ensurePlaylistOrder(meting, loadedPlayer);
       this.activatePlayer(aplayer);
       this.currentSource = previousSource;
       this.saveSource(previousSource);
       this.setActiveState(previousSource);
+      this.updateSourceHelp(previousSource);
       this.setStatus(
         `${this.getSourceLabel(failedSource)}加载失败，已恢复${this.getSourceLabel(previousSource)}`,
         'error'
@@ -181,17 +226,26 @@ class MusicPlayer {
       this.markSourceError(failedSource);
       this.dispatchSourceChange(previousSource);
     } catch (restoreError) {
-      if (this.destroyed || generation !== this.generation || restoreError.name === 'AbortError') return;
+      if (this.destroyed || generation !== this.generation) return;
       console.error(`[Music] Failed to restore ${previousSource}:`, restoreError);
       this.showLoadFailure(failedSource, restoreError, previousSource);
     }
   }
 
-  replaceMetingElement(source) {
+  getPlaylist(source) {
+    const sourceConfig = this.config.sources[source];
+    if (!sourceConfig || typeof window.utils?.getMusicPlaylist !== 'function') {
+      return Promise.reject(new Error('Music playlist loader is unavailable'));
+    }
+    return window.utils.getMusicPlaylist(this.config.api, sourceConfig, this.config.cacheTtl);
+  }
+
+  replaceMetingElement(source, playlist) {
     const sourceConfig = this.config.sources[source];
     const oldMeting = this.getMetingElement();
     this.detachPlayerListeners();
     this.playerReady = false;
+    this.parkSourcePanel();
     this.retireMetingElement(oldMeting);
 
     const meting = document.createElement('meting-js');
@@ -199,9 +253,69 @@ class MusicPlayer {
     meting.setAttribute('server', sourceConfig.server);
     meting.setAttribute('type', sourceConfig.type);
     meting.setAttribute('id', sourceConfig.id);
+    meting.dataset.musicSource = source;
+    this.configurePlaylistLoader(meting, sourceConfig, playlist);
+    this.configurePlaylistOrder(meting);
     this.host.replaceChildren(meting);
     this.resetPlayerVisuals();
     return meting;
+  }
+
+  configurePlaylistLoader(meting, sourceConfig, prefetchedPlaylist) {
+    if (!meting) return;
+
+    meting._parse = () => {
+      const request = Array.isArray(prefetchedPlaylist)
+        ? Promise.resolve(prefetchedPlaylist.map(track => ({ ...track })))
+        : window.utils.getMusicPlaylist(this.config.api, sourceConfig, this.config.cacheTtl);
+
+      meting._solitudePlaylistError = null;
+      meting._solitudePlaylistPromise = request;
+      return request
+        .then(playlist => {
+          if (!meting.isConnected || meting.lock) return;
+          meting._loadPlayer(playlist);
+        })
+        .catch(error => {
+          meting._solitudePlaylistError = error;
+          console.error('[Music] Playlist request failed:', error);
+        });
+    };
+  }
+
+  configurePlaylistOrder(meting) {
+    if (!this.config.reverse || !meting || meting._solitudeReverseConfigured || typeof meting._loadPlayer !== 'function') return;
+
+    meting._solitudeReverseConfigured = true;
+    const loadPlayer = meting._loadPlayer.bind(meting);
+    meting._loadPlayer = audios => {
+      const orderedAudios = Array.isArray(audios) ? [...audios].reverse() : audios;
+      meting._solitudeReverseApplied = true;
+      loadPlayer(orderedAudios);
+    };
+  }
+
+  ensurePlaylistOrder(meting, aplayer) {
+    if (!this.config.reverse || meting?._solitudeReverseApplied) return aplayer;
+
+    const audios = aplayer?.list?.audios;
+    if (!Array.isArray(audios) || audios.length < 2 || typeof window.APlayer !== 'function') {
+      if (meting) meting._solitudeReverseApplied = true;
+      return aplayer;
+    }
+
+    const options = {
+      ...aplayer.options,
+      container: aplayer.container,
+      audio: [...audios].reverse(),
+      autoplay: false
+    };
+
+    this.destroyAPlayer(aplayer);
+    const orderedPlayer = new window.APlayer(options);
+    meting.aplayer = orderedPlayer;
+    meting._solitudeReverseApplied = true;
+    return orderedPlayer;
   }
 
   waitForAPlayer(meting, generation) {
@@ -227,6 +341,11 @@ class MusicPlayer {
 
         if (!meting.isConnected) {
           finish(reject, new Error('Music player element was removed before initialization'));
+          return;
+        }
+
+        if (meting._solitudePlaylistError) {
+          finish(reject, meting._solitudePlaylistError);
           return;
         }
 
@@ -261,6 +380,7 @@ class MusicPlayer {
 
     this.lyricElement = this.host.querySelector('.aplayer-lrc');
     this.lyricElement?.addEventListener('click', this.handleLyricsClick);
+    this.mountSourcePanel();
     this.setLoadingVisible(false);
 
     if (this.backgroundElement) {
@@ -273,6 +393,7 @@ class MusicPlayer {
     this.currentSource = source;
     if (persist) this.saveSource(source);
     this.setActiveState(source);
+    this.updateSourceHelp(source);
     this.setStatus(`当前音源：${this.getSourceLabel(source)}`, 'ready');
     this.dispatchSourceChange(source);
   }
@@ -286,6 +407,7 @@ class MusicPlayer {
   setLoadingState(source) {
     const label = this.getSourceLabel(source);
     this.switchElement?.setAttribute('aria-busy', 'true');
+    this.updateSourceHelp(source);
     this.sourceButtons.forEach(button => {
       const isLoading = button.dataset.musicSource === source;
       button.disabled = true;
@@ -294,7 +416,7 @@ class MusicPlayer {
       button.removeAttribute('aria-invalid');
     });
     this.setStatus(`正在加载${label}…`, 'loading');
-    this.setLoadingVisible(true);
+    this.setLoadingVisible(!this.playerReady);
   }
 
   setActiveState(source) {
@@ -328,6 +450,7 @@ class MusicPlayer {
     this.markSourceError(source);
     const restoreMessage = restoreSource ? `，${this.getSourceLabel(restoreSource)}也无法恢复` : '，请稍后重试';
     this.setStatus(`${this.getSourceLabel(source)}加载失败${restoreMessage}`, 'error');
+    this.showFallbackPanel();
     this.setLoadingVisible(false);
     this.resetPlayerVisuals();
   }
@@ -337,6 +460,36 @@ class MusicPlayer {
     this.statusElement.textContent = message;
     this.statusElement.classList.toggle('is-loading', state === 'loading');
     this.statusElement.classList.toggle('is-error', state === 'error');
+    this.statusElement.classList.toggle('is-ready', state === 'ready');
+    this.sourcePanel?.classList.toggle('is-loading', state === 'loading');
+    this.sourcePanel?.classList.toggle('is-error', state === 'error');
+    this.sourcePanel?.classList.toggle('is-ready', state === 'ready');
+  }
+
+  updateSourceHelp(source) {
+    if (!this.helpElement) return;
+    const showHelp = this.config.sources[source]?.server === 'tencent';
+    this.helpElement.hidden = !showHelp;
+    this.sourcePanel?.classList.toggle('has-help', showHelp);
+  }
+
+  parkSourcePanel() {
+    if (!this.sourcePanel) return;
+    this.sourcePanel.remove();
+    this.sourcePanel.classList.add('is-staging');
+  }
+
+  mountSourcePanel() {
+    const playlist = this.host?.querySelector('.aplayer-list');
+    if (!playlist || !this.sourcePanel) return;
+    this.sourcePanel.classList.remove('is-staging');
+    playlist.prepend(this.sourcePanel);
+  }
+
+  showFallbackPanel() {
+    if (!this.host || !this.sourcePanel) return;
+    this.sourcePanel.classList.add('is-staging');
+    this.host.before(this.sourcePanel);
   }
 
   setLoadingVisible(visible) {
@@ -443,6 +596,7 @@ class MusicPlayer {
 
   retireMetingElement(meting) {
     if (!meting) return;
+    if (this.sourcePanel && meting.contains(this.sourcePanel)) this.parkSourcePanel();
     // MetingJS 2.0.1 assumes APlayer exists on detach and can finish a stale fetch later.
     meting.lock = true;
     meting._loadPlayer = () => {};
@@ -484,11 +638,15 @@ class MusicPlayer {
     this.cancelPendingWait();
     document.removeEventListener('keydown', this.handleKeydown);
     window.removeEventListener('pjax:send', this.handlePjaxSend);
+    window.removeEventListener('resize', this.handleViewportResize);
+    window.visualViewport?.removeEventListener('resize', this.handleViewportResize);
+    this.sourcePanel?.removeEventListener('click', this.handlePanelClick);
     this.sourceButtons.forEach(button => button.removeEventListener('click', this.handleSourceClick));
     this.detachPlayerListeners();
     this.playerReady = false;
     const meting = this.getMetingElement();
     if (meting) {
+      if (this.sourcePanel && meting.contains(this.sourcePanel)) this.parkSourcePanel();
       meting.lock = true;
       meting._loadPlayer = () => {};
       if (meting.isConnected) this.destroyAPlayer(meting.aplayer);
