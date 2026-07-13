@@ -117,9 +117,10 @@ window.oncontextmenu = (ele) => {
     const link = ele.target.href;
     const src = ele.target.currentSrc;
     const tagName = ele.target.tagName.toLowerCase();
-    const cls = ele.target.className.toLowerCase();
+    const cls = typeof ele.target.className === "string" ? ele.target.className.toLowerCase() : "";
+    const isCapsuleMusic = Boolean(ele.target.closest?.("#nav-music .aplayer"));
 
-    const display = !!(selectTextNow && window.getSelection()) || !!link || !!src || (tagName === "input" || tagName === "textarea") || cls.match(/aplayer/);
+    const display = !!(selectTextNow && window.getSelection()) || !!link || !!src || (tagName === "input" || tagName === "textarea") || cls.match(/aplayer/) || isCapsuleMusic;
 
     rm.menuItems.copy.style.display = selectTextNow && window.getSelection() ? "flex" : "none";
     GLOBAL_CONFIG.comment && (rm.menuItems.comment.style.display = selectTextNow && window.getSelection() ? "flex" : "none");
@@ -136,7 +137,7 @@ window.oncontextmenu = (ele) => {
     rm.menuItems.paste.style.display = (tagName === "input" || tagName === "textarea") ? "flex" : "none";
 
     if (GLOBAL_CONFIG.right_menu.music) {
-        if (cls.match(/aplayer/)) {
+        if (isCapsuleMusic) {
             rm.menuItems.music.forEach(item => item.style.display = "flex");
         } else {
             rm.menuItems.music.forEach(item => item.style.display = "none");
@@ -168,16 +169,17 @@ window.oncontextmenu = (ele) => {
             rm.hideRightMenu();
         });
         addEventListener(rm.menuItems.music[1], "click", () => {
-            document.querySelector("meting-js").aplayer.skipBack();
+            document.querySelector("#nav-music meting-js")?.aplayer?.skipBack();
             rm.hideRightMenu();
         });
         addEventListener(rm.menuItems.music[2], "click", () => {
-            document.querySelector("meting-js").aplayer.skipForward();
+            document.querySelector("#nav-music meting-js")?.aplayer?.skipForward();
             rm.hideRightMenu();
         });
         addEventListener(rm.menuItems.music[3], "click", () => {
-            const title = Array.from(document.querySelectorAll(".aplayer-title")).map(e => e.innerText)[0];
-            rm.copyText(title);
+            const title = document.querySelector("#nav-music .aplayer-title")?.innerText;
+            if (title) rm.copyText(title);
+            else rm.hideRightMenu();
         });
     }
 

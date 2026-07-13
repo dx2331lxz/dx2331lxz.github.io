@@ -161,29 +161,34 @@ const sco = {
     }
   },
   musicToggle(isMeting = true) {
-    if (!this.isMusicBind) {
-      this.musicBind();
-    }
     const $music = document.querySelector('#nav-music');
-    const $meting = document.querySelector('meting-js');
+    const $meting = document.querySelector('#nav-music meting-js');
     const $console = document.getElementById('consoleMusic');
     const $rmText = document.querySelector('#menu-music-toggle span');
     const $rmIcon = document.querySelector('#menu-music-toggle i');
 
     if (!$music) return;
     if (isMeting && !$meting?.aplayer && window.loadCapsuleMusic) {
-      window.loadCapsuleMusic().then(() => this.musicToggle(true));
-      return;
+      if (!this.musicTogglePromise) {
+        this.musicTogglePromise = window.loadCapsuleMusic()
+          .then(() => this.resetCapsuleMusicState())
+          .catch(() => this.resetCapsuleMusicState())
+          .finally(() => {
+            this.musicTogglePromise = null;
+          });
+      }
+      return this.musicTogglePromise;
     }
+    if (!this.isMusicBind) this.musicBind();
 
     this.musicPlaying = !this.musicPlaying;
     $music.classList.toggle("playing", this.musicPlaying);
     $music.classList.toggle("stretch", this.musicPlaying);
     $console?.classList.toggle("on", this.musicPlaying);
 
-    if (typeof rm !== 'undefined' && rm?.menuItems.music[0]) {
-      $rmText.textContent = this.musicPlaying ? GLOBAL_CONFIG.right_menu.music.stop : GLOBAL_CONFIG.right_menu.music.start;
-      $rmIcon.className = this.musicPlaying ? 'solitude fas fa-pause' : 'solitude fas fa-play';
+    if (typeof rm !== 'undefined' && rm?.menuItems?.music?.[0]) {
+      if ($rmText) $rmText.textContent = this.musicPlaying ? GLOBAL_CONFIG.right_menu.music.stop : GLOBAL_CONFIG.right_menu.music.start;
+      if ($rmIcon) $rmIcon.className = this.musicPlaying ? 'solitude fas fa-pause' : 'solitude fas fa-play';
     }
 
     if (isMeting && $meting?.aplayer) {
@@ -195,6 +200,11 @@ const sco = {
     const $name = document.querySelector('#nav-music .aplayer-music');
     const $button = document.querySelector('#nav-music .aplayer-button');
 
+    if (!$music || !$name || !$button) {
+      this.isMusicBind = false;
+      return;
+    }
+
     $name?.addEventListener('click', () => {
       $music.classList.toggle("stretch");
     });
@@ -204,6 +214,17 @@ const sco = {
     });
 
     this.isMusicBind = true;
+  },
+  resetCapsuleMusicState(preserveBinding = false) {
+    this.musicPlaying = false;
+    if (!preserveBinding) this.isMusicBind = false;
+    document.getElementById('nav-music')?.classList.remove('playing', 'stretch');
+    document.getElementById('consoleMusic')?.classList.remove('on');
+
+    const $rmText = document.querySelector('#menu-music-toggle span');
+    const $rmIcon = document.querySelector('#menu-music-toggle i');
+    if ($rmText && GLOBAL_CONFIG.right_menu?.music) $rmText.textContent = GLOBAL_CONFIG.right_menu.music.start;
+    if ($rmIcon) $rmIcon.className = 'solitude fas fa-play';
   },
   switchCommentBarrage() {
     const commentBarrageElement = document.querySelector(".comment-barrage");
@@ -766,7 +787,7 @@ window.refreshFn = () => {
   if (covercolor.enable) coverColor();
   if (PAGE_CONFIG.toc) toc.init();
   if (lure) tabs.lureAddListener();
-  page === 'music' && initializeMusicPlayer();
+  page === 'music' && typeof initializeMusicPlayer === 'function' && initializeMusicPlayer();
   forPostFn();
 };
 
