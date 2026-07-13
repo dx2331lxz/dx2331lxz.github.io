@@ -75,6 +75,10 @@ class MusicPlayer {
     const defaultSource = sources[globalConfig.defaultSource]
       ? globalConfig.defaultSource
       : sourceKeys[0];
+    const fallbackConfig = globalConfig.fallback || {};
+    const fallbackSource = sources[fallbackConfig.source]
+      ? fallbackConfig.source
+      : sourceKeys.find(key => sources[key].server === 'netease');
 
     return {
       api: globalConfig.api || window.meting_api,
@@ -83,7 +87,13 @@ class MusicPlayer {
       initialSource: sources[globalConfig.initialSource] ? globalConfig.initialSource : defaultSource,
       player: globalConfig.player || {},
       sources,
-      reverse: globalConfig.reverse === true
+      reverse: globalConfig.reverse === true,
+      fallback: {
+        enable: fallbackConfig.enable === true && Boolean(fallbackSource),
+        source: fallbackSource,
+        positiveTtl: Number(fallbackConfig.positiveTtl || fallbackConfig.positive_ttl) || 604800000,
+        negativeTtl: Number(fallbackConfig.negativeTtl || fallbackConfig.negative_ttl) || 86400000
+      }
     };
   }
 
@@ -377,6 +387,7 @@ class MusicPlayer {
     aplayer.pause();
     aplayer.on('loadeddata', this.handleLoadedData);
     aplayer.on('timeupdate', this.handleTimeUpdate);
+    this.attachMusicFallback(aplayer);
 
     this.lyricElement = this.host.querySelector('.aplayer-lrc');
     this.lyricElement?.addEventListener('click', this.handleLyricsClick);
@@ -387,6 +398,51 @@ class MusicPlayer {
       this.backgroundElement.style.display = 'block';
       this.updateBackgroundImage(this.backgroundElement);
     }
+  }
+
+  attachMusicFallback(aplayer) {
+    const fallback = this.config.fallback;
+    const activeSourceKey = this.findElementSource(this.getMetingElement());
+    const activeSource = this.config.sources[activeSourceKey];
+    const fallbackSource = this.config.sources[fallback.source];
+    if (!fallback.enable || typeof window.utils?.attachMusicFallback !== 'function') return;
+
+    window.utils.attachMusicFallback(aplayer, {
+      api: this.config.api,
+      activeSource,
+      fallbackSource,
+      positiveTtl: fallback.positiveTtl,
+      negativeTtl: fallback.negativeTtl,
+      isActive: player => !this.destroyed && this.getPageAPlayer() === player,
+      onStatus: detail => this.handleFallbackStatus(detail)
+    });
+  }
+
+  handleFallbackStatus({ state, track }) {
+    if (this.destroyed) return;
+    const title = track?.name || track?.title || '当前歌曲';
+
+    if (state === 'resolving') {
+      this.setStatus(`《${title}》的 QQ 音源不可用，正在匹配网易云…`, 'loading');
+      return;
+    }
+
+    if (state === 'resolved') {
+      this.setStatus(`《${title}》已切换至网易云音源`, 'ready');
+      window.utils?.snackbarShow?.(`《${title}》已切换至网易云音源`, false, 3000);
+      return;
+    }
+
+    const message = state === 'fallback-error'
+      ? `《${title}》的网易云替代音源也无法播放，已自动跳过`
+      : `《${title}》暂无可用的网易云替代音源，已自动跳过`;
+    this.setStatus(message, 'error');
+    window.utils?.snackbarShow?.(message, false, 3500);
+    this.setTrackedTimeout(() => {
+      if (this.destroyed) return;
+      const currentSource = this.currentSource;
+      this.setStatus(`当前音源：${this.getSourceLabel(currentSource)}`, 'ready');
+    }, 4000);
   }
 
   commitSource(source, { persist = true } = {}) {
