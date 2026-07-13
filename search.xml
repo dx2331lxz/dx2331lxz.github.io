@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Beego启动！！！</title>
-    <url>/posts/3200/</url>
-    <content><![CDATA[<h1 id="beego启动！！！"><a href="#beego启动！！！" class="headerlink" title="beego启动！！！"></a>beego启动！！！</h1><h2 id="Beego核心包"><a href="#Beego核心包" class="headerlink" title="Beego核心包"></a>Beego核心包</h2><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">go</span> get -u github.com/beego/beego/v2</span><br></pre></td></tr></table></figure>
-<h2 id="bee工具"><a href="#bee工具" class="headerlink" title="bee工具"></a>bee工具</h2><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">go</span> install github.com/beego/bee/v2@latest</span><br></pre></td></tr></table></figure>
-<h2 id="把-GOPATH-bin-添加到环境变量中"><a href="#把-GOPATH-bin-添加到环境变量中" class="headerlink" title="把 $GOPATH/bin 添加到环境变量中"></a>把 <code>$GOPATH/bin</code> 添加到环境变量中</h2><p>mac：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vim ~/.zshrc</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:$GOPATH/bin</span><br></pre></td></tr></table></figure>
-<h2 id="使用bee创建项目"><a href="#使用bee创建项目" class="headerlink" title="使用bee创建项目"></a>使用bee创建项目</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bee new [项目名称]</span><br></pre></td></tr></table></figure>
-<h2 id="运行项目"><a href="#运行项目" class="headerlink" title="运行项目"></a>运行项目</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bee run</span><br></pre></td></tr></table></figure>
-<h2 id="app-conf"><a href="#app-conf" class="headerlink" title="app.conf"></a>app.conf</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">appname = beego</span><br><span class="line">httpport = 8080</span><br><span class="line">runmode = dev</span><br><span class="line"></span><br><span class="line"># 处理JSON请求参数</span><br><span class="line">copyrequestbody = true</span><br><span class="line"></span><br><span class="line"># 禁止自动渲染模板</span><br><span class="line">autorender = false</span><br><span class="line">#包含MySQL配置文件</span><br><span class="line">include &quot;mysql.conf&quot;</span><br><span class="line"></span><br><span class="line">sessionon = true # 开启session</span><br><span class="line">sessionname = &quot;beegosessionID&quot; # beegosessionID</span><br><span class="line">sessiongcmaxlifetime = 3600 # session过期时间</span><br><span class="line">SessionCookieLifeTime = 3600 # session id 的过期时间，因为其保存在cookie中</span><br></pre></td></tr></table></figure>
-]]></content>
-      <tags>
-        <tag>Beego</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’</title>
     <url>/posts/371/</url>
     <content><![CDATA[<h1 id="C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’"><a href="#C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’" class="headerlink" title="C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’"></a>C语言关于动态创建数组的问题，以及如何传递‘以变量定义长宽的二维数组’</h1><h2 id="C语言关于动态创建数组的问题"><a href="#C语言关于动态创建数组的问题" class="headerlink" title="C语言关于动态创建数组的问题"></a>C语言关于动态创建数组的问题</h2><p>C语言的数组设置完应该进行初始化，不然会出现补不可预测的bug</p>
@@ -92,21 +76,6 @@
       </categories>
       <tags>
         <tag>c语言</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>C语言读入多个字符串（不含空格）的方法</title>
-    <url>/posts/54468/</url>
-    <content><![CDATA[<h1 id="C语言读入多个字符串（不含空格）的方法"><a href="#C语言读入多个字符串（不含空格）的方法" class="headerlink" title="C语言读入多个字符串（不含空格）的方法"></a>C语言读入多个字符串（不含空格）的方法</h1><p>方法一：定义二维字符串数组</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//方法一：直接定义字符串数组</span><br><span class="line"></span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    int len = 100;//len是每个字符串最大的长度</span><br><span class="line">    //输入字符串的个数</span><br><span class="line">    int n;</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;n);</span><br><span class="line">    //定义字符串数组</span><br><span class="line">    char p[n][len];</span><br><span class="line">    //读入字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">    	scanf(&quot;%s&quot;, &amp;p[i][0]);</span><br><span class="line">    &#125;</span><br><span class="line">    //输出字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        printf(&quot;%s \n&quot;, &amp;p[i][0]);</span><br><span class="line">    &#125;   </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>方法二：定义字符串指针数组</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*方法二：定义字符串指针数组，即数组中的指针指向字符串，</span><br><span class="line">并需要给数组中的每个指针分配动态内存*/</span><br><span class="line"></span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">#include&lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    int len = 100;//len是每个字符串最大的长度</span><br><span class="line">    //输入字符串的个数,</span><br><span class="line">    int n;</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;n);</span><br><span class="line">    //定义字符串指针数组，并给每个指针分配动态内存</span><br><span class="line">    char *p[n];</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        p[i] = (char*)malloc(len * sizeof(char));</span><br><span class="line">    &#125;</span><br><span class="line">    //读入字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        scanf(&quot;%s&quot;, p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    //输出字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        printf(&quot;%s \n&quot;, p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    //释放内存</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        free(p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>C语言</category>
-      </categories>
-      <tags>
-        <tag>C语言</tag>
       </tags>
   </entry>
   <entry>
@@ -298,6 +267,37 @@
       </tags>
   </entry>
   <entry>
+    <title>C语言读入多个字符串（不含空格）的方法</title>
+    <url>/posts/54468/</url>
+    <content><![CDATA[<h1 id="C语言读入多个字符串（不含空格）的方法"><a href="#C语言读入多个字符串（不含空格）的方法" class="headerlink" title="C语言读入多个字符串（不含空格）的方法"></a>C语言读入多个字符串（不含空格）的方法</h1><p>方法一：定义二维字符串数组</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//方法一：直接定义字符串数组</span><br><span class="line"></span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    int len = 100;//len是每个字符串最大的长度</span><br><span class="line">    //输入字符串的个数</span><br><span class="line">    int n;</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;n);</span><br><span class="line">    //定义字符串数组</span><br><span class="line">    char p[n][len];</span><br><span class="line">    //读入字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">    	scanf(&quot;%s&quot;, &amp;p[i][0]);</span><br><span class="line">    &#125;</span><br><span class="line">    //输出字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        printf(&quot;%s \n&quot;, &amp;p[i][0]);</span><br><span class="line">    &#125;   </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>方法二：定义字符串指针数组</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*方法二：定义字符串指针数组，即数组中的指针指向字符串，</span><br><span class="line">并需要给数组中的每个指针分配动态内存*/</span><br><span class="line"></span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">#include&lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    int len = 100;//len是每个字符串最大的长度</span><br><span class="line">    //输入字符串的个数,</span><br><span class="line">    int n;</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;n);</span><br><span class="line">    //定义字符串指针数组，并给每个指针分配动态内存</span><br><span class="line">    char *p[n];</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        p[i] = (char*)malloc(len * sizeof(char));</span><br><span class="line">    &#125;</span><br><span class="line">    //读入字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        scanf(&quot;%s&quot;, p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    //输出字符串数组</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        printf(&quot;%s \n&quot;, p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    //释放内存</span><br><span class="line">    for(int i = 0; i &lt; n; i++)&#123;</span><br><span class="line">        free(p[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>C语言</category>
+      </categories>
+      <tags>
+        <tag>C语言</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Beego启动！！！</title>
+    <url>/posts/3200/</url>
+    <content><![CDATA[<h1 id="beego启动！！！"><a href="#beego启动！！！" class="headerlink" title="beego启动！！！"></a>beego启动！！！</h1><h2 id="Beego核心包"><a href="#Beego核心包" class="headerlink" title="Beego核心包"></a>Beego核心包</h2><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">go</span> get -u github.com/beego/beego/v2</span><br></pre></td></tr></table></figure>
+<h2 id="bee工具"><a href="#bee工具" class="headerlink" title="bee工具"></a>bee工具</h2><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">go</span> install github.com/beego/bee/v2@latest</span><br></pre></td></tr></table></figure>
+<h2 id="把-GOPATH-bin-添加到环境变量中"><a href="#把-GOPATH-bin-添加到环境变量中" class="headerlink" title="把 $GOPATH/bin 添加到环境变量中"></a>把 <code>$GOPATH/bin</code> 添加到环境变量中</h2><p>mac：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vim ~/.zshrc</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:$GOPATH/bin</span><br></pre></td></tr></table></figure>
+<h2 id="使用bee创建项目"><a href="#使用bee创建项目" class="headerlink" title="使用bee创建项目"></a>使用bee创建项目</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bee new [项目名称]</span><br></pre></td></tr></table></figure>
+<h2 id="运行项目"><a href="#运行项目" class="headerlink" title="运行项目"></a>运行项目</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bee run</span><br></pre></td></tr></table></figure>
+<h2 id="app-conf"><a href="#app-conf" class="headerlink" title="app.conf"></a>app.conf</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">appname = beego</span><br><span class="line">httpport = 8080</span><br><span class="line">runmode = dev</span><br><span class="line"></span><br><span class="line"># 处理JSON请求参数</span><br><span class="line">copyrequestbody = true</span><br><span class="line"></span><br><span class="line"># 禁止自动渲染模板</span><br><span class="line">autorender = false</span><br><span class="line">#包含MySQL配置文件</span><br><span class="line">include &quot;mysql.conf&quot;</span><br><span class="line"></span><br><span class="line">sessionon = true # 开启session</span><br><span class="line">sessionname = &quot;beegosessionID&quot; # beegosessionID</span><br><span class="line">sessiongcmaxlifetime = 3600 # session过期时间</span><br><span class="line">SessionCookieLifeTime = 3600 # session id 的过期时间，因为其保存在cookie中</span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>Beego</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Django simpleui后台页面的自定义方法</title>
     <url>/posts/53297/</url>
     <content><![CDATA[<div class="tip cogs"><p>书写前言</p>
@@ -378,6 +378,62 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
       </tags>
   </entry>
   <entry>
+    <title>NAT的四种类型</title>
+    <url>/posts/58955/</url>
+    <content><![CDATA[<h1 id="NAT的四种类型"><a href="#NAT的四种类型" class="headerlink" title="NAT的四种类型"></a>NAT的四种类型</h1><p>参考文章：</p>
+<p><a href="https://blog.csdn.net/s2603898260/article/details/11875547">NAT的四种分类：全锥形NAT,地址受限锥形NAT,端口受限锥形NAT,对称NAT</a></p>
+<h2 id="Full-cone-NAT（全锥形NAT）"><a href="#Full-cone-NAT（全锥形NAT）" class="headerlink" title="Full cone NAT（全锥形NAT）"></a>Full cone NAT（全锥形NAT）</h2><blockquote>
+<p><strong>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到同一个外网（IP，端口），且任何一个外网主机都可以通过访问映射后的公网地址，实现访问位于内网的主机设备功能。</strong></p>
+<p>外网主机可以主动连接内网主机。</p>
+</blockquote>
+<p><img src="https://image.daoxuan.cc/2025/08/1adccc807281c0afa142ce634a3c7a35.png" alt=""></p>
+<h2 id="Restricted-Cone-NAT（地址受限锥形NAT）"><a href="#Restricted-Cone-NAT（地址受限锥形NAT）" class="headerlink" title="Restricted Cone NAT（地址受限锥形NAT）"></a>Restricted Cone NAT（地址受限锥形NAT）</h2><blockquote>
+<p>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到通过一个外网（IP，端口），但与全锥形不同点在于：生成的映射表项与目的IP有关，只有符合要求的目的IP(要访问的公网服务器IP)才可以通讯。此NAT还有个特点：不能主动连接内网中的主机地址，连接必须由内网地址发起。</p>
+<p>限制比全锥形NAT多了：IP地址限制。</p>
+</blockquote>
+<p>此类型NAT除了与源IP和源端口相关外，还与目的IP有关，只有内网主机主动连接的公网IP才可以与内网中的主机通讯。</p>
+<p><img src="https://image.daoxuan.cc/2025/08/8ae88aeed2b1916a9f759ab9aa812877.png" alt="在这里插入图片描述"></p>
+<h2 id="Port-Restricted-Cone-NAT（端口受限锥形NAT）"><a href="#Port-Restricted-Cone-NAT（端口受限锥形NAT）" class="headerlink" title="Port Restricted Cone NAT（端口受限锥形NAT）"></a>Port Restricted Cone NAT（端口受限锥形NAT）</h2><blockquote>
+<p>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到通过一个外网（IP，端口），但是在地址受限锥形NAT基础上增加了端口的限制。</p>
+<p>地址受限锥形NAT时，只有内网主机主动连接的公网主机才可与之进行通讯，而不用担心端口号是否与请求的端口相同。</p>
+<p>但是端口受限锥形NAT除了IP限制外，增加了端口限制。意思是说：除了之前主动连接了主机的（IP，port1,）可以通讯，其他的（IP，port2）等都不可以与之通讯。此NAT映射与报文的三元组绑定</p>
+</blockquote>
+<p><img src="https://image.daoxuan.cc/2025/08/8543bc0f2da38172dac22217358ad06d.jpeg" alt="在这里插入图片描述"></p>
+<h2 id="Symetric-NAT（对称NAT）"><a href="#Symetric-NAT（对称NAT）" class="headerlink" title="Symetric NAT（对称NAT）"></a>Symetric NAT（对称NAT）</h2><blockquote>
+<p>所有从同一个内网（IP，端口）发送到同一个目的IP和端口的请求都会被映射到同一个IP和端口。换句话说（SIP，Sport, DIP, Dport）只要有一个发生变化都会使用不同的映射条目，即此NAT映射与报文四元组绑定。</p>
+</blockquote>
+<ul>
+<li>SIP: Source IP，源IP地址</li>
+<li>Sport: Source Port，源端口</li>
+<li>DIP: Destination IP，目的IP地址</li>
+<li>Dport: Destination Port，目的端口</li>
+</ul>
+<p><img src="https://image.daoxuan.cc/2025/08/5894c4f46833a9bd0e1c80fb1c1abb32.png" alt="在这里插入图片描述"></p>
+<p><strong>“流量过滤的过程依赖 <code>conntrack</code> 维护的连接状态记录，但实际的过滤行为是由iptables/nftables规则或内核NAT模块根据这些状态执行的。”</strong></p>
+<h4 id="具体流程示例"><a href="#具体流程示例" class="headerlink" title="具体流程示例"></a><strong>具体流程示例</strong></h4><ol>
+<li><strong>内网主机</strong> <code>192.168.1.100</code> 访问 <code>8.8.8.8:80</code>，<code>conntrack</code> 记录状态为 <code>NEW</code>。</li>
+<li><strong>iptables的NAT规则</strong> 在 <code>POSTROUTING</code> 链修改源IP为 <code>1.2.3.4:60000</code>，并更新 <code>conntrack</code>。</li>
+<li><strong>返回包</strong> <code>8.8.8.8:80 → 1.2.3.4:60000</code> 到达时：<ul>
+<li>内核查询 <code>conntrack</code>，发现匹配 <code>ESTABLISHED</code> 状态。</li>
+<li><strong>如果是对称NAT</strong>：进一步检查端口是否匹配会话。</li>
+<li><strong>如果是端口受限锥形NAT</strong>：检查 <code>8.8.8.8:80</code> 是否在记录中。</li>
+</ul>
+</li>
+<li><strong>最终决策</strong>：<ul>
+<li>通过 <code>conntrack</code> 验证后，内核决定是否转发或丢弃数据包。</li>
+</ul>
+</li>
+</ol>
+<h3 id="🌟-总结"><a href="#🌟-总结" class="headerlink" title="🌟 总结"></a>🌟 <strong>总结</strong></h3><ul>
+<li><strong><code>conntrack</code> 是“账本”</strong>：记录谁在和谁通信。</li>
+<li><strong>iptables/内核是“警察”</strong>：根据账本决定是否放行。</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>网络</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>PicGo + 七牛云 + Typora 搭建图床</title>
     <url>/posts/24979/</url>
     <content><![CDATA[<p>[TOC]</p>
@@ -438,62 +494,6 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
 ]]></content>
       <tags>
         <tag>图床</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>NAT的四种类型</title>
-    <url>/posts/58955/</url>
-    <content><![CDATA[<h1 id="NAT的四种类型"><a href="#NAT的四种类型" class="headerlink" title="NAT的四种类型"></a>NAT的四种类型</h1><p>参考文章：</p>
-<p><a href="https://blog.csdn.net/s2603898260/article/details/11875547">NAT的四种分类：全锥形NAT,地址受限锥形NAT,端口受限锥形NAT,对称NAT</a></p>
-<h2 id="Full-cone-NAT（全锥形NAT）"><a href="#Full-cone-NAT（全锥形NAT）" class="headerlink" title="Full cone NAT（全锥形NAT）"></a>Full cone NAT（全锥形NAT）</h2><blockquote>
-<p><strong>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到同一个外网（IP，端口），且任何一个外网主机都可以通过访问映射后的公网地址，实现访问位于内网的主机设备功能。</strong></p>
-<p>外网主机可以主动连接内网主机。</p>
-</blockquote>
-<p><img src="https://image.daoxuan.cc/2025/08/1adccc807281c0afa142ce634a3c7a35.png" alt=""></p>
-<h2 id="Restricted-Cone-NAT（地址受限锥形NAT）"><a href="#Restricted-Cone-NAT（地址受限锥形NAT）" class="headerlink" title="Restricted Cone NAT（地址受限锥形NAT）"></a>Restricted Cone NAT（地址受限锥形NAT）</h2><blockquote>
-<p>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到通过一个外网（IP，端口），但与全锥形不同点在于：生成的映射表项与目的IP有关，只有符合要求的目的IP(要访问的公网服务器IP)才可以通讯。此NAT还有个特点：不能主动连接内网中的主机地址，连接必须由内网地址发起。</p>
-<p>限制比全锥形NAT多了：IP地址限制。</p>
-</blockquote>
-<p>此类型NAT除了与源IP和源端口相关外，还与目的IP有关，只有内网主机主动连接的公网IP才可以与内网中的主机通讯。</p>
-<p><img src="https://image.daoxuan.cc/2025/08/8ae88aeed2b1916a9f759ab9aa812877.png" alt="在这里插入图片描述"></p>
-<h2 id="Port-Restricted-Cone-NAT（端口受限锥形NAT）"><a href="#Port-Restricted-Cone-NAT（端口受限锥形NAT）" class="headerlink" title="Port Restricted Cone NAT（端口受限锥形NAT）"></a>Port Restricted Cone NAT（端口受限锥形NAT）</h2><blockquote>
-<p>所有从同一个内网的（IP，端口）发送出来的请求都会被映射到通过一个外网（IP，端口），但是在地址受限锥形NAT基础上增加了端口的限制。</p>
-<p>地址受限锥形NAT时，只有内网主机主动连接的公网主机才可与之进行通讯，而不用担心端口号是否与请求的端口相同。</p>
-<p>但是端口受限锥形NAT除了IP限制外，增加了端口限制。意思是说：除了之前主动连接了主机的（IP，port1,）可以通讯，其他的（IP，port2）等都不可以与之通讯。此NAT映射与报文的三元组绑定</p>
-</blockquote>
-<p><img src="https://image.daoxuan.cc/2025/08/8543bc0f2da38172dac22217358ad06d.jpeg" alt="在这里插入图片描述"></p>
-<h2 id="Symetric-NAT（对称NAT）"><a href="#Symetric-NAT（对称NAT）" class="headerlink" title="Symetric NAT（对称NAT）"></a>Symetric NAT（对称NAT）</h2><blockquote>
-<p>所有从同一个内网（IP，端口）发送到同一个目的IP和端口的请求都会被映射到同一个IP和端口。换句话说（SIP，Sport, DIP, Dport）只要有一个发生变化都会使用不同的映射条目，即此NAT映射与报文四元组绑定。</p>
-</blockquote>
-<ul>
-<li>SIP: Source IP，源IP地址</li>
-<li>Sport: Source Port，源端口</li>
-<li>DIP: Destination IP，目的IP地址</li>
-<li>Dport: Destination Port，目的端口</li>
-</ul>
-<p><img src="https://image.daoxuan.cc/2025/08/5894c4f46833a9bd0e1c80fb1c1abb32.png" alt="在这里插入图片描述"></p>
-<p><strong>“流量过滤的过程依赖 <code>conntrack</code> 维护的连接状态记录，但实际的过滤行为是由iptables/nftables规则或内核NAT模块根据这些状态执行的。”</strong></p>
-<h4 id="具体流程示例"><a href="#具体流程示例" class="headerlink" title="具体流程示例"></a><strong>具体流程示例</strong></h4><ol>
-<li><strong>内网主机</strong> <code>192.168.1.100</code> 访问 <code>8.8.8.8:80</code>，<code>conntrack</code> 记录状态为 <code>NEW</code>。</li>
-<li><strong>iptables的NAT规则</strong> 在 <code>POSTROUTING</code> 链修改源IP为 <code>1.2.3.4:60000</code>，并更新 <code>conntrack</code>。</li>
-<li><strong>返回包</strong> <code>8.8.8.8:80 → 1.2.3.4:60000</code> 到达时：<ul>
-<li>内核查询 <code>conntrack</code>，发现匹配 <code>ESTABLISHED</code> 状态。</li>
-<li><strong>如果是对称NAT</strong>：进一步检查端口是否匹配会话。</li>
-<li><strong>如果是端口受限锥形NAT</strong>：检查 <code>8.8.8.8:80</code> 是否在记录中。</li>
-</ul>
-</li>
-<li><strong>最终决策</strong>：<ul>
-<li>通过 <code>conntrack</code> 验证后，内核决定是否转发或丢弃数据包。</li>
-</ul>
-</li>
-</ol>
-<h3 id="🌟-总结"><a href="#🌟-总结" class="headerlink" title="🌟 总结"></a>🌟 <strong>总结</strong></h3><ul>
-<li><strong><code>conntrack</code> 是“账本”</strong>：记录谁在和谁通信。</li>
-<li><strong>iptables/内核是“警察”</strong>：根据账本决定是否放行。</li>
-</ul>
-]]></content>
-      <tags>
-        <tag>网络</tag>
       </tags>
   </entry>
   <entry>
@@ -734,37 +734,6 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
 ]]></content>
       <tags>
         <tag>AI</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>butterfly魔改时候报错</title>
-    <url>/posts/51950/</url>
-    <content><![CDATA[<div class="tip "><p>对于一个前端知识全靠用的时候学的后端菜菜，最头疼的莫过于仿照大佬更改源码之后<code>hexo g</code>报错</p>
-</div>
-<blockquote>
-<p>今天分享一个错误</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Only named blocks and mixins can appear at the top level of an extending template</span><br></pre></td></tr></table></figure>
-<h1 id="这个错误的正规解答是这样的"><a href="#这个错误的正规解答是这样的" class="headerlink" title="这个错误的正规解答是这样的"></a>这个错误的正规解答是这样的</h1><p>Pug的模板继承是一项强大的功能，可让您将复杂的页面模板结构拆分为更小，更简单的文件。 但是，如果将许多模板链接在一起，则可能会使页面复杂得不可维护。</p>
-<p>请注意，只有命名块<code>(block)</code>和混合定义可以出现在子模板的顶层（未缩进），顶层不能出现其他内容，如<code>lin()</code>，<code>script</code>，和普通的标签如<code>div(class=&quot;content&quot;)</code>。 这个很重要！ 否则会报错：<code>Only named blocks and mixins can appear at the top level of an extending template</code>。父模板定义页面的整体结构，子模板只能附加，添加或替换特定的标记和逻辑块。 如果子模板试图在块外添加内容，Pug将无法知道将其放置在最终页面的何处。</p>
-<p>使用未缓冲的代码，如果需要在子模块中使用变量，则可以使用下面几种不同的方法：</p>
-<ul>
-<li>将变量添加到Pug选项对象，或在父模板的未缓冲代码中定义它们。 子模板将继承这些变量。</li>
-<li>在子模板的块中定义变量。 扩展模板必须至少包含一个块，否则将为空-只需在此处定义变量即可。</li>
-</ul>
-<p>出于同样的原因，Pug的缓冲注释不能出现在扩展模板的顶层：它们产生的HTML注释在生成的HTML中无处渲染。 （但是，无缓冲的Pug注释仍然可以）</p>
-<blockquote>
-<p>我的一个愚蠢的错误是：在做备份方面自以为是了。</p>
-</blockquote>
-<p>鉴于以往做Django项目的使用习惯，我以为<code>\\</code>这种注释在什么格式的文件都行得通，只用简单快捷键<kbd>Ctrl</kbd> + <kbd>/</kbd>就可以大功告成，成功备份，事实上在<code>png</code>格式的文本中我吃了亏</p>
-<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>每种文件的注释方式不同，一定不要自以为是。</p>
-]]></content>
-      <categories>
-        <category>报错</category>
-      </categories>
-      <tags>
-        <tag>butterfly</tag>
-        <tag>报错</tag>
       </tags>
   </entry>
   <entry>
@@ -1028,6 +997,37 @@ kwargs[&quot;queryset&quot;] = Tags.objects.filter(user=request.user)定义过�
       </categories>
       <tags>
         <tag>后端</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>butterfly魔改时候报错</title>
+    <url>/posts/51950/</url>
+    <content><![CDATA[<div class="tip "><p>对于一个前端知识全靠用的时候学的后端菜菜，最头疼的莫过于仿照大佬更改源码之后<code>hexo g</code>报错</p>
+</div>
+<blockquote>
+<p>今天分享一个错误</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Only named blocks and mixins can appear at the top level of an extending template</span><br></pre></td></tr></table></figure>
+<h1 id="这个错误的正规解答是这样的"><a href="#这个错误的正规解答是这样的" class="headerlink" title="这个错误的正规解答是这样的"></a>这个错误的正规解答是这样的</h1><p>Pug的模板继承是一项强大的功能，可让您将复杂的页面模板结构拆分为更小，更简单的文件。 但是，如果将许多模板链接在一起，则可能会使页面复杂得不可维护。</p>
+<p>请注意，只有命名块<code>(block)</code>和混合定义可以出现在子模板的顶层（未缩进），顶层不能出现其他内容，如<code>lin()</code>，<code>script</code>，和普通的标签如<code>div(class=&quot;content&quot;)</code>。 这个很重要！ 否则会报错：<code>Only named blocks and mixins can appear at the top level of an extending template</code>。父模板定义页面的整体结构，子模板只能附加，添加或替换特定的标记和逻辑块。 如果子模板试图在块外添加内容，Pug将无法知道将其放置在最终页面的何处。</p>
+<p>使用未缓冲的代码，如果需要在子模块中使用变量，则可以使用下面几种不同的方法：</p>
+<ul>
+<li>将变量添加到Pug选项对象，或在父模板的未缓冲代码中定义它们。 子模板将继承这些变量。</li>
+<li>在子模板的块中定义变量。 扩展模板必须至少包含一个块，否则将为空-只需在此处定义变量即可。</li>
+</ul>
+<p>出于同样的原因，Pug的缓冲注释不能出现在扩展模板的顶层：它们产生的HTML注释在生成的HTML中无处渲染。 （但是，无缓冲的Pug注释仍然可以）</p>
+<blockquote>
+<p>我的一个愚蠢的错误是：在做备份方面自以为是了。</p>
+</blockquote>
+<p>鉴于以往做Django项目的使用习惯，我以为<code>\\</code>这种注释在什么格式的文件都行得通，只用简单快捷键<kbd>Ctrl</kbd> + <kbd>/</kbd>就可以大功告成，成功备份，事实上在<code>png</code>格式的文本中我吃了亏</p>
+<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>每种文件的注释方式不同，一定不要自以为是。</p>
+]]></content>
+      <categories>
+        <category>报错</category>
+      </categories>
+      <tags>
+        <tag>butterfly</tag>
+        <tag>报错</tag>
       </tags>
   </entry>
   <entry>
@@ -1395,6 +1395,20 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
+    <title>github pages的DNS check出现问题</title>
+    <url>/posts/12709/</url>
+    <content><![CDATA[<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Your site<span class="string">&#x27;s DNS settings are using a custom subdomain, www.daoxuan.cc, that is set up as an A record. We recommend you change this to a CNAME record pointing to dx2331lxz.github.io. For more information, see documentation (InvalidARecordError).</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>出现这种报错时候的解决方案是：以CNAME添加两个解析，一个@，一个www都让其解析到xxx.github.io就可以了</p>
+</blockquote>
+<p><img src="http://picture.daoxuan.cc/image/202301122102656.jpg" alt=""></p>
+]]></content>
+      <tags>
+        <tag>github</tag>
+        <tag>DNS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>fatal: unable to access &#39;https://github.com/username/repo.git/&#39;: GnuTLS recv error (-110): The TLS connection was non-properly terminated.</title>
     <url>/posts/27467/</url>
     <content><![CDATA[<h1 id="fatal-unable-to-access-‘https-github-com-username-repo-git-‘-GnuTLS-recv-error-110-The-TLS-connection-was-non-properly-terminated"><a href="#fatal-unable-to-access-‘https-github-com-username-repo-git-‘-GnuTLS-recv-error-110-The-TLS-connection-was-non-properly-terminated" class="headerlink" title="fatal: unable to access ‘https://github.com/username/repo.git/‘: GnuTLS recv error (-110): The TLS connection was non-properly terminated."></a>fatal: unable to access ‘<a href="https://github.com/username/repo.git/">https://github.com/username/repo.git/</a>‘: GnuTLS recv error (-110): The TLS connection was non-properly terminated.</h1><p>解决方案：</p>
@@ -1410,20 +1424,6 @@ return HttpResponse(book)
       </categories>
       <tags>
         <tag>报错</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>github pages的DNS check出现问题</title>
-    <url>/posts/12709/</url>
-    <content><![CDATA[<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Your site<span class="string">&#x27;s DNS settings are using a custom subdomain, www.daoxuan.cc, that is set up as an A record. We recommend you change this to a CNAME record pointing to dx2331lxz.github.io. For more information, see documentation (InvalidARecordError).</span></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>出现这种报错时候的解决方案是：以CNAME添加两个解析，一个@，一个www都让其解析到xxx.github.io就可以了</p>
-</blockquote>
-<p><img src="http://picture.daoxuan.cc/image/202301122102656.jpg" alt=""></p>
-]]></content>
-      <tags>
-        <tag>github</tag>
-        <tag>DNS</tag>
       </tags>
   </entry>
   <entry>
@@ -1626,26 +1626,19 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>openclaw通过cloudflare ai gateway解决openrouter的模型区域访问受限</title>
-    <url>/posts/20296/</url>
-    <content><![CDATA[<h2 id="开启ai-gateway"><a href="#开启ai-gateway" class="headerlink" title="开启ai gateway"></a>开启ai gateway</h2><blockquote>
-<p>查看文档获得官方说明<a href="https://developers.cloudflare.com/ai-gateway/get-started/">https://developers.cloudflare.com/ai-gateway/get-started/</a></p>
-</blockquote>
-<h3 id="获得accountId"><a href="#获得accountId" class="headerlink" title="获得accountId"></a>获得accountId</h3><p>访问<a href="https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/得到账户ID">https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/得到账户ID</a></p>
-<h3 id="开通ai-gateway"><a href="#开通ai-gateway" class="headerlink" title="开通ai gateway"></a>开通ai gateway</h3><p>原教程中，给出了一种申请<strong>Cloudflare API 令牌</strong>发送请求的方式自动配置，不过我更喜欢手动开启</p>
-<p>访问<a href="https://dash.cloudflare.com/?to=/:account/ai/ai-gateway，拉到页面最下面点击Create">https://dash.cloudflare.com/?to=/:account/ai/ai-gateway，拉到页面最下面点击Create</a> gateway</p>
-<p>名称随便起一个英文的就好，不用太长，会应用到访问url中</p>
-<p>注意：已验证的网关这个选项记得关掉，不然的话你需要在访问时候配置身份令牌，没有就会报错</p>
-<p>HTTP 401: [{“code”:2009,”message”:”Unauthorized”}]，省事一点还是关掉</p>
-<p>到现在，ai gateway这边就配置完事了</p>
-<h2 id="openclaw配置openrouter"><a href="#openclaw配置openrouter" class="headerlink" title="openclaw配置openrouter"></a>openclaw配置openrouter</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;models&quot;: &#123;</span><br><span class="line">    &quot;mode&quot;: &quot;merge&quot;,</span><br><span class="line">    &quot;providers&quot;: &#123;</span><br><span class="line">      &quot;openrouter&quot;: &#123;</span><br><span class="line">        &quot;baseUrl&quot;: &quot;https://gateway.ai.cloudflare.com/v1/&#123;account_id&#125;/&#123;gateway_id&#125;/openrouter&quot;,</span><br><span class="line">        &quot;apiKey&quot;: &quot;sk-or-v1-xxxxba6f8d3f&quot;,</span><br><span class="line">        &quot;api&quot;: &quot;openai-completions&quot;,</span><br><span class="line">        &quot;models&quot;: [</span><br><span class="line">          &#123;</span><br><span class="line">            &quot;id&quot;: &quot;google/gemini-3-flash-preview&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;google/gemini-3-flash-preview&quot;,</span><br><span class="line">            &quot;reasoning&quot;: false,</span><br><span class="line">            &quot;input&quot;: [</span><br><span class="line">              &quot;text&quot;</span><br><span class="line">            ],</span><br><span class="line">            &quot;contextWindow&quot;: 128000,</span><br><span class="line">            &quot;maxTokens&quot;: 16384</span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            &quot;id&quot;: &quot;nvidia/nemotron-3-super-120b-a12b:free&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;nvidia/nemotron-3-super-120b-a12b:free&quot;,</span><br><span class="line">            &quot;reasoning&quot;: false,</span><br><span class="line">            &quot;input&quot;: [</span><br><span class="line">              &quot;text&quot;</span><br><span class="line">            ],</span><br><span class="line">            &quot;contextWindow&quot;: 128000,</span><br><span class="line">            &quot;maxTokens&quot;: 16384</span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-<p>这里accout_id、gateway_id我们刚刚已经有了，apiKey就是openrouter的apiKey</p>
-<p>最后配置一下agent的模型使用就OK了</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;agents&quot;: &#123;</span><br><span class="line">    &quot;defaults&quot;: &#123;</span><br><span class="line">      &quot;model&quot;: &#123;</span><br><span class="line">        &quot;primary&quot;: &quot;openrouter/nvidia/nemotron-3-super-120b-a12b:free&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;models&quot;: &#123;</span><br><span class="line">        &quot;openrouter/google/gemini-3-flash-preview&quot;: &#123;&#125;,</span><br><span class="line">        &quot;openrouter/nvidia/nemotron-3-super-120b-a12b:free&quot;: &#123;&#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;workspace&quot;: &quot;/home/dx2331lxz/.openclaw/workspace&quot;,</span><br><span class="line">      &quot;compaction&quot;: &#123;</span><br><span class="line">        &quot;mode&quot;: &quot;safeguard&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;maxConcurrent&quot;: 4,</span><br><span class="line">      &quot;subagents&quot;: &#123;</span><br><span class="line">        &quot;maxConcurrent&quot;: 8</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-<p>配置完成记得重启一下网关</p>
+    <title>picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式</title>
+    <url>/posts/64135/</url>
+    <content><![CDATA[<h1 id="picgo报错Error-connect-ECONNREFUSED-127-0-0-1-443的解决方式"><a href="#picgo报错Error-connect-ECONNREFUSED-127-0-0-1-443的解决方式" class="headerlink" title="picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式"></a>picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式</h1><p>参考文章：</p>
+<p><a href="https://blog.csdn.net/m0_53277621/article/details/125121042">picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式_JohnnyassSilverhand的博客-CSDN博客</a></p>
+<p>处理方式：换dns域名解析服务器、换host</p>
+<p>具体解决方式：</p>
+<p>查找 api.github.com 的正确域名（不要直接 ping，建议通过 DNS 查询工具进行查询）</p>
+<p>将其添加到对应的 hosts 文件中</p>
+<p>在C:\Windows\System32\drivers\etc路径找到hosts文件，在末尾加入：</p>
+<p> 140.82.112.6 api.github.com<br> 140.82.114.5 api.github.com<br> //github域名会定期更新，如果不行需要自行查询<br>刷新本地 dns 缓存：cmd执行命令行ipconfig /flushdns</p>
 ]]></content>
       <tags>
-        <tag>openclaw</tag>
+        <tag>报错</tag>
       </tags>
   </entry>
   <entry>
@@ -1684,22 +1677,6 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式</title>
-    <url>/posts/64135/</url>
-    <content><![CDATA[<h1 id="picgo报错Error-connect-ECONNREFUSED-127-0-0-1-443的解决方式"><a href="#picgo报错Error-connect-ECONNREFUSED-127-0-0-1-443的解决方式" class="headerlink" title="picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式"></a>picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式</h1><p>参考文章：</p>
-<p><a href="https://blog.csdn.net/m0_53277621/article/details/125121042">picgo报错Error: connect ECONNREFUSED 127.0.0.1:443的解决方式_JohnnyassSilverhand的博客-CSDN博客</a></p>
-<p>处理方式：换dns域名解析服务器、换host</p>
-<p>具体解决方式：</p>
-<p>查找 api.github.com 的正确域名（不要直接 ping，建议通过 DNS 查询工具进行查询）</p>
-<p>将其添加到对应的 hosts 文件中</p>
-<p>在C:\Windows\System32\drivers\etc路径找到hosts文件，在末尾加入：</p>
-<p> 140.82.112.6 api.github.com<br> 140.82.114.5 api.github.com<br> //github域名会定期更新，如果不行需要自行查询<br>刷新本地 dns 缓存：cmd执行命令行ipconfig /flushdns</p>
-]]></content>
-      <tags>
-        <tag>报错</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>super()调用逻辑</title>
     <url>/posts/50029/</url>
     <content><![CDATA[<h1 id="super-调用逻辑"><a href="#super-调用逻辑" class="headerlink" title="super()调用逻辑"></a>super()调用逻辑</h1><blockquote>
@@ -1725,6 +1702,65 @@ return HttpResponse(book)
 <p>检索顺序：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">                           6</span><br><span class="line">                          ---</span><br><span class="line">Level 3                  | O |</span><br><span class="line">                       /  ---  \</span><br><span class="line">                      /    |    \</span><br><span class="line">                     /     |     \</span><br><span class="line">                    /      |      \</span><br><span class="line">                  ---     ---    ---</span><br><span class="line">Level 2        2 | E | 4 | D |  | F | 5</span><br><span class="line">                  ---     ---    ---</span><br><span class="line">                   \      / \     /</span><br><span class="line">                    \    /   \   /</span><br><span class="line">                     \  /     \ /</span><br><span class="line">                      ---     ---</span><br><span class="line">Level 1            1 | B |   | C | 3</span><br><span class="line">                      ---     ---</span><br><span class="line">                       \       /</span><br><span class="line">                        \     /</span><br><span class="line">                          ---</span><br><span class="line">Level 0                0 | A |</span><br><span class="line">                          ---</span><br></pre></td></tr></table></figure>
 <p><a href="https://docs.python.org/3/howto/mro.html">mro使用算法说明官方文章</a></p>
+]]></content>
+      <tags>
+        <tag>python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>python蓝桥杯刷题笔记</title>
+    <url>/posts/55779/</url>
+    <content><![CDATA[<blockquote>
+<p>未完待续</p>
+</blockquote>
+<h1 id="python蓝桥杯刷题备忘录"><a href="#python蓝桥杯刷题备忘录" class="headerlink" title="python蓝桥杯刷题备忘录"></a>python蓝桥杯刷题备忘录</h1><h2 id="1-字符逆序"><a href="#1-字符逆序" class="headerlink" title="1.  字符逆序"></a>1.  字符逆序</h2><p>字符串切割：[-1::-1]</p>
+<blockquote>
+<p>[起始位置:结束位置:步幅]  PS：负号表示倒序</p>
+</blockquote>
+<h2 id="2-水仙花数"><a href="#2-水仙花数" class="headerlink" title="2. 水仙花数"></a>2. 水仙花数</h2><p><code>//</code>表示整除, <code>/</code>表示正常除法，<code>%</code>表示求余数</p>
+<h2 id="3-Python内置的map函数"><a href="#3-Python内置的map函数" class="headerlink" title="3. Python内置的map函数"></a>3. Python内置的map函数</h2><h3 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h3><p>map() 会根据提供的函数对指定序列做映射。</p>
+<p>第一个参数 function 以参数序列中的每一个元素调用 function 函数，返回包含每次 function 函数返回值的新列表。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt;&gt;&gt; def square(x) :         # 计算平方数</span><br><span class="line">...     return x ** 2</span><br><span class="line">... </span><br><span class="line">&gt;&gt;&gt; map(square, [1,2,3,4,5])    # 计算列表各个元素的平方</span><br><span class="line">&lt;map object at 0x100d3d550&gt;     # 返回迭代器</span><br><span class="line">&gt;&gt;&gt; list(map(square, [1,2,3,4,5]))   # 使用 list() 转换为列表</span><br><span class="line">[1, 4, 9, 16, 25]</span><br><span class="line">&gt;&gt;&gt; list(map(lambda x: x ** 2, [1, 2, 3, 4, 5]))   # 使用 lambda 匿名函数</span><br><span class="line">[1, 4, 9, 16, 25]</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果两个参数就两个序列，按照对应位置输入前面的函数</p>
+</blockquote>
+<h2 id="4-字符串格式化输出"><a href="#4-字符串格式化输出" class="headerlink" title="4. 字符串格式化输出"></a>4. 字符串格式化输出</h2><p>print(“格式化字符串”%变量1)<br>print(“格式化字符串”%(变量1,变量2，…))</p>
+<p><strong>%d 用0补齐</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">student_no = 1</span><br><span class="line">print(&#x27;学生的序号为:%03d&#x27; %student_no</span><br><span class="line">学生的序号为:001</span><br></pre></td></tr></table></figure>
+<p><strong>%f 四舍五入</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pi = 3.1415926</span><br><span class="line">print(&#x27;圆周率为：%f&#x27; % pi) #默认输出小数点后面6位</span><br><span class="line">print(&#x27;圆周率为：%.0f&#x27; % pi) </span><br><span class="line">print(&#x27;圆周率为：%.2f&#x27; % pi) </span><br><span class="line">print(&#x27;圆周率为：%.3f&#x27; % pi) </span><br><span class="line">print(&#x27;圆周率为：%.8f&#x27; % pi) #不足位用0补足</span><br></pre></td></tr></table></figure>
+<script type="math/tex; mode=display">
+圆周率为：3.141593
+圆周率为：3
+圆周率为：3.14
+圆周率为：3.142
+圆周率为：3.1415960</script><h2 id="5-字符串是否相等"><a href="#5-字符串是否相等" class="headerlink" title="5. 字符串是否相等"></a>5. 字符串是否相等</h2><p>可以直接用<code>==</code>来判断是否完全相同，可以使用<code>.lower()</code>来使字符串变成小写，用<code>.upper()</code>把字符串变成大写。</p>
+<h2 id="6-Python在方括号中使用for循环"><a href="#6-Python在方括号中使用for循环" class="headerlink" title="6. Python在方括号中使用for循环"></a>6. Python在方括号中使用for循环</h2><p><strong>1、[expression for iter_val in iterable]</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">传统写法：</span><br><span class="line"></span><br><span class="line">L = []</span><br><span class="line">for i in range(1,11):</span><br><span class="line">    L.append(i**2)</span><br><span class="line">print(L)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">列表解析：</span><br><span class="line"></span><br><span class="line">L = [i**2 for i in range(1,11)]</span><br><span class="line">print(L)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>2、[expression for iter_val in iterable if cond_expr]</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">传统写法：</span><br><span class="line"></span><br><span class="line">L = []</span><br><span class="line">for i in range(1,11):</span><br><span class="line">    if i**2 &gt; 50:</span><br><span class="line">        L.append(i**2)</span><br><span class="line">print(L)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">[64, 81, 100]</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">列表解析：</span><br><span class="line"></span><br><span class="line">L = [i**2 for i in range(1,11) if i**2 &gt;50]</span><br><span class="line">print(L)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">[64, 81, 100]</span><br></pre></td></tr></table></figure>
+<h2 id="7-合并列表"><a href="#7-合并列表" class="headerlink" title="7. 合并列表"></a>7. 合并列表</h2><blockquote>
+<p>将列表中元素合并为一个字符串</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">my_list = [<span class="string">&quot;Hello&quot;</span>, <span class="string">&quot; &quot;</span>, <span class="string">&quot;World&quot;</span>]</span><br><span class="line">result_string = <span class="string">&#x27;&#x27;</span>.join(my_list)</span><br><span class="line"><span class="built_in">print</span>(result_string)</span><br></pre></td></tr></table></figure>
+<p>得到的是字符串，不是列表</p>
+<blockquote>
+<p>将多个列表合并为一个列表</p>
+</blockquote>
+<p>直接相加即可</p>
+<h2 id="8"><a href="#8" class="headerlink" title="8."></a>8.</h2><p><strong>子序列不同于子串，子串要求元素在原序列中是连续的，而子序列不要求连续。</strong></p>
+<h2 id="9"><a href="#9" class="headerlink" title="9."></a>9.</h2><p>在 Python 中，<code>round()</code> 是一个内置函数，用于对数字进行四舍五入。<code>round()</code> 函数接受两个参数：要四舍五入的数字和保留的小数位数。</p>
+<p>语法如下：<br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">round</span>(number, ndigits)</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>number</code> 是要四舍五入的数字</li>
+<li><code>ndigits</code> 是要保留的小数位数（可以为负数，表示要四舍五入到小数点左边的位数）</li>
+</ul>
+<p>如果 <code>ndigits</code> 参数被省略，<code>round()</code> 函数会将 <code>number</code> 四舍五入为最接近的整数。</p>
+<p>以下是一些示例：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">number1 = <span class="number">3.14159</span></span><br><span class="line">rounded_number1 = <span class="built_in">round</span>(number1, <span class="number">2</span>)</span><br><span class="line"><span class="built_in">print</span>(rounded_number1)  <span class="comment"># 输出: 3.14</span></span><br><span class="line"></span><br><span class="line">number2 = <span class="number">10.6789</span></span><br><span class="line">rounded_number2 = <span class="built_in">round</span>(number2)</span><br><span class="line"><span class="built_in">print</span>(rounded_number2)  <span class="comment"># 输出: 11</span></span><br><span class="line"></span><br><span class="line">number3 = <span class="number">1234.5678</span></span><br><span class="line">rounded_number3 = <span class="built_in">round</span>(number3, -<span class="number">2</span>)</span><br><span class="line"><span class="built_in">print</span>(rounded_number3)  <span class="comment"># 输出: 1200</span></span><br></pre></td></tr></table></figure>
+<p>在这些示例中，<code>round()</code> 函数根据提供的 <code>ndigits</code> 参数四舍五入了不同的数字，并返回结果。</p>
 ]]></content>
       <tags>
         <tag>python</tag>
@@ -1822,62 +1858,67 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>python蓝桥杯刷题笔记</title>
-    <url>/posts/55779/</url>
-    <content><![CDATA[<blockquote>
-<p>未完待续</p>
+    <title>使用wireguard组网</title>
+    <url>/posts/25443/</url>
+    <content><![CDATA[<h1 id="使用wireguard组网"><a href="#使用wireguard组网" class="headerlink" title="使用wireguard组网"></a>使用wireguard组网</h1><blockquote>
+<p>首先说一下我的使用的设备，一台阿里云的轻量服务器（debian内核、有公网ip），一台MacBook，一个位于校园网内的debian小主机</p>
 </blockquote>
-<h1 id="python蓝桥杯刷题备忘录"><a href="#python蓝桥杯刷题备忘录" class="headerlink" title="python蓝桥杯刷题备忘录"></a>python蓝桥杯刷题备忘录</h1><h2 id="1-字符逆序"><a href="#1-字符逆序" class="headerlink" title="1.  字符逆序"></a>1.  字符逆序</h2><p>字符串切割：[-1::-1]</p>
-<blockquote>
-<p>[起始位置:结束位置:步幅]  PS：负号表示倒序</p>
-</blockquote>
-<h2 id="2-水仙花数"><a href="#2-水仙花数" class="headerlink" title="2. 水仙花数"></a>2. 水仙花数</h2><p><code>//</code>表示整除, <code>/</code>表示正常除法，<code>%</code>表示求余数</p>
-<h2 id="3-Python内置的map函数"><a href="#3-Python内置的map函数" class="headerlink" title="3. Python内置的map函数"></a>3. Python内置的map函数</h2><h3 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h3><p>map() 会根据提供的函数对指定序列做映射。</p>
-<p>第一个参数 function 以参数序列中的每一个元素调用 function 函数，返回包含每次 function 函数返回值的新列表。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt;&gt;&gt; def square(x) :         # 计算平方数</span><br><span class="line">...     return x ** 2</span><br><span class="line">... </span><br><span class="line">&gt;&gt;&gt; map(square, [1,2,3,4,5])    # 计算列表各个元素的平方</span><br><span class="line">&lt;map object at 0x100d3d550&gt;     # 返回迭代器</span><br><span class="line">&gt;&gt;&gt; list(map(square, [1,2,3,4,5]))   # 使用 list() 转换为列表</span><br><span class="line">[1, 4, 9, 16, 25]</span><br><span class="line">&gt;&gt;&gt; list(map(lambda x: x ** 2, [1, 2, 3, 4, 5]))   # 使用 lambda 匿名函数</span><br><span class="line">[1, 4, 9, 16, 25]</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>如果两个参数就两个序列，按照对应位置输入前面的函数</p>
-</blockquote>
-<h2 id="4-字符串格式化输出"><a href="#4-字符串格式化输出" class="headerlink" title="4. 字符串格式化输出"></a>4. 字符串格式化输出</h2><p>print(“格式化字符串”%变量1)<br>print(“格式化字符串”%(变量1,变量2，…))</p>
-<p><strong>%d 用0补齐</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">student_no = 1</span><br><span class="line">print(&#x27;学生的序号为:%03d&#x27; %student_no</span><br><span class="line">学生的序号为:001</span><br></pre></td></tr></table></figure>
-<p><strong>%f 四舍五入</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pi = 3.1415926</span><br><span class="line">print(&#x27;圆周率为：%f&#x27; % pi) #默认输出小数点后面6位</span><br><span class="line">print(&#x27;圆周率为：%.0f&#x27; % pi) </span><br><span class="line">print(&#x27;圆周率为：%.2f&#x27; % pi) </span><br><span class="line">print(&#x27;圆周率为：%.3f&#x27; % pi) </span><br><span class="line">print(&#x27;圆周率为：%.8f&#x27; % pi) #不足位用0补足</span><br></pre></td></tr></table></figure>
-<script type="math/tex; mode=display">
-圆周率为：3.141593
-圆周率为：3
-圆周率为：3.14
-圆周率为：3.142
-圆周率为：3.1415960</script><h2 id="5-字符串是否相等"><a href="#5-字符串是否相等" class="headerlink" title="5. 字符串是否相等"></a>5. 字符串是否相等</h2><p>可以直接用<code>==</code>来判断是否完全相同，可以使用<code>.lower()</code>来使字符串变成小写，用<code>.upper()</code>把字符串变成大写。</p>
-<h2 id="6-Python在方括号中使用for循环"><a href="#6-Python在方括号中使用for循环" class="headerlink" title="6. Python在方括号中使用for循环"></a>6. Python在方括号中使用for循环</h2><p><strong>1、[expression for iter_val in iterable]</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">传统写法：</span><br><span class="line"></span><br><span class="line">L = []</span><br><span class="line">for i in range(1,11):</span><br><span class="line">    L.append(i**2)</span><br><span class="line">print(L)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">列表解析：</span><br><span class="line"></span><br><span class="line">L = [i**2 for i in range(1,11)]</span><br><span class="line">print(L)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p><strong>2、[expression for iter_val in iterable if cond_expr]</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">传统写法：</span><br><span class="line"></span><br><span class="line">L = []</span><br><span class="line">for i in range(1,11):</span><br><span class="line">    if i**2 &gt; 50:</span><br><span class="line">        L.append(i**2)</span><br><span class="line">print(L)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">[64, 81, 100]</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">列表解析：</span><br><span class="line"></span><br><span class="line">L = [i**2 for i in range(1,11) if i**2 &gt;50]</span><br><span class="line">print(L)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">[64, 81, 100]</span><br></pre></td></tr></table></figure>
-<h2 id="7-合并列表"><a href="#7-合并列表" class="headerlink" title="7. 合并列表"></a>7. 合并列表</h2><blockquote>
-<p>将列表中元素合并为一个字符串</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">my_list = [<span class="string">&quot;Hello&quot;</span>, <span class="string">&quot; &quot;</span>, <span class="string">&quot;World&quot;</span>]</span><br><span class="line">result_string = <span class="string">&#x27;&#x27;</span>.join(my_list)</span><br><span class="line"><span class="built_in">print</span>(result_string)</span><br></pre></td></tr></table></figure>
-<p>得到的是字符串，不是列表</p>
-<blockquote>
-<p>将多个列表合并为一个列表</p>
-</blockquote>
-<p>直接相加即可</p>
-<h2 id="8"><a href="#8" class="headerlink" title="8."></a>8.</h2><p><strong>子序列不同于子串，子串要求元素在原序列中是连续的，而子序列不要求连续。</strong></p>
-<h2 id="9"><a href="#9" class="headerlink" title="9."></a>9.</h2><p>在 Python 中，<code>round()</code> 是一个内置函数，用于对数字进行四舍五入。<code>round()</code> 函数接受两个参数：要四舍五入的数字和保留的小数位数。</p>
-<p>语法如下：<br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">round</span>(number, ndigits)</span><br></pre></td></tr></table></figure></p>
+<h2 id="校园网"><a href="#校园网" class="headerlink" title="校园网"></a>校园网</h2><p>首先配置校园网内的debian小主机</p>
 <ul>
-<li><code>number</code> 是要四舍五入的数字</li>
-<li><code>ndigits</code> 是要保留的小数位数（可以为负数，表示要四舍五入到小数点左边的位数）</li>
+<li>下载wireguard</li>
 </ul>
-<p>如果 <code>ndigits</code> 参数被省略，<code>round()</code> 函数会将 <code>number</code> 四舍五入为最接近的整数。</p>
-<p>以下是一些示例：</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">number1 = <span class="number">3.14159</span></span><br><span class="line">rounded_number1 = <span class="built_in">round</span>(number1, <span class="number">2</span>)</span><br><span class="line"><span class="built_in">print</span>(rounded_number1)  <span class="comment"># 输出: 3.14</span></span><br><span class="line"></span><br><span class="line">number2 = <span class="number">10.6789</span></span><br><span class="line">rounded_number2 = <span class="built_in">round</span>(number2)</span><br><span class="line"><span class="built_in">print</span>(rounded_number2)  <span class="comment"># 输出: 11</span></span><br><span class="line"></span><br><span class="line">number3 = <span class="number">1234.5678</span></span><br><span class="line">rounded_number3 = <span class="built_in">round</span>(number3, -<span class="number">2</span>)</span><br><span class="line"><span class="built_in">print</span>(rounded_number3)  <span class="comment"># 输出: 1200</span></span><br></pre></td></tr></table></figure>
-<p>在这些示例中，<code>round()</code> 函数根据提供的 <code>ndigits</code> 参数四舍五入了不同的数字，并返回结果。</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">apt install wireguard</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在/etc/wireguard生成公钥私钥</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#生成私钥</span></span><br><span class="line">$ wg genkey &gt; privatekey</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成公钥</span></span><br><span class="line">$ wg pubkey &lt; privatekey &gt; publickey</span><br></pre></td></tr></table></figure>
+<ul>
+<li>编辑配置文件</li>
+</ul>
+<p>配置文件可以放在任何路径下，但必须通过绝对路径引用。默认路径是 <code>/etc/wireguard/wg0.conf</code></p>
+<p>配置文件的命名形式必须为 <script type="math/tex">{WireGuard 接口的名称}.conf`。通常情况下 WireGuard 接口名称以 `wg` 为前缀，并从 `0` 开始编号，但你也可以使用其他名称，只要符合正则表达式 `^[a-zA-Z0-9_=+.-]{1,15}</script> 就行。</p>
+<p>配置文件内容：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"><span class="section">[Interface]</span></span><br><span class="line"><span class="attr">PrivateKey</span> = 本机私钥</span><br><span class="line"><span class="attr">Address</span> = <span class="number">10.6</span>.<span class="number">0.6</span>/<span class="number">24</span></span><br><span class="line"><span class="attr">DNS</span> = <span class="number">1.1</span>.<span class="number">1.1</span></span><br><span class="line"></span><br><span class="line"><span class="section">[Peer]</span></span><br><span class="line"><span class="attr">PublicKey</span> = 阿里云服务器公钥</span><br><span class="line"><span class="attr">AllowedIPs</span> = <span class="number">10.6</span>.<span class="number">0.2</span>/<span class="number">32</span></span><br><span class="line"><span class="attr">Endpoint</span> = <span class="number">1</span>panel.daoxuan.cc:<span class="number">51820</span>  <span class="comment"># 阿里云服务器域名+端口</span></span><br><span class="line"><span class="attr">PersistentKeepalive</span> = <span class="number">25</span></span><br></pre></td></tr></table></figure>
+<h2 id="阿里云服务器"><a href="#阿里云服务器" class="headerlink" title="阿里云服务器"></a>阿里云服务器</h2><p>下载流程和密钥生成流程同上</p>
+<p>开启IP地址转发：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ echo &quot;net.ipv4.ip_forward = 1&quot; &gt;&gt; /etc/sysctl.conf</span><br><span class="line">$ echo &quot;net.ipv4.conf.all.proxy_arp = 1&quot; &gt;&gt; /etc/sysctl.conf</span><br><span class="line">$ sysctl -p /etc/sysctl.conf</span><br></pre></td></tr></table></figure>
+<p>下面是配置文件内容：</p>
+<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"><span class="section">[Interface]</span></span><br><span class="line"><span class="attr">Address</span> = <span class="number">10.6</span>.<span class="number">0.2</span>/<span class="number">24</span></span><br><span class="line"><span class="attr">ListenPort</span> = <span class="number">51820</span></span><br><span class="line"><span class="attr">PrivateKey</span> = </span><br><span class="line"><span class="attr">PostUp</span> = iptables -A FORWARD -i %i -j ACCEPT<span class="comment">; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</span></span><br><span class="line"><span class="attr">PostDown</span> = iptables -D FORWARD -i %i -j ACCEPT<span class="comment">; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE</span></span><br><span class="line"><span class="section">[Peer]</span></span><br><span class="line"><span class="attr">PublicKey</span> = </span><br><span class="line"><span class="attr">AllowedIPs</span> = <span class="number">10.6</span>.<span class="number">0.6</span>/<span class="number">32</span></span><br></pre></td></tr></table></figure>
+<p>这里的eth0需要根据自己的默认网络出口网卡进行配置</p>
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>配置结束之后通过：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wg-quick up wg0</span><br></pre></td></tr></table></figure>
+<p>启动！！</p>
+<p>启动之后可以通过<code>wg show</code>查看连接状态</p>
+<p>可以通过ping 内网地址查看是否互通</p>
+<blockquote>
+<p>至此实现校园网内网主机与阿里云轻量服务器组网</p>
+</blockquote>
 ]]></content>
       <tags>
-        <tag>python</tag>
+        <tag>wireguard</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>openclaw通过cloudflare ai gateway解决openrouter的模型区域访问受限</title>
+    <url>/posts/20296/</url>
+    <content><![CDATA[<h2 id="开启ai-gateway"><a href="#开启ai-gateway" class="headerlink" title="开启ai gateway"></a>开启ai gateway</h2><blockquote>
+<p>查看文档获得官方说明<a href="https://developers.cloudflare.com/ai-gateway/get-started/">https://developers.cloudflare.com/ai-gateway/get-started/</a></p>
+</blockquote>
+<h3 id="获得accountId"><a href="#获得accountId" class="headerlink" title="获得accountId"></a>获得accountId</h3><p>访问<a href="https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/得到账户ID">https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/得到账户ID</a></p>
+<h3 id="开通ai-gateway"><a href="#开通ai-gateway" class="headerlink" title="开通ai gateway"></a>开通ai gateway</h3><p>原教程中，给出了一种申请<strong>Cloudflare API 令牌</strong>发送请求的方式自动配置，不过我更喜欢手动开启</p>
+<p>访问<a href="https://dash.cloudflare.com/?to=/:account/ai/ai-gateway，拉到页面最下面点击Create">https://dash.cloudflare.com/?to=/:account/ai/ai-gateway，拉到页面最下面点击Create</a> gateway</p>
+<p>名称随便起一个英文的就好，不用太长，会应用到访问url中</p>
+<p>注意：已验证的网关这个选项记得关掉，不然的话你需要在访问时候配置身份令牌，没有就会报错</p>
+<p>HTTP 401: [{“code”:2009,”message”:”Unauthorized”}]，省事一点还是关掉</p>
+<p>到现在，ai gateway这边就配置完事了</p>
+<h2 id="openclaw配置openrouter"><a href="#openclaw配置openrouter" class="headerlink" title="openclaw配置openrouter"></a>openclaw配置openrouter</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;models&quot;: &#123;</span><br><span class="line">    &quot;mode&quot;: &quot;merge&quot;,</span><br><span class="line">    &quot;providers&quot;: &#123;</span><br><span class="line">      &quot;openrouter&quot;: &#123;</span><br><span class="line">        &quot;baseUrl&quot;: &quot;https://gateway.ai.cloudflare.com/v1/&#123;account_id&#125;/&#123;gateway_id&#125;/openrouter&quot;,</span><br><span class="line">        &quot;apiKey&quot;: &quot;sk-or-v1-xxxxba6f8d3f&quot;,</span><br><span class="line">        &quot;api&quot;: &quot;openai-completions&quot;,</span><br><span class="line">        &quot;models&quot;: [</span><br><span class="line">          &#123;</span><br><span class="line">            &quot;id&quot;: &quot;google/gemini-3-flash-preview&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;google/gemini-3-flash-preview&quot;,</span><br><span class="line">            &quot;reasoning&quot;: false,</span><br><span class="line">            &quot;input&quot;: [</span><br><span class="line">              &quot;text&quot;</span><br><span class="line">            ],</span><br><span class="line">            &quot;contextWindow&quot;: 128000,</span><br><span class="line">            &quot;maxTokens&quot;: 16384</span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            &quot;id&quot;: &quot;nvidia/nemotron-3-super-120b-a12b:free&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;nvidia/nemotron-3-super-120b-a12b:free&quot;,</span><br><span class="line">            &quot;reasoning&quot;: false,</span><br><span class="line">            &quot;input&quot;: [</span><br><span class="line">              &quot;text&quot;</span><br><span class="line">            ],</span><br><span class="line">            &quot;contextWindow&quot;: 128000,</span><br><span class="line">            &quot;maxTokens&quot;: 16384</span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>这里accout_id、gateway_id我们刚刚已经有了，apiKey就是openrouter的apiKey</p>
+<p>最后配置一下agent的模型使用就OK了</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&quot;agents&quot;: &#123;</span><br><span class="line">    &quot;defaults&quot;: &#123;</span><br><span class="line">      &quot;model&quot;: &#123;</span><br><span class="line">        &quot;primary&quot;: &quot;openrouter/nvidia/nemotron-3-super-120b-a12b:free&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;models&quot;: &#123;</span><br><span class="line">        &quot;openrouter/google/gemini-3-flash-preview&quot;: &#123;&#125;,</span><br><span class="line">        &quot;openrouter/nvidia/nemotron-3-super-120b-a12b:free&quot;: &#123;&#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;workspace&quot;: &quot;/home/dx2331lxz/.openclaw/workspace&quot;,</span><br><span class="line">      &quot;compaction&quot;: &#123;</span><br><span class="line">        &quot;mode&quot;: &quot;safeguard&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;maxConcurrent&quot;: 4,</span><br><span class="line">      &quot;subagents&quot;: &#123;</span><br><span class="line">        &quot;maxConcurrent&quot;: 8</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>配置完成记得重启一下网关</p>
+]]></content>
+      <tags>
+        <tag>openclaw</tag>
       </tags>
   </entry>
   <entry>
@@ -1945,47 +1986,6 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>使用wireguard组网</title>
-    <url>/posts/25443/</url>
-    <content><![CDATA[<h1 id="使用wireguard组网"><a href="#使用wireguard组网" class="headerlink" title="使用wireguard组网"></a>使用wireguard组网</h1><blockquote>
-<p>首先说一下我的使用的设备，一台阿里云的轻量服务器（debian内核、有公网ip），一台MacBook，一个位于校园网内的debian小主机</p>
-</blockquote>
-<h2 id="校园网"><a href="#校园网" class="headerlink" title="校园网"></a>校园网</h2><p>首先配置校园网内的debian小主机</p>
-<ul>
-<li>下载wireguard</li>
-</ul>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">apt install wireguard</span><br></pre></td></tr></table></figure>
-<ul>
-<li>在/etc/wireguard生成公钥私钥</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#生成私钥</span></span><br><span class="line">$ wg genkey &gt; privatekey</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成公钥</span></span><br><span class="line">$ wg pubkey &lt; privatekey &gt; publickey</span><br></pre></td></tr></table></figure>
-<ul>
-<li>编辑配置文件</li>
-</ul>
-<p>配置文件可以放在任何路径下，但必须通过绝对路径引用。默认路径是 <code>/etc/wireguard/wg0.conf</code></p>
-<p>配置文件的命名形式必须为 <script type="math/tex">{WireGuard 接口的名称}.conf`。通常情况下 WireGuard 接口名称以 `wg` 为前缀，并从 `0` 开始编号，但你也可以使用其他名称，只要符合正则表达式 `^[a-zA-Z0-9_=+.-]{1,15}</script> 就行。</p>
-<p>配置文件内容：</p>
-<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"><span class="section">[Interface]</span></span><br><span class="line"><span class="attr">PrivateKey</span> = 本机私钥</span><br><span class="line"><span class="attr">Address</span> = <span class="number">10.6</span>.<span class="number">0.6</span>/<span class="number">24</span></span><br><span class="line"><span class="attr">DNS</span> = <span class="number">1.1</span>.<span class="number">1.1</span></span><br><span class="line"></span><br><span class="line"><span class="section">[Peer]</span></span><br><span class="line"><span class="attr">PublicKey</span> = 阿里云服务器公钥</span><br><span class="line"><span class="attr">AllowedIPs</span> = <span class="number">10.6</span>.<span class="number">0.2</span>/<span class="number">32</span></span><br><span class="line"><span class="attr">Endpoint</span> = <span class="number">1</span>panel.daoxuan.cc:<span class="number">51820</span>  <span class="comment"># 阿里云服务器域名+端口</span></span><br><span class="line"><span class="attr">PersistentKeepalive</span> = <span class="number">25</span></span><br></pre></td></tr></table></figure>
-<h2 id="阿里云服务器"><a href="#阿里云服务器" class="headerlink" title="阿里云服务器"></a>阿里云服务器</h2><p>下载流程和密钥生成流程同上</p>
-<p>开启IP地址转发：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ echo &quot;net.ipv4.ip_forward = 1&quot; &gt;&gt; /etc/sysctl.conf</span><br><span class="line">$ echo &quot;net.ipv4.conf.all.proxy_arp = 1&quot; &gt;&gt; /etc/sysctl.conf</span><br><span class="line">$ sysctl -p /etc/sysctl.conf</span><br></pre></td></tr></table></figure>
-<p>下面是配置文件内容：</p>
-<figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"><span class="section">[Interface]</span></span><br><span class="line"><span class="attr">Address</span> = <span class="number">10.6</span>.<span class="number">0.2</span>/<span class="number">24</span></span><br><span class="line"><span class="attr">ListenPort</span> = <span class="number">51820</span></span><br><span class="line"><span class="attr">PrivateKey</span> = </span><br><span class="line"><span class="attr">PostUp</span> = iptables -A FORWARD -i %i -j ACCEPT<span class="comment">; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</span></span><br><span class="line"><span class="attr">PostDown</span> = iptables -D FORWARD -i %i -j ACCEPT<span class="comment">; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE</span></span><br><span class="line"><span class="section">[Peer]</span></span><br><span class="line"><span class="attr">PublicKey</span> = </span><br><span class="line"><span class="attr">AllowedIPs</span> = <span class="number">10.6</span>.<span class="number">0.6</span>/<span class="number">32</span></span><br></pre></td></tr></table></figure>
-<p>这里的eth0需要根据自己的默认网络出口网卡进行配置</p>
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>配置结束之后通过：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wg-quick up wg0</span><br></pre></td></tr></table></figure>
-<p>启动！！</p>
-<p>启动之后可以通过<code>wg show</code>查看连接状态</p>
-<p>可以通过ping 内网地址查看是否互通</p>
-<blockquote>
-<p>至此实现校园网内网主机与阿里云轻量服务器组网</p>
-</blockquote>
-]]></content>
-      <tags>
-        <tag>wireguard</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>使用云服务器部署hexo博客</title>
     <url>/posts/12233/</url>
     <content><![CDATA[<h1 id="使用云服务器部署hexo博客"><a href="#使用云服务器部署hexo博客" class="headerlink" title="使用云服务器部署hexo博客"></a>使用云服务器部署hexo博客</h1><p>我最开始的方案是用hexo的hexo server来跑我的博客，蛮方便的，只需要反向代理一下默认的4000端口即可。</p>
@@ -2021,35 +2021,57 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>充电桩mqtt弃用后的使用透传的平替方案</title>
-    <url>/posts/59863/</url>
-    <content><![CDATA[<h1 id="充电桩mqtt弃用后的使用透传的平替方案"><a href="#充电桩mqtt弃用后的使用透传的平替方案" class="headerlink" title="充电桩mqtt弃用后的使用透传的平替方案"></a>充电桩mqtt弃用后的使用透传的平替方案</h1><blockquote>
-<p>mqtt是原本的充电桩项目方案，本身具有按照主题发布消息订阅消息的能力，不过由于硬件方声称使用mqtt丢包率过高，需要更换为透传的方式，故而有了这个平替方案设计</p>
+    <title>使用宝塔面板部署django项目</title>
+    <url>/posts/20868/</url>
+    <content><![CDATA[<h1 id="使用宝塔面板部署django项目"><a href="#使用宝塔面板部署django项目" class="headerlink" title="使用宝塔面板部署django项目"></a>使用宝塔面板部署django项目</h1><div class="tip cogs"><p>非常emo</p>
+</div>
+<p>爱特程序部现在只剩下三人，为了方便程序部成员使用，写一篇关于部署的教程</p>
+<blockquote>
+<p>欢迎加入爱特工作室</p>
 </blockquote>
-<h2 id="MQTT协议工作原理"><a href="#MQTT协议工作原理" class="headerlink" title="MQTT协议工作原理"></a>MQTT协议工作原理</h2><p>在 MQTT 协议中有三种身份：发布者（Publish）、代理（Broker）（服务器）和订阅者（Subscribe）。其中消息的发布者和订阅者都是客户端，消息代理是服务器，消息发布者可以同时是订阅者，这三者的关系如下图所示：</p>
-<p><img src="https://image.daoxuan.cc/2025/08/854b4fb9d5ea00afd6cb2187685b8a17.png" alt="mqtt_principle"></p>
-<p>在 MQTT 协议的实际使用过程中，一般遵循以下流程：</p>
-<ul>
-<li>发布者通过代理服务器向指定的 Topic 发布消息。</li>
-<li>订阅者通过代理服务器订阅所需要的 Topic。</li>
-<li>订阅成功后如果有发布者向订阅者订阅的 Topic 发布消息，那么订阅者就会收到代理服务器的推送消息，通过这种方式可以进行高效的数据交换。</li>
-</ul>
-<p>在原本的工作逻辑中，Broker是docker部署的RMQX（一个开箱即用的mqtt代理），需要通信的三方：充电桩、后端服务器、微信小程序，都会同时作为发布者和订阅者，通过合理设置主题，实现充电流程的通信（细节不做说明）</p>
-<p><strong>可以看出这里的Broker是核心</strong></p>
-<p>然而透传便是去掉这个代理，让硬件客户端直接连接到服务器发送消息，也就是说直接使用<code>TCP</code>发送数据包。</p>
-<h2 id="透传的工作原理"><a href="#透传的工作原理" class="headerlink" title="透传的工作原理"></a>透传的工作原理</h2><p>去掉Broker后，硬件客户端通过<code>TCP</code>协议连接到后端服务器，因为tcp是全双工的，因此，充电桩和后端服务器之前的通信算是打通了。然而微信客户端如何与硬件进行通信呢？</p>
-<p>微信需要向充电桩下达充电指令，结束充电指令以及，状态查询指令，充电桩需要向微信回复指令的执行结果以及充电过程中的计费信息。两者也是需要双向通行的，然而两者都没有固定的ip，因此，需要借助后端服务器进行中转。</p>
-<h3 id="小程序-——-后端服务器"><a href="#小程序-——-后端服务器" class="headerlink" title="小程序 —— 后端服务器"></a>小程序 —— 后端服务器</h3><p>由于前端吐槽ws协议连接起来也不稳定，因此小程序和后端通信使用http协议，为了确保及时性，采用http轮询。</p>
-<h3 id="微信小程序→充电桩"><a href="#微信小程序→充电桩" class="headerlink" title="微信小程序→充电桩"></a>微信小程序→充电桩</h3><p>小程序通过http协议向后端服务器发送充电开始请求，携带充电桩编号，后端服务器接收到消息以后构建消息通过TCP发送到对应的充电桩。至此小程序到充电桩的消息发送成功。</p>
-<h3 id="充电桩→微信小程序"><a href="#充电桩→微信小程序" class="headerlink" title="充电桩→微信小程序"></a>充电桩→微信小程序</h3><p>微信小程序需要通过http轮询获取到充电桩信息，因此后端需要记录充电桩回复，将其放回给小程序，由于使用mysql更新对应充电桩字段状态这种方式比较麻烦且性能有限，使用redis记录整个消息无法很好的区分充电桩和主题。因此我选择使用<code>rabbitmq</code>消息对列，将充电桩的回复都发送到rabbitmq中。</p>
-<p>为了能够更好的区分不同充电桩的不同类型消息，使用充电桩的编号作为交换机的名称，使用消息主题作为channel的名称。</p>
-<p>这样小程序查询对应充电桩回复时后端服务器可以通过充电桩编号以及消息主题作为索引，去对应的消息对列中取消息，解析过后按照json格式放回给小程序。</p>
-<p>优点：相较于使用mysql保存字段状态，这个方式不需要改变以及建好的数据库表，可以复用mqtt协议时候的消息解析函数。</p>
-<h2 id="图示流程"><a href="#图示流程" class="headerlink" title="图示流程"></a>图示流程</h2><p><img src="https://image.daoxuan.cc/2025/08/e4e00b6f1740a5d39cc4a957e06583ea.png" alt="image-20250803220315270"></p>
-<p>注：pika是rabbitmq的python SDK</p>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><blockquote>
+<p>我使用的服务器是腾讯云服务器，什么服务器倒是无所谓，只需要根据官方文档和你的服务器使用的系统安装宝塔面板即可。</p>
+</blockquote>
+<p>这个是宝塔官网<a href="https://www.bt.cn/new/index.html">宝塔面板 - 简单好用的Linux/Windows服务器运维管理面板 (bt.cn)</a>网上一搜就有其实。</p>
+<h2 id="登录改密"><a href="#登录改密" class="headerlink" title="登录改密"></a>登录改密</h2><p><img src="http://picture.daoxuan.cc/image/202304172157280.png" alt="image-20230417185210940"></p>
+<blockquote>
+<p>安装完之后会显示网址，那个网址一定要记住，访问之后的界面是这样的，用服务器返回给你的账号密码进行登录</p>
+</blockquote>
+<p>当然，因为那个账号密码用起来很不方便可以在登录时候进行改密。</p>
+<blockquote>
+<p>第一次进入之后安装提示会安装一些东西，我们安装体量小的那个。</p>
+</blockquote>
+<p><img src="http://picture.daoxuan.cc/image/202304172157735.png" alt="image-20230417202220060"></p>
+<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>进入软件商店下载Python项目管理器，在Python管理器中需要下载Python</p>
+<blockquote>
+<p>有一些东西需要下载我记不全。</p>
+</blockquote>
+<h2 id="配置数据库"><a href="#配置数据库" class="headerlink" title="配置数据库"></a>配置数据库</h2><p>点击添加数据库，编码utf-8其他的可以和自己本地的一样（这样就不用调settings的设置了）</p>
+<blockquote>
+<p>需要核对一下自己settings里面的数据库设置和自己添加的数据库需要一致。</p>
+</blockquote>
+<p>创建完数据库时候就可以点击导入，然后导入本地的数据库包（.sql）</p>
+<h2 id="在本地生成依赖文件"><a href="#在本地生成依赖文件" class="headerlink" title="在本地生成依赖文件"></a>在本地生成依赖文件</h2><p><code>pip freeze &gt; requirements.txt</code>输入这个命令生成依赖文件<code>requirements.txt</code>查看该文件中的依赖是不是自己这个项目用的，不是的话自己debug，然后改一下依赖的编码格式为utf-8,防止识别不到。</p>
+<h2 id="上传项目压缩包"><a href="#上传项目压缩包" class="headerlink" title="上传项目压缩包"></a>上传项目压缩包</h2><p>上传项目压缩包到/www/wwwroot这个目录下面进行解压（其实到哪里无所谓，习惯上放这里）</p>
+<h2 id="部署项目"><a href="#部署项目" class="headerlink" title="部署项目"></a>部署项目</h2><p>打开之前下载好的Python项目管理器，点击添加项目。路径选择刚刚导入的文件夹，框架选择django，启动方式选择gunicorn，选择一个没有被占用过的端口比如9000；8088之类的，点击安装模块依赖，开机启动，之后就可以点击确定了。</p>
+<blockquote>
+<p>下载完成之后打开项目日志，查看有没有bug，有报错的话可能是依赖包缺少，自行查看下载。</p>
+<p>到这里需要保证数据库的配置是正确的，而且settings有一句这个ALLOWED_HOSTS = []给他改成ALLOWED_HOSTS = [“*”]</p>
+</blockquote>
+<p>然后在Python项目管理器里点击映射，有自己域名的映射自己为这个项目起的域名，没有的话把服务器地址写一下。</p>
+<p>到这里就成功了</p>
+<h2 id="需要自行完善的地方"><a href="#需要自行完善的地方" class="headerlink" title="需要自行完善的地方"></a>需要自行完善的地方</h2><ol>
+<li><p>项目部署的时候设置了端口，这个需要在宝塔面板的”安全“那里，和服务器的“防火墙”那里把你添加的端口放行一下。</p>
+</li>
+<li><p>域名的ssl证书自行配置。</p>
+</li>
+<li><p>数据库的文件可以在Navicat里面按照下图进行导出</p>
+</li>
+</ol>
+<p><img src="http://picture.daoxuan.cc/image/202304172157907.png" alt="image-20230417214005276"></p>
 ]]></content>
       <tags>
-        <tag>充电桩</tag>
+        <tag>django</tag>
       </tags>
   </entry>
   <entry>
@@ -2148,97 +2170,6 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>使用宝塔面板部署django项目</title>
-    <url>/posts/20868/</url>
-    <content><![CDATA[<h1 id="使用宝塔面板部署django项目"><a href="#使用宝塔面板部署django项目" class="headerlink" title="使用宝塔面板部署django项目"></a>使用宝塔面板部署django项目</h1><div class="tip cogs"><p>非常emo</p>
-</div>
-<p>爱特程序部现在只剩下三人，为了方便程序部成员使用，写一篇关于部署的教程</p>
-<blockquote>
-<p>欢迎加入爱特工作室</p>
-</blockquote>
-<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><blockquote>
-<p>我使用的服务器是腾讯云服务器，什么服务器倒是无所谓，只需要根据官方文档和你的服务器使用的系统安装宝塔面板即可。</p>
-</blockquote>
-<p>这个是宝塔官网<a href="https://www.bt.cn/new/index.html">宝塔面板 - 简单好用的Linux/Windows服务器运维管理面板 (bt.cn)</a>网上一搜就有其实。</p>
-<h2 id="登录改密"><a href="#登录改密" class="headerlink" title="登录改密"></a>登录改密</h2><p><img src="http://picture.daoxuan.cc/image/202304172157280.png" alt="image-20230417185210940"></p>
-<blockquote>
-<p>安装完之后会显示网址，那个网址一定要记住，访问之后的界面是这样的，用服务器返回给你的账号密码进行登录</p>
-</blockquote>
-<p>当然，因为那个账号密码用起来很不方便可以在登录时候进行改密。</p>
-<blockquote>
-<p>第一次进入之后安装提示会安装一些东西，我们安装体量小的那个。</p>
-</blockquote>
-<p><img src="http://picture.daoxuan.cc/image/202304172157735.png" alt="image-20230417202220060"></p>
-<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>进入软件商店下载Python项目管理器，在Python管理器中需要下载Python</p>
-<blockquote>
-<p>有一些东西需要下载我记不全。</p>
-</blockquote>
-<h2 id="配置数据库"><a href="#配置数据库" class="headerlink" title="配置数据库"></a>配置数据库</h2><p>点击添加数据库，编码utf-8其他的可以和自己本地的一样（这样就不用调settings的设置了）</p>
-<blockquote>
-<p>需要核对一下自己settings里面的数据库设置和自己添加的数据库需要一致。</p>
-</blockquote>
-<p>创建完数据库时候就可以点击导入，然后导入本地的数据库包（.sql）</p>
-<h2 id="在本地生成依赖文件"><a href="#在本地生成依赖文件" class="headerlink" title="在本地生成依赖文件"></a>在本地生成依赖文件</h2><p><code>pip freeze &gt; requirements.txt</code>输入这个命令生成依赖文件<code>requirements.txt</code>查看该文件中的依赖是不是自己这个项目用的，不是的话自己debug，然后改一下依赖的编码格式为utf-8,防止识别不到。</p>
-<h2 id="上传项目压缩包"><a href="#上传项目压缩包" class="headerlink" title="上传项目压缩包"></a>上传项目压缩包</h2><p>上传项目压缩包到/www/wwwroot这个目录下面进行解压（其实到哪里无所谓，习惯上放这里）</p>
-<h2 id="部署项目"><a href="#部署项目" class="headerlink" title="部署项目"></a>部署项目</h2><p>打开之前下载好的Python项目管理器，点击添加项目。路径选择刚刚导入的文件夹，框架选择django，启动方式选择gunicorn，选择一个没有被占用过的端口比如9000；8088之类的，点击安装模块依赖，开机启动，之后就可以点击确定了。</p>
-<blockquote>
-<p>下载完成之后打开项目日志，查看有没有bug，有报错的话可能是依赖包缺少，自行查看下载。</p>
-<p>到这里需要保证数据库的配置是正确的，而且settings有一句这个ALLOWED_HOSTS = []给他改成ALLOWED_HOSTS = [“*”]</p>
-</blockquote>
-<p>然后在Python项目管理器里点击映射，有自己域名的映射自己为这个项目起的域名，没有的话把服务器地址写一下。</p>
-<p>到这里就成功了</p>
-<h2 id="需要自行完善的地方"><a href="#需要自行完善的地方" class="headerlink" title="需要自行完善的地方"></a>需要自行完善的地方</h2><ol>
-<li><p>项目部署的时候设置了端口，这个需要在宝塔面板的”安全“那里，和服务器的“防火墙”那里把你添加的端口放行一下。</p>
-</li>
-<li><p>域名的ssl证书自行配置。</p>
-</li>
-<li><p>数据库的文件可以在Navicat里面按照下图进行导出</p>
-</li>
-</ol>
-<p><img src="http://picture.daoxuan.cc/image/202304172157907.png" alt="image-20230417214005276"></p>
-]]></content>
-      <tags>
-        <tag>django</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>关于左值</title>
-    <url>/posts/49774/</url>
-    <content><![CDATA[<h1 id="关于左值"><a href="#关于左值" class="headerlink" title="关于左值"></a>关于左值</h1><details class="folding-tag" ><summary> 引用自小甲鱼的教程 </summary>
-              <div class='content'>
-              <div class="tag link"><a class="link-card" title="Tag Plugins Plus | 什么是lvalue" href="https://fishc.com.cn/thread-69833-1-1.html"><div class="left"><img src="/img/link.png"/></div><div class="right"><p class="text">Tag Plugins Plus | 什么是lvalue</p><p class="url">https://fishc.com.cn/thread-69833-1-1.html</p></div></a></div>
-              </div>
-            </details>
-<blockquote>
-<p>一般来说，当你看到这样的报错时</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Error] lvalue required as left operand of assignment</span><br></pre></td></tr></table></figure>
-<p>就是左值概念不清晰的原因啦</p>
-<p>首先我们引用一下c99的官方文档</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">The name &quot;lvalue&quot; comes originally from the assignment expression E1 = E2, in which the left operand E1 is required to be a (modi&amp;#64257;able) lvalue. It is perhaps better considered as representing an object &quot;locator value&quot;. What is sometimes called &quot;rvalue&quot; is in this International Standard described as the &quot;value of an expression&quot;.</span><br></pre></td></tr></table></figure>
-<div class="tip "><p>当然，装装样子而已啦，还是用汉语叙述：</p>
-</div>
-<p>左值也就是lvalue，更加合理的解释应该是locator value（特定位置的值），rvalue则应该理解为value of an expression（表达式的值）</p>
-<p>以下面的代码为例：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">        int a = 5;</span><br><span class="line"></span><br><span class="line">        ++(a++);</span><br><span class="line"></span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这段代码是会报错的</p>
-<blockquote>
-<p>如果你认为左值只是赋值运算左边的值，这个错误就无法理解了</p>
-<p>正确的理解是：</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(a++) 是先将变量 a 的值（5）做为整个表达式的值返回，再将 a 自增 1（类似于 a = a + 1）。</span><br><span class="line"></span><br><span class="line">所以这里 ++(a++); 相当于 ++(5), a = a + 1;</span><br><span class="line"></span><br><span class="line">那当然要报错啦，5 是一个常量，当然不能给你 5 = 5 + 1 咯~</span><br></pre></td></tr></table></figure>
-<p>++的作用对象需要是一个用于识别或定位储存位置的表示符（lvalue）</p>
-<h1 id="省流"><a href="#省流" class="headerlink" title="省流"></a>省流</h1><p>C 语言的术语 lvalue 指用于识别或定位一个存储位置的标识符。（注意：左值同时还必须是可改变的）</p>
-<p>其实 rvalue 的发明完全是为了搭配 lvalue，rvalue 你可以理解为 readable value，即任何可读取的值都被认为是右值（非左值）。</p>
-]]></content>
-      <categories>
-        <category>C语言</category>
-      </categories>
-      <tags>
-        <tag>左值</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>创新科技月演讲稿</title>
     <url>/posts/46458/</url>
     <content><![CDATA[<h1 id="介绍部分"><a href="#介绍部分" class="headerlink" title="介绍部分"></a>介绍部分</h1><h2 id="什么是个人博客"><a href="#什么是个人博客" class="headerlink" title="什么是个人博客"></a>什么是个人博客</h2><p>很多人都有自己的分享欲，有些人发动态，有些人发朋友圈，而搭建博客发表文章便是程序员们独有的浪漫。</p>
@@ -2283,49 +2214,6 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
-    <title>内网穿透单个服务快捷实现记录</title>
-    <url>/posts/25626/</url>
-    <content><![CDATA[<h1 id="内网穿透单个服务快捷实现记录"><a href="#内网穿透单个服务快捷实现记录" class="headerlink" title="内网穿透单个服务快捷实现记录"></a>内网穿透单个服务快捷实现记录</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[你的Docker容器(内网)]               [跳板机(云服务器)]                      [外网用户]</span><br><span class="line">    |                                      |                                      |</span><br><span class="line">    | 容器内业务服务(如8080端口)             | SSH服务端                             |</span><br><span class="line">    | 容器内安装autossh                      | (配置GatewayPorts=yes)                |</span><br><span class="line">    |    ↓                                  |    ↓                                 |</span><br><span class="line">    | autossh建立反向隧道                     | 监听0.0.0.0:8080                      |</span><br><span class="line">    | -R 8080:localhost:8080 ---------------&gt;| (公网可直接访问)                       |</span><br><span class="line">    |                                      |    ↓                                 |</span><br><span class="line">    |                                      | 外网用户访问:                          |</span><br><span class="line">    |                                      | curl http://云服务器IP:8080            |</span><br><span class="line">    |                                      | ✅ 直接成功                            |</span><br></pre></td></tr></table></figure>
-<h2 id="内网机器"><a href="#内网机器" class="headerlink" title="内网机器"></a>内网机器</h2><h3 id="安装autossh"><a href="#安装autossh" class="headerlink" title="安装autossh"></a>安装autossh</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">apt-get update &amp;&amp; apt-get install -y autossh openssh-client</span><br></pre></td></tr></table></figure>
-<h3 id="配置-SSH-免密登录到跳板机"><a href="#配置-SSH-免密登录到跳板机" class="headerlink" title="配置 SSH 免密登录到跳板机"></a>配置 SSH 免密登录到跳板机</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 1. 生成SSH密钥对</span><br><span class="line">ssh-keygen -t rsa -b 4096</span><br><span class="line"># 一路回车使用默认路径</span><br><span class="line"></span><br><span class="line"># 2. 将公钥复制到跳板机</span><br><span class="line">ssh-copy-id root@&lt;你的云服务器IP&gt;</span><br><span class="line"></span><br><span class="line"># 3. 测试免密登录（第一次连接需要确认指纹）</span><br><span class="line">ssh root@&lt;你的云服务器IP&gt;</span><br><span class="line"># 应该直接登录成功，不需要输入密码</span><br></pre></td></tr></table></figure>
-<h3 id="在容器内运行autossh"><a href="#在容器内运行autossh" class="headerlink" title="在容器内运行autossh"></a>在容器内运行autossh</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 用autossh（-M 0 表示禁用内置监控端口，使用SSH的保活机制）</span><br><span class="line">autossh -M 0 -fNTR 8080:localhost:8080 root@&lt;你的云服务器IP&gt;</span><br></pre></td></tr></table></figure>
-<p><strong>命令参数说明</strong>：</p>
-<ul>
-<li><code>-M 0</code>：禁用 autossh 的监控端口，改用 SSH 的 <code>ServerAliveInterval</code> 和 <code>ServerAliveCountMax</code> 机制保活 </li>
-<li><code>-f</code>：后台运行</li>
-<li><code>-N</code>：不执行远程命令，只建隧道</li>
-<li><code>-T</code>：禁用伪终端分配</li>
-<li><code>-R 8080:localhost:8080</code>：反向隧道，将跳板机的8080端口转发到容器内的8080端口</li>
-</ul>
-<h2 id="跳板机"><a href="#跳板机" class="headerlink" title="跳板机"></a>跳板机</h2><blockquote>
-<p>确保跳板机有公网ip</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 查看端口监听情况</span><br><span class="line">netstat -tulnp | grep 8080</span><br><span class="line"># 应该看到 0.0.0.0:8080 在监听，而不是 127.0.0.1:8080</span><br><span class="line"></span><br><span class="line"># 如果只看到127.0.0.1，需要检查跳板机的sshd_config</span><br><span class="line"># 确保设置了 GatewayPorts yes</span><br></pre></td></tr></table></figure>
-<p>应该看到这样的输出</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      409690/sshd: root</span><br><span class="line">tcp6       0      0 :::8080                  :::*                    LISTEN      409690/sshd: root</span><br></pre></td></tr></table></figure>
-<p>如果没有，杀死原有的autossh进程，重新建立隧道</p>
-]]></content>
-      <tags>
-        <tag>内网穿透</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>博客rss更新记录</title>
-    <url>/posts/14505/</url>
-    <content><![CDATA[<h1 id="博客rss更新记录"><a href="#博客rss更新记录" class="headerlink" title="博客rss更新记录"></a>博客rss更新记录</h1><blockquote>
-<p>使用<a href="https://docs.rsshub.app/">rsshub</a>编写了该博客的rss订阅</p>
-</blockquote>
-<h2 id="订阅方式"><a href="#订阅方式" class="headerlink" title="订阅方式"></a>订阅方式</h2><p>可以通过<code>/daoxuan</code>来订阅本博客，如果<code>https://rsshub.app/daoxuan</code>这个地址不通的话可以<a href="https://docs.rsshub.app/zh/deploy/">自建一个rsshub</a>或者<a href="https://docs.rsshub.app/zh/guide/instances">使用公共实例</a></p>
-<h2 id="文档地址"><a href="#文档地址" class="headerlink" title="文档地址"></a>文档地址</h2><p>可以在<code>https://docs.rsshub.app/zh/routes/blog#道宣的窝</code>这里找到订阅路由</p>
-<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>没有写抓取全部文章的逻辑，只是抓取了首页最新的10篇文章。</p>
-<p>如果不知道rss订阅是什么的话，可以看下这个文章<br><a href="https://blog.zhheo.com/p/9158a43c.html">RSS上手教程：聚合自己的信息收集渠道，RSSHub、FreshRSS、NetNewsWir</a></p>
-<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>跟朋友交流突然发现原来hexo有rss订阅插件，也搞了一下订阅地址为<code>https://daoxuan.cc/atom.xml</code></p>
-]]></content>
-      <tags>
-        <tag>博客</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>大英三翻译</title>
     <url>/posts/16961/</url>
     <content><![CDATA[<h1 id="Unit1"><a href="#Unit1" class="headerlink" title="Unit1"></a>Unit1</h1><p>中国有一句话，叫“人贵有自知之明”。这个观念的 最早提出者是老子。老子在《道德经》里说“知人者智，自知者明”。有“自知之明”是指人应该对自己有正确的认识，了解自身的优点和缺点，清醒地知道自己能做什么。</p>
@@ -2357,6 +2245,49 @@ return HttpResponse(book)
 ]]></content>
       <tags>
         <tag>English</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>博客rss更新记录</title>
+    <url>/posts/14505/</url>
+    <content><![CDATA[<h1 id="博客rss更新记录"><a href="#博客rss更新记录" class="headerlink" title="博客rss更新记录"></a>博客rss更新记录</h1><blockquote>
+<p>使用<a href="https://docs.rsshub.app/">rsshub</a>编写了该博客的rss订阅</p>
+</blockquote>
+<h2 id="订阅方式"><a href="#订阅方式" class="headerlink" title="订阅方式"></a>订阅方式</h2><p>可以通过<code>/daoxuan</code>来订阅本博客，如果<code>https://rsshub.app/daoxuan</code>这个地址不通的话可以<a href="https://docs.rsshub.app/zh/deploy/">自建一个rsshub</a>或者<a href="https://docs.rsshub.app/zh/guide/instances">使用公共实例</a></p>
+<h2 id="文档地址"><a href="#文档地址" class="headerlink" title="文档地址"></a>文档地址</h2><p>可以在<code>https://docs.rsshub.app/zh/routes/blog#道宣的窝</code>这里找到订阅路由</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>没有写抓取全部文章的逻辑，只是抓取了首页最新的10篇文章。</p>
+<p>如果不知道rss订阅是什么的话，可以看下这个文章<br><a href="https://blog.zhheo.com/p/9158a43c.html">RSS上手教程：聚合自己的信息收集渠道，RSSHub、FreshRSS、NetNewsWir</a></p>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>跟朋友交流突然发现原来hexo有rss订阅插件，也搞了一下订阅地址为<code>https://daoxuan.cc/atom.xml</code></p>
+]]></content>
+      <tags>
+        <tag>博客</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>内网穿透单个服务快捷实现记录</title>
+    <url>/posts/25626/</url>
+    <content><![CDATA[<h1 id="内网穿透单个服务快捷实现记录"><a href="#内网穿透单个服务快捷实现记录" class="headerlink" title="内网穿透单个服务快捷实现记录"></a>内网穿透单个服务快捷实现记录</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[你的Docker容器(内网)]               [跳板机(云服务器)]                      [外网用户]</span><br><span class="line">    |                                      |                                      |</span><br><span class="line">    | 容器内业务服务(如8080端口)             | SSH服务端                             |</span><br><span class="line">    | 容器内安装autossh                      | (配置GatewayPorts=yes)                |</span><br><span class="line">    |    ↓                                  |    ↓                                 |</span><br><span class="line">    | autossh建立反向隧道                     | 监听0.0.0.0:8080                      |</span><br><span class="line">    | -R 8080:localhost:8080 ---------------&gt;| (公网可直接访问)                       |</span><br><span class="line">    |                                      |    ↓                                 |</span><br><span class="line">    |                                      | 外网用户访问:                          |</span><br><span class="line">    |                                      | curl http://云服务器IP:8080            |</span><br><span class="line">    |                                      | ✅ 直接成功                            |</span><br></pre></td></tr></table></figure>
+<h2 id="内网机器"><a href="#内网机器" class="headerlink" title="内网机器"></a>内网机器</h2><h3 id="安装autossh"><a href="#安装autossh" class="headerlink" title="安装autossh"></a>安装autossh</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">apt-get update &amp;&amp; apt-get install -y autossh openssh-client</span><br></pre></td></tr></table></figure>
+<h3 id="配置-SSH-免密登录到跳板机"><a href="#配置-SSH-免密登录到跳板机" class="headerlink" title="配置 SSH 免密登录到跳板机"></a>配置 SSH 免密登录到跳板机</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 1. 生成SSH密钥对</span><br><span class="line">ssh-keygen -t rsa -b 4096</span><br><span class="line"># 一路回车使用默认路径</span><br><span class="line"></span><br><span class="line"># 2. 将公钥复制到跳板机</span><br><span class="line">ssh-copy-id root@&lt;你的云服务器IP&gt;</span><br><span class="line"></span><br><span class="line"># 3. 测试免密登录（第一次连接需要确认指纹）</span><br><span class="line">ssh root@&lt;你的云服务器IP&gt;</span><br><span class="line"># 应该直接登录成功，不需要输入密码</span><br></pre></td></tr></table></figure>
+<h3 id="在容器内运行autossh"><a href="#在容器内运行autossh" class="headerlink" title="在容器内运行autossh"></a>在容器内运行autossh</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 用autossh（-M 0 表示禁用内置监控端口，使用SSH的保活机制）</span><br><span class="line">autossh -M 0 -fNTR 8080:localhost:8080 root@&lt;你的云服务器IP&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>命令参数说明</strong>：</p>
+<ul>
+<li><code>-M 0</code>：禁用 autossh 的监控端口，改用 SSH 的 <code>ServerAliveInterval</code> 和 <code>ServerAliveCountMax</code> 机制保活 </li>
+<li><code>-f</code>：后台运行</li>
+<li><code>-N</code>：不执行远程命令，只建隧道</li>
+<li><code>-T</code>：禁用伪终端分配</li>
+<li><code>-R 8080:localhost:8080</code>：反向隧道，将跳板机的8080端口转发到容器内的8080端口</li>
+</ul>
+<h2 id="跳板机"><a href="#跳板机" class="headerlink" title="跳板机"></a>跳板机</h2><blockquote>
+<p>确保跳板机有公网ip</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 查看端口监听情况</span><br><span class="line">netstat -tulnp | grep 8080</span><br><span class="line"># 应该看到 0.0.0.0:8080 在监听，而不是 127.0.0.1:8080</span><br><span class="line"></span><br><span class="line"># 如果只看到127.0.0.1，需要检查跳板机的sshd_config</span><br><span class="line"># 确保设置了 GatewayPorts yes</span><br></pre></td></tr></table></figure>
+<p>应该看到这样的输出</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      409690/sshd: root</span><br><span class="line">tcp6       0      0 :::8080                  :::*                    LISTEN      409690/sshd: root</span><br></pre></td></tr></table></figure>
+<p>如果没有，杀死原有的autossh进程，重新建立隧道</p>
+]]></content>
+      <tags>
+        <tag>内网穿透</tag>
       </tags>
   </entry>
   <entry>
@@ -2616,6 +2547,43 @@ return HttpResponse(book)
       </tags>
   </entry>
   <entry>
+    <title>关于左值</title>
+    <url>/posts/49774/</url>
+    <content><![CDATA[<h1 id="关于左值"><a href="#关于左值" class="headerlink" title="关于左值"></a>关于左值</h1><details class="folding-tag" ><summary> 引用自小甲鱼的教程 </summary>
+              <div class='content'>
+              <div class="tag link"><a class="link-card" title="Tag Plugins Plus | 什么是lvalue" href="https://fishc.com.cn/thread-69833-1-1.html"><div class="left"><img src="/img/link.png"/></div><div class="right"><p class="text">Tag Plugins Plus | 什么是lvalue</p><p class="url">https://fishc.com.cn/thread-69833-1-1.html</p></div></a></div>
+              </div>
+            </details>
+<blockquote>
+<p>一般来说，当你看到这样的报错时</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Error] lvalue required as left operand of assignment</span><br></pre></td></tr></table></figure>
+<p>就是左值概念不清晰的原因啦</p>
+<p>首先我们引用一下c99的官方文档</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">The name &quot;lvalue&quot; comes originally from the assignment expression E1 = E2, in which the left operand E1 is required to be a (modi&amp;#64257;able) lvalue. It is perhaps better considered as representing an object &quot;locator value&quot;. What is sometimes called &quot;rvalue&quot; is in this International Standard described as the &quot;value of an expression&quot;.</span><br></pre></td></tr></table></figure>
+<div class="tip "><p>当然，装装样子而已啦，还是用汉语叙述：</p>
+</div>
+<p>左值也就是lvalue，更加合理的解释应该是locator value（特定位置的值），rvalue则应该理解为value of an expression（表达式的值）</p>
+<p>以下面的代码为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">        int a = 5;</span><br><span class="line"></span><br><span class="line">        ++(a++);</span><br><span class="line"></span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码是会报错的</p>
+<blockquote>
+<p>如果你认为左值只是赋值运算左边的值，这个错误就无法理解了</p>
+<p>正确的理解是：</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(a++) 是先将变量 a 的值（5）做为整个表达式的值返回，再将 a 自增 1（类似于 a = a + 1）。</span><br><span class="line"></span><br><span class="line">所以这里 ++(a++); 相当于 ++(5), a = a + 1;</span><br><span class="line"></span><br><span class="line">那当然要报错啦，5 是一个常量，当然不能给你 5 = 5 + 1 咯~</span><br></pre></td></tr></table></figure>
+<p>++的作用对象需要是一个用于识别或定位储存位置的表示符（lvalue）</p>
+<h1 id="省流"><a href="#省流" class="headerlink" title="省流"></a>省流</h1><p>C 语言的术语 lvalue 指用于识别或定位一个存储位置的标识符。（注意：左值同时还必须是可改变的）</p>
+<p>其实 rvalue 的发明完全是为了搭配 lvalue，rvalue 你可以理解为 readable value，即任何可读取的值都被认为是右值（非左值）。</p>
+]]></content>
+      <categories>
+        <category>C语言</category>
+      </categories>
+      <tags>
+        <tag>左值</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>大英散记</title>
     <url>/posts/64429/</url>
     <content><![CDATA[<details class="folding-tag" ><summary> 大英2unit1 </summary>
@@ -2828,41 +2796,12 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       </tags>
   </entry>
   <entry>
-    <title>情侣之间，对与错真的重要么？</title>
-    <url>/posts/5430/</url>
-    <content><![CDATA[<h1 id="情侣之间，对与错真的重要么？"><a href="#情侣之间，对与错真的重要么？" class="headerlink" title="情侣之间，对与错真的重要么？"></a>情侣之间，对与错真的重要么？</h1><blockquote>
-<p>昨天和女朋友突然发生了矛盾，其实冲突时间总体也不到两分钟，起因是因为我说了一句话女朋友刚开始没有听清，后续在我多次强调之后，她继续按照她听错的词讲话，而我大声的质问她到底有没有听清我说话。</p>
-<p>之后说了几句话记不清了，不过随后她挂断了电话。</p>
-<p>我在微信里面回复了一句有病吧</p>
-<p><img src="https://easyimage.daoxuan.cc/i/2024/12/11/u905lz.png" alt="" style="zoom: 67%;" /></p>
-<p>然后我们一晚上没有发消息，直到第二天的下午四点</p>
-<p><img src="https://easyimage.daoxuan.cc/i/2024/12/11/uarbr7.png" alt="" style="zoom:50%;" /></p>
-</blockquote>
-<p>事情经过便是如此，当时我正在上课，所以没有选择回复，因为一句两句说不清。</p>
-<p>下课后便给她打了电话，她开口的第一句话是为什么偷偷取了她给我买的袜子，挺可爱的，能看出来她并不想和我有矛盾，也没有很生气。</p>
-<p>不过很快我们就对昨天的事情进行了论证，论证过程便不再赘述，总之是理性辩论与感性辩论的复杂交织，理性角度不沾道理便会从感性角度去说，这很正常。</p>
-<p>结果我并没有道歉，我不想道歉，在这种两人都有点问题的局面。</p>
-<p>这通电话其实不了了之算是。</p>
-<p>但是很快她像平时一样给我发消息</p>
-<p><img src="https://easyimage.daoxuan.cc/i/2024/12/11/ugc9yg.jpg" alt=""></p>
-<p>当然，这并不代表她低头了，或者是在感情中卑微的一方，我们在一起还有十多天就4周年了，这也是一种磨合后的结果，我们都知道这件事情没什么，所以我们为什么要去争？</p>
-<p>正如题目所言，我开始思考，情侣之前，对与错真的重要么？在这种都认为自己有点道理的情况下。</p>
-<p>说重要的话有它的道理：</p>
-<p>一方面，先承认错误的那一方，便有一种在感情中地位低下的感觉，一次两次当然没有什么问题，可以说明这是一个温柔大度的人，先进行让步，希望感情不会出现问题，但问题是我们总要一起生活，一直一起生活，每次都是同一个人让步的话也总会不对劲的。所以我在考虑让步的时候，也会考虑到以后是否也需要这样，于是坚持自己的立场。</p>
-<p>另一方面，每次矛盾的出现都说明了一定的问题，我们是需要去深究其真正的原因的，然后进行改正，这样感情才能长久。</p>
-<p>如果说不重要的话：</p>
-<p>感觉，当真的是争论出来的对错的话，失败的那一方不会很舒服，而胜利的一方也不会很开心（当然如果辩论胜利就洋洋得意的话，其实就很不对劲了），本来就是相爱的两个人，干嘛要像竞争对手一样去争论呢？看似分出胜负，实则两败俱伤。</p>
-<p>人是复杂的动物，感情则更是复杂，我可以花四年时间摸透女朋友的性格，我清楚的知道怎么做可以快速结束这件小事，但是我没有去做。因为我知道感情与做题不同，不能如同做题一般：“有公式，秒了！”，</p>
-<p>我察觉到自己很矛盾，因此便有了这篇文章，我需要理一理自己的思路，需要思考，以一个认真的态度去思考，</p>
-<p>所以，情侣之前，对与错真的重要么？</p>
-<p>我觉得，恋爱的两个人的事情，观念统一才是最重要的，因此“对与错重不重要”并不重要，我们两个都觉得重要的话，它便是重要的，都觉得无所谓的话，它便不重要。</p>
-<p>所以还是静下心来一起聊个天吧</p>
-]]></content>
-      <categories>
-        <category>恋爱</category>
-      </categories>
+    <title>年终总结</title>
+    <url>/posts/50092/</url>
+    <content><![CDATA[]]></content>
       <tags>
-        <tag>恋爱</tag>
+        <tag>年终总结</tag>
+        <tag>标签外挂的使用</tag>
       </tags>
   </entry>
   <entry>
@@ -2963,15 +2902,6 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       </tags>
   </entry>
   <entry>
-    <title>年终总结</title>
-    <url>/posts/50092/</url>
-    <content><![CDATA[]]></content>
-      <tags>
-        <tag>年终总结</tag>
-        <tag>标签外挂的使用</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>检验密码强度python</title>
     <url>/posts/16342/</url>
     <content><![CDATA[<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">check_password</span>(<span class="params">self, password</span>):</span><br><span class="line">    score = <span class="number">0</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    一、密码长度:</span></span><br><span class="line"><span class="string">        5 分: 小于等于 4 个字符</span></span><br><span class="line"><span class="string">        10 分: 5 到 7 字符</span></span><br><span class="line"><span class="string">        25 分: 大于等于 8 个字符</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        二、字母:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0 分: 没有字母</span></span><br><span class="line"><span class="string">        10 分: 全都是小（大）写字母20 分: 大小写混合字母</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        三、数字:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0分: 没有数字</span></span><br><span class="line"><span class="string">        10分: 1 个数字</span></span><br><span class="line"><span class="string">        20分: 大于等于 3个数字</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        四、符号:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        0分: 没有符号</span></span><br><span class="line"><span class="string">        10分: 1个符号</span></span><br><span class="line"><span class="string">        25分: 大于1个符号</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        五、奖励:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        2分: 字母和数字</span></span><br><span class="line"><span class="string">        3分: 字母、数字和符号</span></span><br><span class="line"><span class="string">        5分: 大小写字母、数字和符号</span></span><br><span class="line"><span class="string">    :param password: 密码</span></span><br><span class="line"><span class="string">    :return: 分数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 长度</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(password) &lt;= <span class="number">4</span>:</span><br><span class="line">        score += <span class="number">5</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="number">5</span> &lt;= <span class="built_in">len</span>(password) &lt;= <span class="number">7</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">25</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 字母</span></span><br><span class="line">    <span class="keyword">if</span> password.isalpha():</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> password.islower() <span class="keyword">or</span> password.isupper():</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">20</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 数字</span></span><br><span class="line">    <span class="keyword">if</span> password.isdigit():</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt;= <span class="number">3</span>:</span><br><span class="line">        score += <span class="number">20</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 符号</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalnum()]) == <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">0</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) == <span class="number">1</span>:</span><br><span class="line">        score += <span class="number">10</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        score += <span class="number">25</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 奖励</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalpha()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">2</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isalpha()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>(</span><br><span class="line">            [i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">3</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.islower()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isupper()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>(</span><br><span class="line">            [i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> i.isdigit()]) &gt; <span class="number">0</span> <span class="keyword">and</span> <span class="built_in">len</span>([i <span class="keyword">for</span> i <span class="keyword">in</span> password <span class="keyword">if</span> <span class="keyword">not</span> i.isalnum()]) &gt; <span class="number">0</span>:</span><br><span class="line">        score += <span class="number">5</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> score</span><br></pre></td></tr></table></figure>
@@ -2981,157 +2911,111 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       </tags>
   </entry>
   <entry>
-    <title>线形模型局限性</title>
-    <url>/posts/23147/</url>
-    <content><![CDATA[<h1 id="线形模型局限性"><a href="#线形模型局限性" class="headerlink" title="线形模型局限性"></a>线形模型局限性</h1><hr>
-<h3 id="核心局限性一览"><a href="#核心局限性一览" class="headerlink" title="核心局限性一览"></a>核心局限性一览</h3><div class="table-container">
+    <title>充电桩mqtt弃用后的使用透传的平替方案</title>
+    <url>/posts/59863/</url>
+    <content><![CDATA[<h1 id="充电桩mqtt弃用后的使用透传的平替方案"><a href="#充电桩mqtt弃用后的使用透传的平替方案" class="headerlink" title="充电桩mqtt弃用后的使用透传的平替方案"></a>充电桩mqtt弃用后的使用透传的平替方案</h1><blockquote>
+<p>mqtt是原本的充电桩项目方案，本身具有按照主题发布消息订阅消息的能力，不过由于硬件方声称使用mqtt丢包率过高，需要更换为透传的方式，故而有了这个平替方案设计</p>
+</blockquote>
+<h2 id="MQTT协议工作原理"><a href="#MQTT协议工作原理" class="headerlink" title="MQTT协议工作原理"></a>MQTT协议工作原理</h2><p>在 MQTT 协议中有三种身份：发布者（Publish）、代理（Broker）（服务器）和订阅者（Subscribe）。其中消息的发布者和订阅者都是客户端，消息代理是服务器，消息发布者可以同时是订阅者，这三者的关系如下图所示：</p>
+<p><img src="https://image.daoxuan.cc/2025/08/854b4fb9d5ea00afd6cb2187685b8a17.png" alt="mqtt_principle"></p>
+<p>在 MQTT 协议的实际使用过程中，一般遵循以下流程：</p>
+<ul>
+<li>发布者通过代理服务器向指定的 Topic 发布消息。</li>
+<li>订阅者通过代理服务器订阅所需要的 Topic。</li>
+<li>订阅成功后如果有发布者向订阅者订阅的 Topic 发布消息，那么订阅者就会收到代理服务器的推送消息，通过这种方式可以进行高效的数据交换。</li>
+</ul>
+<p>在原本的工作逻辑中，Broker是docker部署的RMQX（一个开箱即用的mqtt代理），需要通信的三方：充电桩、后端服务器、微信小程序，都会同时作为发布者和订阅者，通过合理设置主题，实现充电流程的通信（细节不做说明）</p>
+<p><strong>可以看出这里的Broker是核心</strong></p>
+<p>然而透传便是去掉这个代理，让硬件客户端直接连接到服务器发送消息，也就是说直接使用<code>TCP</code>发送数据包。</p>
+<h2 id="透传的工作原理"><a href="#透传的工作原理" class="headerlink" title="透传的工作原理"></a>透传的工作原理</h2><p>去掉Broker后，硬件客户端通过<code>TCP</code>协议连接到后端服务器，因为tcp是全双工的，因此，充电桩和后端服务器之前的通信算是打通了。然而微信客户端如何与硬件进行通信呢？</p>
+<p>微信需要向充电桩下达充电指令，结束充电指令以及，状态查询指令，充电桩需要向微信回复指令的执行结果以及充电过程中的计费信息。两者也是需要双向通行的，然而两者都没有固定的ip，因此，需要借助后端服务器进行中转。</p>
+<h3 id="小程序-——-后端服务器"><a href="#小程序-——-后端服务器" class="headerlink" title="小程序 —— 后端服务器"></a>小程序 —— 后端服务器</h3><p>由于前端吐槽ws协议连接起来也不稳定，因此小程序和后端通信使用http协议，为了确保及时性，采用http轮询。</p>
+<h3 id="微信小程序→充电桩"><a href="#微信小程序→充电桩" class="headerlink" title="微信小程序→充电桩"></a>微信小程序→充电桩</h3><p>小程序通过http协议向后端服务器发送充电开始请求，携带充电桩编号，后端服务器接收到消息以后构建消息通过TCP发送到对应的充电桩。至此小程序到充电桩的消息发送成功。</p>
+<h3 id="充电桩→微信小程序"><a href="#充电桩→微信小程序" class="headerlink" title="充电桩→微信小程序"></a>充电桩→微信小程序</h3><p>微信小程序需要通过http轮询获取到充电桩信息，因此后端需要记录充电桩回复，将其放回给小程序，由于使用mysql更新对应充电桩字段状态这种方式比较麻烦且性能有限，使用redis记录整个消息无法很好的区分充电桩和主题。因此我选择使用<code>rabbitmq</code>消息对列，将充电桩的回复都发送到rabbitmq中。</p>
+<p>为了能够更好的区分不同充电桩的不同类型消息，使用充电桩的编号作为交换机的名称，使用消息主题作为channel的名称。</p>
+<p>这样小程序查询对应充电桩回复时后端服务器可以通过充电桩编号以及消息主题作为索引，去对应的消息对列中取消息，解析过后按照json格式放回给小程序。</p>
+<p>优点：相较于使用mysql保存字段状态，这个方式不需要改变以及建好的数据库表，可以复用mqtt协议时候的消息解析函数。</p>
+<h2 id="图示流程"><a href="#图示流程" class="headerlink" title="图示流程"></a>图示流程</h2><p><img src="https://image.daoxuan.cc/2025/08/e4e00b6f1740a5d39cc4a957e06583ea.png" alt="image-20250803220315270"></p>
+<p>注：pika是rabbitmq的python SDK</p>
+]]></content>
+      <tags>
+        <tag>充电桩</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>球球最爱吃的薯片</title>
+    <url>/posts/65143/</url>
+    <content><![CDATA[<h1>球球最爱吃的薯片合集</h1>
+
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th style="text-align:left">局限性</th>
-<th style="text-align:left">含义</th>
-<th style="text-align:left">后果</th>
-<th style="text-align:left">可视化比喻</th>
+<th>排名</th>
+<th>品牌</th>
+<th>名称</th>
+<th>口味</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left"><strong>1. 线性假设</strong></td>
-<td style="text-align:left">只能拟合直线/平面，无法捕捉弯曲关系</td>
-<td style="text-align:left">对非线性数据拟合极差，系统误差大</td>
-<td style="text-align:left">试图用一根筷子去贴合一个篮球的曲线</td>
+<td>NO.1</td>
+<td>上好佳</td>
+<td>田园薯片</td>
+<td>甜辣口味</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>2. 可加性假设</strong></td>
-<td style="text-align:left">假设特征 effects 独立，效应可简单相加</td>
-<td style="text-align:left">无法捕捉特征间的相互作用（交互效应）</td>
-<td style="text-align:left">调音师认为乐器的效果互不影响</td>
+<td>NO.2</td>
+<td>上好佳</td>
+<td>田园薯片</td>
+<td>烤肉口味</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>3. 对异常值敏感</strong></td>
-<td style="text-align:left">最小二乘法会极力减少大误差</td>
-<td style="text-align:left">一个异常点就能“带偏”整个模型</td>
-<td style="text-align:left">一颗磁力极强的磁铁吸走了整个铁板</td>
+<td>NO.3</td>
+<td>乐事</td>
+<td>西班牙火腿薯片</td>
+<td></td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>4. 对多重共线性敏感</strong></td>
-<td style="text-align:left">特征之间高度相关</td>
-<td style="text-align:left">模型估计不稳定，系数难以解释</td>
-<td style="text-align:left">试图区分连体双胞胎各自对结果的贡献</td>
+<td>NO.4</td>
+<td>乐事</td>
+<td>玫瑰花瓣薯片</td>
+<td></td>
+</tr>
+<tr>
+<td>NO.5</td>
+<td>薯愿</td>
+<td></td>
+<td>红酒牛肉味</td>
+</tr>
+<tr>
+<td>NO.6</td>
+<td>好丽友</td>
+<td>好友趣</td>
+<td>多汁牛排味</td>
+</tr>
+<tr>
+<td>NO.7</td>
+<td>可比克</td>
+<td></td>
+<td>番茄味</td>
+</tr>
+<tr>
+<td>NO.8</td>
+<td>乐事</td>
+<td></td>
+<td>深井烧鹅味</td>
 </tr>
 </tbody>
 </table>
 </div>
-<hr>
-<h3 id="详细解读与示例"><a href="#详细解读与示例" class="headerlink" title="详细解读与示例"></a>详细解读与示例</h3><h4 id="1-线性假设-Linearity-Assumption"><a href="#1-线性假设-Linearity-Assumption" class="headerlink" title="1. 线性假设 (Linearity Assumption)"></a>1. 线性假设 (Linearity Assumption)</h4><ul>
-<li><strong>问题</strong>：世界万物的关系远非都是线性的。许多关系是<strong>曲线</strong>的（如药物剂量与效果）、<strong>指数</strong>的（如病毒传播）、<strong>周期性</strong>的（如气温变化）。</li>
-<li><strong>例子</strong>：预测房屋价格与面积的关系。初期，面积增加会带来价格快速上升；但当面积非常大时（如豪宅），每平米带来的价格增值可能会降低。这种“ diminishing returns”（收益递减）关系是<strong>曲线</strong>，而线性模型只能拟合一条<strong>直线</strong>，导致预测不准。</li>
-<li><strong>可视化</strong>：<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">  y （价格） </span><br><span class="line">  |                 • • •</span><br><span class="line">  |               •   •   •</span><br><span class="line">  |             •     •     •</span><br><span class="line">  |           •       •       •</span><br><span class="line">  |         •         •         •</span><br><span class="line">  |       •           •</span><br><span class="line">  |     •           •</span><br><span class="line">  |   •           •</span><br><span class="line">  | •           •</span><br><span class="line">  +-----------------------------&gt; x （面积）</span><br><span class="line">【线性拟合】      【真实关系】</span><br><span class="line">一条直线          一条曲线</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="2-可加性假设-Additivity-No-Interaction"><a href="#2-可加性假设-Additivity-No-Interaction" class="headerlink" title="2. 可加性假设 (Additivity / No Interaction)"></a>2. 可加性假设 (Additivity / No Interaction)</h4><ul>
-<li><strong>问题</strong>：它假设每个预测变量对结果的影响是<strong>独立的</strong>，与其他变量无关。现实中，变量之间经常存在<strong>交互效应</strong>。</li>
-<li><strong>例子</strong>：预测冰淇淋销量 (<code>y</code>)。有两个特征：气温 (<code>x₁</code>) 和是否是周末 (<code>x₂</code>)。<ul>
-<li><strong>线性模型看法</strong>：气温升高带来的销量增加，在周末和工作日是<strong>一样多</strong>的。</li>
-<li><strong>现实情况</strong>：<strong>在周末</strong>，气温升高带来的销量增长会<strong>剧烈得多</strong>（因为大家都有空出门）。这就是“气温”和“是否周末”之间存在交互效应。线性模型无法自动捕捉这种复杂关系，除非手动添加一个交互项 (<code>x₁ * x₂</code>)。</li>
-</ul>
-</li>
-</ul>
-<h4 id="3-对异常值敏感-Sensitive-to-Outliers"><a href="#3-对异常值敏感-Sensitive-to-Outliers" class="headerlink" title="3. 对异常值敏感 (Sensitive to Outliers)"></a>3. 对异常值敏感 (Sensitive to Outliers)</h4><ul>
-<li><strong>问题</strong>：线性回归通过“最小二乘法”拟合，其目标是让<strong>所有误差的平方和</strong>最小。平方项会<strong>极大地放大异常值的影响</strong>。</li>
-<li><strong>例子</strong>：你用身高预测体重。大部分数据点都整齐分布，但有一个数据点是篮球运动员姚明（身高2.29米，体重140公斤）。为了减少姚明这个点的巨大误差平方，拟合出的直线会被<strong>强行“拉”向</strong>姚明这个点，导致对于所有<strong>普通人</strong>的预测都产生偏差。</li>
-<li><strong>可视化</strong>：<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">  y （体重）</span><br><span class="line">  |                 • </span><br><span class="line">  |               •   •</span><br><span class="line">  |             •     • </span><br><span class="line">  |           •       • </span><br><span class="line">  |         •         • </span><br><span class="line">  |       •           • </span><br><span class="line">  |     •           • </span><br><span class="line">  |   • (异常值) </span><br><span class="line">  | • </span><br><span class="line">  +-----------------------------&gt; x （身高）</span><br><span class="line">【无异常值的拟合】   【有异常值的拟合】</span><br><span class="line"> 一条合理的直线     被异常值“拉偏”的直线</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="4-对多重共线性敏感-Sensitive-to-Multicollinearity"><a href="#4-对多重共线性敏感-Sensitive-to-Multicollinearity" class="headerlink" title="4. 对多重共线性敏感 (Sensitive to Multicollinearity)"></a>4. 对多重共线性敏感 (Sensitive to Multicollinearity)</h4><ul>
-<li><strong>问题</strong>：当两个或多个预测变量<strong>高度相关</strong>时，就会出现多重共线性。</li>
-<li><strong>例子</strong>：用一个房子的“卧室数量”和“房屋面积”来预测其价格。这两个变量通常是相关的（卧室多，面积一般也大）。线性模型很难区分<strong>到底是“卧室数量”更重要，还是“房屋面积”更重要</strong>。</li>
-<li><strong>后果</strong>：<ol>
-<li><strong>系数估计不稳定</strong>：数据的微小变化可能导致系数值发生巨大波动。</li>
-<li><strong>难以解释</strong>：你无法自信地说“在保持面积不变的情况下，多一间卧室能使价格增加XX元”，因为现实中你很难“保持面积不变”。</li>
-</ol>
-</li>
-</ul>
-<h4 id="5-其他重要局限性"><a href="#5-其他重要局限性" class="headerlink" title="5. 其他重要局限性"></a>5. 其他重要局限性</h4><ul>
-<li><strong>容易欠拟合</strong>：由于模型结构简单，它可能无法学习到数据中隐藏的复杂模式，导致在训练集和测试集上表现都不好。这是偏差（Bias）高的典型表现。</li>
-<li><strong>必须满足统计假设</strong>：为了保证系数估计的有效性（如p值可信），数据必须满足一些严苛的统计假设，如误差项呈正态分布、方差齐性等。现实中这些假设经常被违反。</li>
-</ul>
-<hr>
-<h3 id="总结：何时使用-避免线性模型？"><a href="#总结：何时使用-避免线性模型？" class="headerlink" title="总结：何时使用/避免线性模型？"></a>总结：何时使用/避免线性模型？</h3><p><strong>✅ 使用线性模型当：</strong></p>
-<ul>
-<li>关系很可能是线性的，或近似线性。</li>
-<li><strong>可解释性</strong>至关重要，你需要理解每个特征的影响。</li>
-<li>作为一个强大的<strong>基准模型</strong>，用来和更复杂的模型做对比。</li>
-<li>数据量较小，或需要快速得到一个初步结果。</li>
-</ul>
-<p><strong>❌ 避免使用线性模型当：</strong></p>
-<ul>
-<li>你通过绘图发现关系明显是<strong>非线性</strong>的（曲线、指数等）。</li>
-<li>你怀疑特征之间存在强烈的<strong>交互效应</strong>。</li>
-<li>你的数据中含有<strong>异常值</strong>，并且无法有效处理它们。</li>
-<li>你的特征之间<strong>高度相关</strong>。</li>
-</ul>
-]]></content>
-      <tags>
-        <tag>机器学习</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>维吉尼亚密码破解python</title>
-    <url>/posts/48193/</url>
-    <content><![CDATA[<h1 id="维吉尼亚密码破解python"><a href="#维吉尼亚密码破解python" class="headerlink" title="维吉尼亚密码破解python"></a>维吉尼亚密码破解python</h1><blockquote>
-<p>具体原理可以自行查看</p>
+<blockquote>
+<p>下面附上图片（球球的亲笔记录）</p>
 </blockquote>
-<h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><h3 id="1-获取key的可能长度（使用重合指数攻击法）"><a href="#1-获取key的可能长度（使用重合指数攻击法）" class="headerlink" title="1. 获取key的可能长度（使用重合指数攻击法）"></a>1. 获取key的可能长度（使用重合指数攻击法）</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">count_IC</span>(<span class="params">cipher</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算重合指数&quot;&quot;&quot;</span></span><br><span class="line">    freq = Counter(cipher)</span><br><span class="line">    L = <span class="built_in">len</span>(cipher)</span><br><span class="line">    IC = <span class="built_in">sum</span>(f * (f - <span class="number">1</span>) <span class="keyword">for</span> f <span class="keyword">in</span> freq.values()) / (L * (L - <span class="number">1</span>))</span><br><span class="line">    <span class="keyword">return</span> IC</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">guess_key_length</span>(<span class="params">cipher, max_len=<span class="number">50</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;猜测密钥长度&quot;&quot;&quot;</span></span><br><span class="line">    best_lengths = []</span><br><span class="line">    <span class="keyword">for</span> key_len <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, max_len + <span class="number">1</span>):</span><br><span class="line">        groups = [<span class="string">&#x27;&#x27;</span> <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(key_len)]</span><br><span class="line">        <span class="keyword">for</span> i, char <span class="keyword">in</span> <span class="built_in">enumerate</span>(cipher):</span><br><span class="line">            groups[i % key_len] += char</span><br><span class="line">        avg_IC = np.mean([count_IC(group) <span class="keyword">for</span> group <span class="keyword">in</span> groups])</span><br><span class="line">        diff = <span class="built_in">abs</span>(avg_IC - <span class="number">0.0667</span>)  <span class="comment"># 英语文本的IC约为0.0667</span></span><br><span class="line">        best_lengths.append((diff, key_len))</span><br><span class="line">    best_lengths.sort()</span><br><span class="line">    <span class="keyword">return</span> [length <span class="keyword">for</span> _, length <span class="keyword">in</span> best_lengths]</span><br></pre></td></tr></table></figure>
-<h3 id="2-猜测key的可能值（字母频率分析）"><a href="#2-猜测key的可能值（字母频率分析）" class="headerlink" title="2. 猜测key的可能值（字母频率分析）"></a>2. 猜测key的可能值（字母频率分析）</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">frequency_analysis</span>(<span class="params">group, num_candidates=<span class="number">3</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;频率分析，找到最匹配的位移&quot;&quot;&quot;</span></span><br><span class="line">    R_list = []</span><br><span class="line">    group_len = <span class="built_in">len</span>(group)  <span class="comment"># 分组长度</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> shift <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">26</span>):  <span class="comment"># 遍历所有可能的位移（0 到 25）</span></span><br><span class="line">        <span class="comment"># 统计位移后字母的频率</span></span><br><span class="line">        shifted_freq = Counter(</span><br><span class="line">            <span class="built_in">chr</span>(((<span class="built_in">ord</span>(char) - <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>) - shift) % <span class="number">26</span>) + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)) <span class="keyword">for</span> char <span class="keyword">in</span> group</span><br><span class="line">        )</span><br><span class="line">        <span class="comment"># 计算内积 R = ∑(P_i * Q_i)</span></span><br><span class="line">        R = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> ENGLISH_FREQ:</span><br><span class="line">            <span class="comment"># P_i: 英语字母频率</span></span><br><span class="line">            <span class="comment"># Q_i: 分组中字母频率</span></span><br><span class="line">            Q_i = shifted_freq.get(char, <span class="number">0</span>) / group_len</span><br><span class="line">            R += ENGLISH_FREQ[char] * Q_i</span><br><span class="line">        R_list.append((shift, R))</span><br><span class="line">    R_list.sort(key=<span class="keyword">lambda</span> x: -x[<span class="number">1</span>])  <span class="comment"># 按R值从大到小排序</span></span><br><span class="line">    <span class="comment"># 返回前num_candidates个位移及其R值</span></span><br><span class="line">    <span class="keyword">return</span> [(<span class="built_in">chr</span>(shift + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)), R) <span class="keyword">for</span> shift, R <span class="keyword">in</span> R_list[:num_candidates]]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">guess_key</span>(<span class="params">cipher, key_len</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;猜测密钥，按照优先级列出所有可能的密钥&quot;&quot;&quot;</span></span><br><span class="line">    groups = [cipher[i::key_len] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(key_len)]  <span class="comment"># 按密钥长度分组</span></span><br><span class="line">    candidates = []</span><br><span class="line">    <span class="keyword">for</span> group <span class="keyword">in</span> groups:</span><br><span class="line">        <span class="comment"># 对每个分组进行频率分析，获取第一个可能的位移及其R值</span></span><br><span class="line">        shifts = frequency_analysis(group, num_candidates=<span class="number">1</span>)</span><br><span class="line">        candidates.append(shifts)</span><br><span class="line">    <span class="comment"># 生成所有可能的密钥组合，并计算其总R值</span></span><br><span class="line">    keys_with_score = []</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> product(*candidates):</span><br><span class="line">        key_str = <span class="string">&#x27;&#x27;</span>.join([k[<span class="number">0</span>] <span class="keyword">for</span> k <span class="keyword">in</span> key])  <span class="comment"># 密钥字符串</span></span><br><span class="line">        total_R = <span class="built_in">sum</span>(k[<span class="number">1</span>] <span class="keyword">for</span> k <span class="keyword">in</span> key)  <span class="comment"># 密钥的总R值</span></span><br><span class="line">        keys_with_score.append((key_str, total_R))</span><br><span class="line">    <span class="comment"># 按总R值从大到小排序</span></span><br><span class="line">    keys_with_score.sort(key=<span class="keyword">lambda</span> x: -x[<span class="number">1</span>])</span><br><span class="line">    <span class="comment"># 返回按优先级排序的密钥列表</span></span><br><span class="line">    <span class="keyword">return</span> [key <span class="keyword">for</span> key, _ <span class="keyword">in</span> keys_with_score]</span><br></pre></td></tr></table></figure>
-<h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> itertools <span class="keyword">import</span> product</span><br><span class="line"></span><br><span class="line">KEYLENGTHNUM = <span class="number">5</span>  <span class="comment"># 密钥长度候选数量</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 英语字母频率表</span></span><br><span class="line">ENGLISH_FREQ = &#123;</span><br><span class="line">    <span class="string">&#x27;A&#x27;</span>: <span class="number">0.08167</span>, <span class="string">&#x27;B&#x27;</span>: <span class="number">0.01492</span>, <span class="string">&#x27;C&#x27;</span>: <span class="number">0.02782</span>, <span class="string">&#x27;D&#x27;</span>: <span class="number">0.04253</span>,</span><br><span class="line">    <span class="string">&#x27;E&#x27;</span>: <span class="number">0.12702</span>, <span class="string">&#x27;F&#x27;</span>: <span class="number">0.02228</span>, <span class="string">&#x27;G&#x27;</span>: <span class="number">0.02015</span>, <span class="string">&#x27;H&#x27;</span>: <span class="number">0.06094</span>,</span><br><span class="line">    <span class="string">&#x27;I&#x27;</span>: <span class="number">0.06966</span>, <span class="string">&#x27;J&#x27;</span>: <span class="number">0.00153</span>, <span class="string">&#x27;K&#x27;</span>: <span class="number">0.00772</span>, <span class="string">&#x27;L&#x27;</span>: <span class="number">0.04025</span>,</span><br><span class="line">    <span class="string">&#x27;M&#x27;</span>: <span class="number">0.02406</span>, <span class="string">&#x27;N&#x27;</span>: <span class="number">0.06749</span>, <span class="string">&#x27;O&#x27;</span>: <span class="number">0.07507</span>, <span class="string">&#x27;P&#x27;</span>: <span class="number">0.01929</span>,</span><br><span class="line">    <span class="string">&#x27;Q&#x27;</span>: <span class="number">0.00095</span>, <span class="string">&#x27;R&#x27;</span>: <span class="number">0.05987</span>, <span class="string">&#x27;S&#x27;</span>: <span class="number">0.06327</span>, <span class="string">&#x27;T&#x27;</span>: <span class="number">0.09056</span>,</span><br><span class="line">    <span class="string">&#x27;U&#x27;</span>: <span class="number">0.02758</span>, <span class="string">&#x27;V&#x27;</span>: <span class="number">0.00978</span>, <span class="string">&#x27;W&#x27;</span>: <span class="number">0.0236</span>, <span class="string">&#x27;X&#x27;</span>: <span class="number">0.0015</span>,</span><br><span class="line">    <span class="string">&#x27;Y&#x27;</span>: <span class="number">0.01974</span>, <span class="string">&#x27;Z&#x27;</span>: <span class="number">0.00074</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">alpha</span>(<span class="params">cipher</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;提取密文中的字母并统一转换为大写&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>.join([char.upper() <span class="keyword">for</span> char <span class="keyword">in</span> cipher <span class="keyword">if</span> char.isalpha()])</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">count_IC</span>(<span class="params">cipher</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算重合指数&quot;&quot;&quot;</span></span><br><span class="line">    freq = Counter(cipher)</span><br><span class="line">    L = <span class="built_in">len</span>(cipher)</span><br><span class="line">    IC = <span class="built_in">sum</span>(f * (f - <span class="number">1</span>) <span class="keyword">for</span> f <span class="keyword">in</span> freq.values()) / (L * (L - <span class="number">1</span>))</span><br><span class="line">    <span class="keyword">return</span> IC</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">guess_key_length</span>(<span class="params">cipher, max_len=<span class="number">50</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;猜测密钥长度&quot;&quot;&quot;</span></span><br><span class="line">    best_lengths = []</span><br><span class="line">    <span class="keyword">for</span> key_len <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, max_len + <span class="number">1</span>):</span><br><span class="line">        groups = [<span class="string">&#x27;&#x27;</span> <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(key_len)]</span><br><span class="line">        <span class="keyword">for</span> i, char <span class="keyword">in</span> <span class="built_in">enumerate</span>(cipher):</span><br><span class="line">            groups[i % key_len] += char</span><br><span class="line">        avg_IC = np.mean([count_IC(group) <span class="keyword">for</span> group <span class="keyword">in</span> groups])</span><br><span class="line">        diff = <span class="built_in">abs</span>(avg_IC - <span class="number">0.0667</span>)  <span class="comment"># 英语文本的IC约为0.0667</span></span><br><span class="line">        best_lengths.append((diff, key_len))</span><br><span class="line">    best_lengths.sort()</span><br><span class="line">    <span class="keyword">return</span> [length <span class="keyword">for</span> _, length <span class="keyword">in</span> best_lengths]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">frequency_analysis</span>(<span class="params">group, num_candidates=<span class="number">3</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;频率分析，找到最匹配的位移&quot;&quot;&quot;</span></span><br><span class="line">    R_list = []</span><br><span class="line">    group_len = <span class="built_in">len</span>(group)  <span class="comment"># 分组长度</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> shift <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">26</span>):  <span class="comment"># 遍历所有可能的位移（0 到 25）</span></span><br><span class="line">        <span class="comment"># 统计位移后字母的频率</span></span><br><span class="line">        shifted_freq = Counter(</span><br><span class="line">            <span class="built_in">chr</span>(((<span class="built_in">ord</span>(char) - <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>) - shift) % <span class="number">26</span>) + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)) <span class="keyword">for</span> char <span class="keyword">in</span> group</span><br><span class="line">        )</span><br><span class="line">        <span class="comment"># 计算内积 R = ∑(P_i * Q_i)</span></span><br><span class="line">        R = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> ENGLISH_FREQ:</span><br><span class="line">            <span class="comment"># P_i: 英语字母频率</span></span><br><span class="line">            <span class="comment"># Q_i: 分组中字母频率</span></span><br><span class="line">            Q_i = shifted_freq.get(char, <span class="number">0</span>) / group_len</span><br><span class="line">            R += ENGLISH_FREQ[char] * Q_i</span><br><span class="line">        R_list.append((shift, R))</span><br><span class="line">    R_list.sort(key=<span class="keyword">lambda</span> x: -x[<span class="number">1</span>])  <span class="comment"># 按R值从大到小排序</span></span><br><span class="line">    <span class="comment"># 返回前num_candidates个位移及其R值</span></span><br><span class="line">    <span class="keyword">return</span> [(<span class="built_in">chr</span>(shift + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)), R) <span class="keyword">for</span> shift, R <span class="keyword">in</span> R_list[:num_candidates]]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">guess_key</span>(<span class="params">cipher, key_len</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;猜测密钥，按照优先级列出所有可能的密钥&quot;&quot;&quot;</span></span><br><span class="line">    groups = [cipher[i::key_len] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(key_len)]  <span class="comment"># 按密钥长度分组</span></span><br><span class="line">    candidates = []</span><br><span class="line">    <span class="keyword">for</span> group <span class="keyword">in</span> groups:</span><br><span class="line">        <span class="comment"># 对每个分组进行频率分析，获取第一个可能的位移及其R值</span></span><br><span class="line">        shifts = frequency_analysis(group, num_candidates=<span class="number">1</span>)</span><br><span class="line">        candidates.append(shifts)</span><br><span class="line">    <span class="comment"># 生成所有可能的密钥组合，并计算其总R值</span></span><br><span class="line">    keys_with_score = []</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> product(*candidates):</span><br><span class="line">        key_str = <span class="string">&#x27;&#x27;</span>.join([k[<span class="number">0</span>] <span class="keyword">for</span> k <span class="keyword">in</span> key])  <span class="comment"># 密钥字符串</span></span><br><span class="line">        total_R = <span class="built_in">sum</span>(k[<span class="number">1</span>] <span class="keyword">for</span> k <span class="keyword">in</span> key)  <span class="comment"># 密钥的总R值</span></span><br><span class="line">        keys_with_score.append((key_str, total_R))</span><br><span class="line">    <span class="comment"># 按总R值从大到小排序</span></span><br><span class="line">    keys_with_score.sort(key=<span class="keyword">lambda</span> x: -x[<span class="number">1</span>])</span><br><span class="line">    <span class="comment"># 返回按优先级排序的密钥列表</span></span><br><span class="line">    <span class="keyword">return</span> [key <span class="keyword">for</span> key, _ <span class="keyword">in</span> keys_with_score]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">vigenere_decrypt</span>(<span class="params">cipher, key</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;维吉尼亚解密&quot;&quot;&quot;</span></span><br><span class="line">    decrypted = []</span><br><span class="line">    key_length = <span class="built_in">len</span>(key)</span><br><span class="line">    key_as_int = [<span class="built_in">ord</span>(k) - <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>) <span class="keyword">for</span> k <span class="keyword">in</span> key]</span><br><span class="line">    index = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> char <span class="keyword">in</span> cipher:</span><br><span class="line">        <span class="keyword">if</span> char.isalpha():</span><br><span class="line">            offset = key_as_int[index % key_length]</span><br><span class="line">            <span class="keyword">if</span> char.isupper():</span><br><span class="line">                value = (<span class="built_in">ord</span>(char) - offset - <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)) % <span class="number">26</span></span><br><span class="line">                decrypted.append(<span class="built_in">chr</span>(value + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)))</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                value = (<span class="built_in">ord</span>(char) - offset - <span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)) % <span class="number">26</span></span><br><span class="line">                decrypted.append(<span class="built_in">chr</span>(value + <span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)))</span><br><span class="line">            index += <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            decrypted.append(char)  <span class="comment"># 保留标点和空格</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>.join(decrypted)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    <span class="comment"># 密文</span></span><br><span class="line">    cipher = <span class="string">&quot;&quot;&quot;Zs vxb fxcnz evm enare usca tvdcs wgkduhtytero xjwmato xpjb jqjl krth bhzl tk hcbb nvb aolmb. Xhase</span></span><br><span class="line"><span class="string">jsb bw zcah plm vigmpiwp ib bum gdaet, owe qbewpa jtbvc ijzmbb yqde smbq urilijk iwl nzc ob</span></span><br><span class="line"><span class="string">ivmceqlg sszcp. Nlb lkzm cw n pmuoi iwl lws hwzm j pbuc. Azh zroubcoqwvnaf bm a ymbh ial woq</span></span><br><span class="line"><span class="string">liem n kmmiyvrbl. Ibd pvccp gw y pepm xn emb bnmkt ial woq liem n aahkst. Jlq zclekqxv gw rha</span></span><br><span class="line"><span class="string">lcktrar ob ilrnvkcs wrl hwh pyva e ajvpbsanc. &quot;&quot;&quot;</span></span><br><span class="line">    alpha_cipher = alpha(cipher)</span><br><span class="line">    key_len = guess_key_length(alpha_cipher)[:KEYLENGTHNUM]</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;候选密钥长度:&quot;</span>, key_len)</span><br><span class="line">    <span class="keyword">for</span> length <span class="keyword">in</span> key_len:</span><br><span class="line">        keys = guess_key(alpha_cipher, length)</span><br><span class="line">        <span class="comment"># keys = guess_key(alpha_cipher, length)</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;\n密钥长度 <span class="subst">&#123;length&#125;</span> 的可能密钥（按优先级排序）:&quot;</span>)</span><br><span class="line">        <span class="keyword">for</span> key <span class="keyword">in</span> keys:</span><br><span class="line">            decrypted_text = vigenere_decrypt(cipher, key)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;密钥: <span class="subst">&#123;key&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;解密结果: <span class="subst">&#123;decrypted_text&#125;</span>&quot;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>原理参考文章：</p>
-<p>重合指数攻击：</p>
-<p><a href="https://blog.csdn.net/forest_LL/article/details/135300302">https://blog.csdn.net/forest_LL/article/details/135300302</a></p>
-<p>字母频率分析：</p>
-<p><a href="https://www.cnblogs.com/ISGuXing/p/9665904.html">https://www.cnblogs.com/ISGuXing/p/9665904.html</a></p>
+<p><img src="http://picture.daoxuan.cc/image/202301301237798.webp" alt=""></p>
 ]]></content>
       <tags>
-        <tag>网络安全</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>网站雷达</title>
-    <url>/posts/41157/</url>
-    <content><![CDATA[<h1 id="网站雷达"><a href="#网站雷达" class="headerlink" title="网站雷达"></a>网站雷达</h1><blockquote>
-<p>发现了一个很厉害的设计师，他的博客我觉得很有价值，可以提高人的审美，也记录的博主的思考，我很喜欢故记录一下，防止忘记。</p>
-</blockquote>
-<p>博客地址：<a href="https://www.ianneo.xyz/">https://www.ianneo.xyz/</a></p>
-<p>github地址：<a href="https://github.com/helloianneo">https://github.com/helloianneo</a></p>
-<p><img src="https://image.daoxuan.cc/2026/07/37f3500c407cc3d262b7516ff22cdc7d.png" alt="f0788a0f406ee889de040b7b4045e094"></p>
-]]></content>
-      <tags>
-        <tag>推荐</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>观影最佳位置</title>
-    <url>/posts/9815/</url>
-    <content><![CDATA[<blockquote>
-<p>以下内容选取自青春山东公众号</p>
-</blockquote>
-<p><strong>2D电影</strong></p>
-<p>根据美国电影电视工程师协会公布的最佳观影位置准则，观看2D电影，<strong>首先需要画面尽量占满视野，观众与屏幕两侧的视线夹角至少要≥36°，</strong>示意图如下。</p>
-<p><img src="https://picture.daoxuan.cc/image/202402222156676.png" alt="图片"></p>
-<p>其次，为避免造成颈椎疲劳，<strong>观众与银幕水平线之间的仰角不宜超过35°，</strong>示意图如下。</p>
-<p><img src="https://picture.daoxuan.cc/image/202402222156076.png" alt="图片"></p>
-<p>基于这两条原则，与银幕一侧水平夹角过小的偏两侧的座位、仰角过大的最前排座位、离屏幕太远且离后置音响过近的最后排座位，都会影响观影视听效果体验，所以要想获得较好的观影体验，就不宜选择这几种座位。</p>
-<p>综合视听效果来考虑，为方便大家快速作出选择，我们将不同规格的影厅对应的位置总结如下。</p>
-<p><strong>·</strong> 如果是8~14排的小厅，最好选择第五、六排前后居中位置；</p>
-<p><strong>·</strong> 如果是15~20排的中厅，最好选择第七、八排前后居中位置；</p>
-<p><strong>·</strong> 如果是21~25排的大厅或者IMAX厅，最好选择第九、十排前后居中位置。</p>
-<p><strong>3D电影</strong></p>
-<p>由于3D眼镜会将银幕亮度削弱40%左右，所以观看3D电影时，为了更好的视觉效果，<strong>应该坐在银幕与放映窗口间1/2的位置，</strong>示意图如下。</p>
-<p><img src="https://picture.daoxuan.cc/image/202402222156510.png" alt="图片"></p>
-<p>电影院中同一放映厅不同位置的票价不同，也是根据观影效果决定的，不过，由于每个人的观影需求不尽相同，具体该怎么选择还要结合自身需求来决定。</p>
-]]></content>
-      <tags>
-        <tag>有趣的知识</tag>
+        <tag>生活</tag>
       </tags>
   </entry>
   <entry>
@@ -3419,24 +3303,195 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       </tags>
   </entry>
   <entry>
-    <title>解决在remoteapp中edge打不开的问题</title>
-    <url>/posts/52000/</url>
-    <content><![CDATA[<p>在remoteapp中点击edge打不开</p>
-<p><strong>分析原因：</strong></p>
-<p>remoteapp连接服务端机器时会使用一个用户对服务端进行登录</p>
-<p>远程桌面连接中重复使用同一用户登录时，默认情况下新连接会顶掉旧连接。如果允许同一用户多重登陆，则会建立多个 session，并存。但多个 session 之间内容并不共享。<br>我们称之为Session Shadowing Mode（会话重影模式）</p>
-<p>然而无论有多少个session，我们使用的机子始终是同一个，也就是说，对于不可以多开的应用例如微信，如果已经在一个session中打开了，那么在另一个session中便无法打开。</p>
-<blockquote>
-<p>所以我推测是因为edge始终在后台运行并且开机自启，因为关键重启之后依然无法使用<code>remoteapp</code>打开</p>
-</blockquote>
-<p>查看edge设置：edge://settings/system</p>
-<p>发现有一个：启动增强配置项，阅读原理后发现，因为这个配置导致edge有进程开机自启。</p>
-<p><strong>解决方案：</strong></p>
-<p>所以我们只需要关闭启动增强即可。</p>
-<p>PS：总结起来就是不允许多开的应用开机自启的话就无法使用<code>remoteapp</code>连接。</p>
+    <title>线形模型局限性</title>
+    <url>/posts/23147/</url>
+    <content><![CDATA[<h1 id="线形模型局限性"><a href="#线形模型局限性" class="headerlink" title="线形模型局限性"></a>线形模型局限性</h1><hr>
+<h3 id="核心局限性一览"><a href="#核心局限性一览" class="headerlink" title="核心局限性一览"></a>核心局限性一览</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">局限性</th>
+<th style="text-align:left">含义</th>
+<th style="text-align:left">后果</th>
+<th style="text-align:left">可视化比喻</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>1. 线性假设</strong></td>
+<td style="text-align:left">只能拟合直线/平面，无法捕捉弯曲关系</td>
+<td style="text-align:left">对非线性数据拟合极差，系统误差大</td>
+<td style="text-align:left">试图用一根筷子去贴合一个篮球的曲线</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2. 可加性假设</strong></td>
+<td style="text-align:left">假设特征 effects 独立，效应可简单相加</td>
+<td style="text-align:left">无法捕捉特征间的相互作用（交互效应）</td>
+<td style="text-align:left">调音师认为乐器的效果互不影响</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>3. 对异常值敏感</strong></td>
+<td style="text-align:left">最小二乘法会极力减少大误差</td>
+<td style="text-align:left">一个异常点就能“带偏”整个模型</td>
+<td style="text-align:left">一颗磁力极强的磁铁吸走了整个铁板</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>4. 对多重共线性敏感</strong></td>
+<td style="text-align:left">特征之间高度相关</td>
+<td style="text-align:left">模型估计不稳定，系数难以解释</td>
+<td style="text-align:left">试图区分连体双胞胎各自对结果的贡献</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h3 id="详细解读与示例"><a href="#详细解读与示例" class="headerlink" title="详细解读与示例"></a>详细解读与示例</h3><h4 id="1-线性假设-Linearity-Assumption"><a href="#1-线性假设-Linearity-Assumption" class="headerlink" title="1. 线性假设 (Linearity Assumption)"></a>1. 线性假设 (Linearity Assumption)</h4><ul>
+<li><strong>问题</strong>：世界万物的关系远非都是线性的。许多关系是<strong>曲线</strong>的（如药物剂量与效果）、<strong>指数</strong>的（如病毒传播）、<strong>周期性</strong>的（如气温变化）。</li>
+<li><strong>例子</strong>：预测房屋价格与面积的关系。初期，面积增加会带来价格快速上升；但当面积非常大时（如豪宅），每平米带来的价格增值可能会降低。这种“ diminishing returns”（收益递减）关系是<strong>曲线</strong>，而线性模型只能拟合一条<strong>直线</strong>，导致预测不准。</li>
+<li><strong>可视化</strong>：<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">  y （价格） </span><br><span class="line">  |                 • • •</span><br><span class="line">  |               •   •   •</span><br><span class="line">  |             •     •     •</span><br><span class="line">  |           •       •       •</span><br><span class="line">  |         •         •         •</span><br><span class="line">  |       •           •</span><br><span class="line">  |     •           •</span><br><span class="line">  |   •           •</span><br><span class="line">  | •           •</span><br><span class="line">  +-----------------------------&gt; x （面积）</span><br><span class="line">【线性拟合】      【真实关系】</span><br><span class="line">一条直线          一条曲线</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="2-可加性假设-Additivity-No-Interaction"><a href="#2-可加性假设-Additivity-No-Interaction" class="headerlink" title="2. 可加性假设 (Additivity / No Interaction)"></a>2. 可加性假设 (Additivity / No Interaction)</h4><ul>
+<li><strong>问题</strong>：它假设每个预测变量对结果的影响是<strong>独立的</strong>，与其他变量无关。现实中，变量之间经常存在<strong>交互效应</strong>。</li>
+<li><strong>例子</strong>：预测冰淇淋销量 (<code>y</code>)。有两个特征：气温 (<code>x₁</code>) 和是否是周末 (<code>x₂</code>)。<ul>
+<li><strong>线性模型看法</strong>：气温升高带来的销量增加，在周末和工作日是<strong>一样多</strong>的。</li>
+<li><strong>现实情况</strong>：<strong>在周末</strong>，气温升高带来的销量增长会<strong>剧烈得多</strong>（因为大家都有空出门）。这就是“气温”和“是否周末”之间存在交互效应。线性模型无法自动捕捉这种复杂关系，除非手动添加一个交互项 (<code>x₁ * x₂</code>)。</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-对异常值敏感-Sensitive-to-Outliers"><a href="#3-对异常值敏感-Sensitive-to-Outliers" class="headerlink" title="3. 对异常值敏感 (Sensitive to Outliers)"></a>3. 对异常值敏感 (Sensitive to Outliers)</h4><ul>
+<li><strong>问题</strong>：线性回归通过“最小二乘法”拟合，其目标是让<strong>所有误差的平方和</strong>最小。平方项会<strong>极大地放大异常值的影响</strong>。</li>
+<li><strong>例子</strong>：你用身高预测体重。大部分数据点都整齐分布，但有一个数据点是篮球运动员姚明（身高2.29米，体重140公斤）。为了减少姚明这个点的巨大误差平方，拟合出的直线会被<strong>强行“拉”向</strong>姚明这个点，导致对于所有<strong>普通人</strong>的预测都产生偏差。</li>
+<li><strong>可视化</strong>：<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">  y （体重）</span><br><span class="line">  |                 • </span><br><span class="line">  |               •   •</span><br><span class="line">  |             •     • </span><br><span class="line">  |           •       • </span><br><span class="line">  |         •         • </span><br><span class="line">  |       •           • </span><br><span class="line">  |     •           • </span><br><span class="line">  |   • (异常值) </span><br><span class="line">  | • </span><br><span class="line">  +-----------------------------&gt; x （身高）</span><br><span class="line">【无异常值的拟合】   【有异常值的拟合】</span><br><span class="line"> 一条合理的直线     被异常值“拉偏”的直线</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="4-对多重共线性敏感-Sensitive-to-Multicollinearity"><a href="#4-对多重共线性敏感-Sensitive-to-Multicollinearity" class="headerlink" title="4. 对多重共线性敏感 (Sensitive to Multicollinearity)"></a>4. 对多重共线性敏感 (Sensitive to Multicollinearity)</h4><ul>
+<li><strong>问题</strong>：当两个或多个预测变量<strong>高度相关</strong>时，就会出现多重共线性。</li>
+<li><strong>例子</strong>：用一个房子的“卧室数量”和“房屋面积”来预测其价格。这两个变量通常是相关的（卧室多，面积一般也大）。线性模型很难区分<strong>到底是“卧室数量”更重要，还是“房屋面积”更重要</strong>。</li>
+<li><strong>后果</strong>：<ol>
+<li><strong>系数估计不稳定</strong>：数据的微小变化可能导致系数值发生巨大波动。</li>
+<li><strong>难以解释</strong>：你无法自信地说“在保持面积不变的情况下，多一间卧室能使价格增加XX元”，因为现实中你很难“保持面积不变”。</li>
+</ol>
+</li>
+</ul>
+<h4 id="5-其他重要局限性"><a href="#5-其他重要局限性" class="headerlink" title="5. 其他重要局限性"></a>5. 其他重要局限性</h4><ul>
+<li><strong>容易欠拟合</strong>：由于模型结构简单，它可能无法学习到数据中隐藏的复杂模式，导致在训练集和测试集上表现都不好。这是偏差（Bias）高的典型表现。</li>
+<li><strong>必须满足统计假设</strong>：为了保证系数估计的有效性（如p值可信），数据必须满足一些严苛的统计假设，如误差项呈正态分布、方差齐性等。现实中这些假设经常被违反。</li>
+</ul>
+<hr>
+<h3 id="总结：何时使用-避免线性模型？"><a href="#总结：何时使用-避免线性模型？" class="headerlink" title="总结：何时使用/避免线性模型？"></a>总结：何时使用/避免线性模型？</h3><p><strong>✅ 使用线性模型当：</strong></p>
+<ul>
+<li>关系很可能是线性的，或近似线性。</li>
+<li><strong>可解释性</strong>至关重要，你需要理解每个特征的影响。</li>
+<li>作为一个强大的<strong>基准模型</strong>，用来和更复杂的模型做对比。</li>
+<li>数据量较小，或需要快速得到一个初步结果。</li>
+</ul>
+<p><strong>❌ 避免使用线性模型当：</strong></p>
+<ul>
+<li>你通过绘图发现关系明显是<strong>非线性</strong>的（曲线、指数等）。</li>
+<li>你怀疑特征之间存在强烈的<strong>交互效应</strong>。</li>
+<li>你的数据中含有<strong>异常值</strong>，并且无法有效处理它们。</li>
+<li>你的特征之间<strong>高度相关</strong>。</li>
+</ul>
 ]]></content>
       <tags>
-        <tag>remoteapp</tag>
+        <tag>机器学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>维吉尼亚密码破解python</title>
+    <url>/posts/48193/</url>
+    <content><![CDATA[<h1 id="维吉尼亚密码破解python"><a href="#维吉尼亚密码破解python" class="headerlink" title="维吉尼亚密码破解python"></a>维吉尼亚密码破解python</h1><blockquote>
+<p>具体原理可以自行查看</p>
+</blockquote>
+<h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><h3 id="1-获取key的可能长度（使用重合指数攻击法）"><a href="#1-获取key的可能长度（使用重合指数攻击法）" class="headerlink" title="1. 获取key的可能长度（使用重合指数攻击法）"></a>1. 获取key的可能长度（使用重合指数攻击法）</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">count_IC</span>(<span class="params">cipher</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算重合指数&quot;&quot;&quot;</span></span><br><span class="line">    freq = Counter(cipher)</span><br><span class="line">    L = <span class="built_in">len</span>(cipher)</span><br><span class="line">    IC = <span class="built_in">sum</span>(f * (f - <span class="number">1</span>) <span class="keyword">for</span> f <span class="keyword">in</span> freq.values()) / (L * (L - <span class="number">1</span>))</span><br><span class="line">    <span class="keyword">return</span> IC</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">guess_key_length</span>(<span class="params">cipher, max_len=<span class="number">50</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;猜测密钥长度&quot;&quot;&quot;</span></span><br><span class="line">    best_lengths = []</span><br><span class="line">    <span class="keyword">for</span> key_len <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, max_len + <span class="number">1</span>):</span><br><span class="line">        groups = [<span class="string">&#x27;&#x27;</span> <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(key_len)]</span><br><span class="line">        <span class="keyword">for</span> i, char <span class="keyword">in</span> <span class="built_in">enumerate</span>(cipher):</span><br><span class="line">            groups[i % key_len] += char</span><br><span class="line">        avg_IC = np.mean([count_IC(group) <span class="keyword">for</span> group <span class="keyword">in</span> groups])</span><br><span class="line">        diff = <span class="built_in">abs</span>(avg_IC - <span class="number">0.0667</span>)  <span class="comment"># 英语文本的IC约为0.0667</span></span><br><span class="line">        best_lengths.append((diff, key_len))</span><br><span class="line">    best_lengths.sort()</span><br><span class="line">    <span class="keyword">return</span> [length <span class="keyword">for</span> _, length <span class="keyword">in</span> best_lengths]</span><br></pre></td></tr></table></figure>
+<h3 id="2-猜测key的可能值（字母频率分析）"><a href="#2-猜测key的可能值（字母频率分析）" class="headerlink" title="2. 猜测key的可能值（字母频率分析）"></a>2. 猜测key的可能值（字母频率分析）</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">frequency_analysis</span>(<span class="params">group, num_candidates=<span class="number">3</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;频率分析，找到最匹配的位移&quot;&quot;&quot;</span></span><br><span class="line">    R_list = []</span><br><span class="line">    group_len = <span class="built_in">len</span>(group)  <span class="comment"># 分组长度</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> shift <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">26</span>):  <span class="comment"># 遍历所有可能的位移（0 到 25）</span></span><br><span class="line">        <span class="comment"># 统计位移后字母的频率</span></span><br><span class="line">        shifted_freq = Counter(</span><br><span class="line">            <span class="built_in">chr</span>(((<span class="built_in">ord</span>(char) - <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>) - shift) % <span class="number">26</span>) + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)) <span class="keyword">for</span> char <span class="keyword">in</span> group</span><br><span class="line">        )</span><br><span class="line">        <span class="comment"># 计算内积 R = ∑(P_i * Q_i)</span></span><br><span class="line">        R = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> ENGLISH_FREQ:</span><br><span class="line">            <span class="comment"># P_i: 英语字母频率</span></span><br><span class="line">            <span class="comment"># Q_i: 分组中字母频率</span></span><br><span class="line">            Q_i = shifted_freq.get(char, <span class="number">0</span>) / group_len</span><br><span class="line">            R += ENGLISH_FREQ[char] * Q_i</span><br><span class="line">        R_list.append((shift, R))</span><br><span class="line">    R_list.sort(key=<span class="keyword">lambda</span> x: -x[<span class="number">1</span>])  <span class="comment"># 按R值从大到小排序</span></span><br><span class="line">    <span class="comment"># 返回前num_candidates个位移及其R值</span></span><br><span class="line">    <span class="keyword">return</span> [(<span class="built_in">chr</span>(shift + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)), R) <span class="keyword">for</span> shift, R <span class="keyword">in</span> R_list[:num_candidates]]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">guess_key</span>(<span class="params">cipher, key_len</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;猜测密钥，按照优先级列出所有可能的密钥&quot;&quot;&quot;</span></span><br><span class="line">    groups = [cipher[i::key_len] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(key_len)]  <span class="comment"># 按密钥长度分组</span></span><br><span class="line">    candidates = []</span><br><span class="line">    <span class="keyword">for</span> group <span class="keyword">in</span> groups:</span><br><span class="line">        <span class="comment"># 对每个分组进行频率分析，获取第一个可能的位移及其R值</span></span><br><span class="line">        shifts = frequency_analysis(group, num_candidates=<span class="number">1</span>)</span><br><span class="line">        candidates.append(shifts)</span><br><span class="line">    <span class="comment"># 生成所有可能的密钥组合，并计算其总R值</span></span><br><span class="line">    keys_with_score = []</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> product(*candidates):</span><br><span class="line">        key_str = <span class="string">&#x27;&#x27;</span>.join([k[<span class="number">0</span>] <span class="keyword">for</span> k <span class="keyword">in</span> key])  <span class="comment"># 密钥字符串</span></span><br><span class="line">        total_R = <span class="built_in">sum</span>(k[<span class="number">1</span>] <span class="keyword">for</span> k <span class="keyword">in</span> key)  <span class="comment"># 密钥的总R值</span></span><br><span class="line">        keys_with_score.append((key_str, total_R))</span><br><span class="line">    <span class="comment"># 按总R值从大到小排序</span></span><br><span class="line">    keys_with_score.sort(key=<span class="keyword">lambda</span> x: -x[<span class="number">1</span>])</span><br><span class="line">    <span class="comment"># 返回按优先级排序的密钥列表</span></span><br><span class="line">    <span class="keyword">return</span> [key <span class="keyword">for</span> key, _ <span class="keyword">in</span> keys_with_score]</span><br></pre></td></tr></table></figure>
+<h3 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> itertools <span class="keyword">import</span> product</span><br><span class="line"></span><br><span class="line">KEYLENGTHNUM = <span class="number">5</span>  <span class="comment"># 密钥长度候选数量</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 英语字母频率表</span></span><br><span class="line">ENGLISH_FREQ = &#123;</span><br><span class="line">    <span class="string">&#x27;A&#x27;</span>: <span class="number">0.08167</span>, <span class="string">&#x27;B&#x27;</span>: <span class="number">0.01492</span>, <span class="string">&#x27;C&#x27;</span>: <span class="number">0.02782</span>, <span class="string">&#x27;D&#x27;</span>: <span class="number">0.04253</span>,</span><br><span class="line">    <span class="string">&#x27;E&#x27;</span>: <span class="number">0.12702</span>, <span class="string">&#x27;F&#x27;</span>: <span class="number">0.02228</span>, <span class="string">&#x27;G&#x27;</span>: <span class="number">0.02015</span>, <span class="string">&#x27;H&#x27;</span>: <span class="number">0.06094</span>,</span><br><span class="line">    <span class="string">&#x27;I&#x27;</span>: <span class="number">0.06966</span>, <span class="string">&#x27;J&#x27;</span>: <span class="number">0.00153</span>, <span class="string">&#x27;K&#x27;</span>: <span class="number">0.00772</span>, <span class="string">&#x27;L&#x27;</span>: <span class="number">0.04025</span>,</span><br><span class="line">    <span class="string">&#x27;M&#x27;</span>: <span class="number">0.02406</span>, <span class="string">&#x27;N&#x27;</span>: <span class="number">0.06749</span>, <span class="string">&#x27;O&#x27;</span>: <span class="number">0.07507</span>, <span class="string">&#x27;P&#x27;</span>: <span class="number">0.01929</span>,</span><br><span class="line">    <span class="string">&#x27;Q&#x27;</span>: <span class="number">0.00095</span>, <span class="string">&#x27;R&#x27;</span>: <span class="number">0.05987</span>, <span class="string">&#x27;S&#x27;</span>: <span class="number">0.06327</span>, <span class="string">&#x27;T&#x27;</span>: <span class="number">0.09056</span>,</span><br><span class="line">    <span class="string">&#x27;U&#x27;</span>: <span class="number">0.02758</span>, <span class="string">&#x27;V&#x27;</span>: <span class="number">0.00978</span>, <span class="string">&#x27;W&#x27;</span>: <span class="number">0.0236</span>, <span class="string">&#x27;X&#x27;</span>: <span class="number">0.0015</span>,</span><br><span class="line">    <span class="string">&#x27;Y&#x27;</span>: <span class="number">0.01974</span>, <span class="string">&#x27;Z&#x27;</span>: <span class="number">0.00074</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">alpha</span>(<span class="params">cipher</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;提取密文中的字母并统一转换为大写&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>.join([char.upper() <span class="keyword">for</span> char <span class="keyword">in</span> cipher <span class="keyword">if</span> char.isalpha()])</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">count_IC</span>(<span class="params">cipher</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算重合指数&quot;&quot;&quot;</span></span><br><span class="line">    freq = Counter(cipher)</span><br><span class="line">    L = <span class="built_in">len</span>(cipher)</span><br><span class="line">    IC = <span class="built_in">sum</span>(f * (f - <span class="number">1</span>) <span class="keyword">for</span> f <span class="keyword">in</span> freq.values()) / (L * (L - <span class="number">1</span>))</span><br><span class="line">    <span class="keyword">return</span> IC</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">guess_key_length</span>(<span class="params">cipher, max_len=<span class="number">50</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;猜测密钥长度&quot;&quot;&quot;</span></span><br><span class="line">    best_lengths = []</span><br><span class="line">    <span class="keyword">for</span> key_len <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, max_len + <span class="number">1</span>):</span><br><span class="line">        groups = [<span class="string">&#x27;&#x27;</span> <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(key_len)]</span><br><span class="line">        <span class="keyword">for</span> i, char <span class="keyword">in</span> <span class="built_in">enumerate</span>(cipher):</span><br><span class="line">            groups[i % key_len] += char</span><br><span class="line">        avg_IC = np.mean([count_IC(group) <span class="keyword">for</span> group <span class="keyword">in</span> groups])</span><br><span class="line">        diff = <span class="built_in">abs</span>(avg_IC - <span class="number">0.0667</span>)  <span class="comment"># 英语文本的IC约为0.0667</span></span><br><span class="line">        best_lengths.append((diff, key_len))</span><br><span class="line">    best_lengths.sort()</span><br><span class="line">    <span class="keyword">return</span> [length <span class="keyword">for</span> _, length <span class="keyword">in</span> best_lengths]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">frequency_analysis</span>(<span class="params">group, num_candidates=<span class="number">3</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;频率分析，找到最匹配的位移&quot;&quot;&quot;</span></span><br><span class="line">    R_list = []</span><br><span class="line">    group_len = <span class="built_in">len</span>(group)  <span class="comment"># 分组长度</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> shift <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">26</span>):  <span class="comment"># 遍历所有可能的位移（0 到 25）</span></span><br><span class="line">        <span class="comment"># 统计位移后字母的频率</span></span><br><span class="line">        shifted_freq = Counter(</span><br><span class="line">            <span class="built_in">chr</span>(((<span class="built_in">ord</span>(char) - <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>) - shift) % <span class="number">26</span>) + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)) <span class="keyword">for</span> char <span class="keyword">in</span> group</span><br><span class="line">        )</span><br><span class="line">        <span class="comment"># 计算内积 R = ∑(P_i * Q_i)</span></span><br><span class="line">        R = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> ENGLISH_FREQ:</span><br><span class="line">            <span class="comment"># P_i: 英语字母频率</span></span><br><span class="line">            <span class="comment"># Q_i: 分组中字母频率</span></span><br><span class="line">            Q_i = shifted_freq.get(char, <span class="number">0</span>) / group_len</span><br><span class="line">            R += ENGLISH_FREQ[char] * Q_i</span><br><span class="line">        R_list.append((shift, R))</span><br><span class="line">    R_list.sort(key=<span class="keyword">lambda</span> x: -x[<span class="number">1</span>])  <span class="comment"># 按R值从大到小排序</span></span><br><span class="line">    <span class="comment"># 返回前num_candidates个位移及其R值</span></span><br><span class="line">    <span class="keyword">return</span> [(<span class="built_in">chr</span>(shift + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)), R) <span class="keyword">for</span> shift, R <span class="keyword">in</span> R_list[:num_candidates]]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">guess_key</span>(<span class="params">cipher, key_len</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;猜测密钥，按照优先级列出所有可能的密钥&quot;&quot;&quot;</span></span><br><span class="line">    groups = [cipher[i::key_len] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(key_len)]  <span class="comment"># 按密钥长度分组</span></span><br><span class="line">    candidates = []</span><br><span class="line">    <span class="keyword">for</span> group <span class="keyword">in</span> groups:</span><br><span class="line">        <span class="comment"># 对每个分组进行频率分析，获取第一个可能的位移及其R值</span></span><br><span class="line">        shifts = frequency_analysis(group, num_candidates=<span class="number">1</span>)</span><br><span class="line">        candidates.append(shifts)</span><br><span class="line">    <span class="comment"># 生成所有可能的密钥组合，并计算其总R值</span></span><br><span class="line">    keys_with_score = []</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> product(*candidates):</span><br><span class="line">        key_str = <span class="string">&#x27;&#x27;</span>.join([k[<span class="number">0</span>] <span class="keyword">for</span> k <span class="keyword">in</span> key])  <span class="comment"># 密钥字符串</span></span><br><span class="line">        total_R = <span class="built_in">sum</span>(k[<span class="number">1</span>] <span class="keyword">for</span> k <span class="keyword">in</span> key)  <span class="comment"># 密钥的总R值</span></span><br><span class="line">        keys_with_score.append((key_str, total_R))</span><br><span class="line">    <span class="comment"># 按总R值从大到小排序</span></span><br><span class="line">    keys_with_score.sort(key=<span class="keyword">lambda</span> x: -x[<span class="number">1</span>])</span><br><span class="line">    <span class="comment"># 返回按优先级排序的密钥列表</span></span><br><span class="line">    <span class="keyword">return</span> [key <span class="keyword">for</span> key, _ <span class="keyword">in</span> keys_with_score]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">vigenere_decrypt</span>(<span class="params">cipher, key</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;维吉尼亚解密&quot;&quot;&quot;</span></span><br><span class="line">    decrypted = []</span><br><span class="line">    key_length = <span class="built_in">len</span>(key)</span><br><span class="line">    key_as_int = [<span class="built_in">ord</span>(k) - <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>) <span class="keyword">for</span> k <span class="keyword">in</span> key]</span><br><span class="line">    index = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> char <span class="keyword">in</span> cipher:</span><br><span class="line">        <span class="keyword">if</span> char.isalpha():</span><br><span class="line">            offset = key_as_int[index % key_length]</span><br><span class="line">            <span class="keyword">if</span> char.isupper():</span><br><span class="line">                value = (<span class="built_in">ord</span>(char) - offset - <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)) % <span class="number">26</span></span><br><span class="line">                decrypted.append(<span class="built_in">chr</span>(value + <span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>)))</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                value = (<span class="built_in">ord</span>(char) - offset - <span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)) % <span class="number">26</span></span><br><span class="line">                decrypted.append(<span class="built_in">chr</span>(value + <span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)))</span><br><span class="line">            index += <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            decrypted.append(char)  <span class="comment"># 保留标点和空格</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>.join(decrypted)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    <span class="comment"># 密文</span></span><br><span class="line">    cipher = <span class="string">&quot;&quot;&quot;Zs vxb fxcnz evm enare usca tvdcs wgkduhtytero xjwmato xpjb jqjl krth bhzl tk hcbb nvb aolmb. Xhase</span></span><br><span class="line"><span class="string">jsb bw zcah plm vigmpiwp ib bum gdaet, owe qbewpa jtbvc ijzmbb yqde smbq urilijk iwl nzc ob</span></span><br><span class="line"><span class="string">ivmceqlg sszcp. Nlb lkzm cw n pmuoi iwl lws hwzm j pbuc. Azh zroubcoqwvnaf bm a ymbh ial woq</span></span><br><span class="line"><span class="string">liem n kmmiyvrbl. Ibd pvccp gw y pepm xn emb bnmkt ial woq liem n aahkst. Jlq zclekqxv gw rha</span></span><br><span class="line"><span class="string">lcktrar ob ilrnvkcs wrl hwh pyva e ajvpbsanc. &quot;&quot;&quot;</span></span><br><span class="line">    alpha_cipher = alpha(cipher)</span><br><span class="line">    key_len = guess_key_length(alpha_cipher)[:KEYLENGTHNUM]</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;候选密钥长度:&quot;</span>, key_len)</span><br><span class="line">    <span class="keyword">for</span> length <span class="keyword">in</span> key_len:</span><br><span class="line">        keys = guess_key(alpha_cipher, length)</span><br><span class="line">        <span class="comment"># keys = guess_key(alpha_cipher, length)</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;\n密钥长度 <span class="subst">&#123;length&#125;</span> 的可能密钥（按优先级排序）:&quot;</span>)</span><br><span class="line">        <span class="keyword">for</span> key <span class="keyword">in</span> keys:</span><br><span class="line">            decrypted_text = vigenere_decrypt(cipher, key)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;密钥: <span class="subst">&#123;key&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;解密结果: <span class="subst">&#123;decrypted_text&#125;</span>&quot;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>原理参考文章：</p>
+<p>重合指数攻击：</p>
+<p><a href="https://blog.csdn.net/forest_LL/article/details/135300302">https://blog.csdn.net/forest_LL/article/details/135300302</a></p>
+<p>字母频率分析：</p>
+<p><a href="https://www.cnblogs.com/ISGuXing/p/9665904.html">https://www.cnblogs.com/ISGuXing/p/9665904.html</a></p>
+]]></content>
+      <tags>
+        <tag>网络安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>情侣之间，对与错真的重要么？</title>
+    <url>/posts/5430/</url>
+    <content><![CDATA[<h1 id="情侣之间，对与错真的重要么？"><a href="#情侣之间，对与错真的重要么？" class="headerlink" title="情侣之间，对与错真的重要么？"></a>情侣之间，对与错真的重要么？</h1><blockquote>
+<p>昨天和女朋友突然发生了矛盾，其实冲突时间总体也不到两分钟，起因是因为我说了一句话女朋友刚开始没有听清，后续在我多次强调之后，她继续按照她听错的词讲话，而我大声的质问她到底有没有听清我说话。</p>
+<p>之后说了几句话记不清了，不过随后她挂断了电话。</p>
+<p>我在微信里面回复了一句有病吧</p>
+<p><img src="https://easyimage.daoxuan.cc/i/2024/12/11/u905lz.png" alt="" style="zoom: 67%;" /></p>
+<p>然后我们一晚上没有发消息，直到第二天的下午四点</p>
+<p><img src="https://easyimage.daoxuan.cc/i/2024/12/11/uarbr7.png" alt="" style="zoom:50%;" /></p>
+</blockquote>
+<p>事情经过便是如此，当时我正在上课，所以没有选择回复，因为一句两句说不清。</p>
+<p>下课后便给她打了电话，她开口的第一句话是为什么偷偷取了她给我买的袜子，挺可爱的，能看出来她并不想和我有矛盾，也没有很生气。</p>
+<p>不过很快我们就对昨天的事情进行了论证，论证过程便不再赘述，总之是理性辩论与感性辩论的复杂交织，理性角度不沾道理便会从感性角度去说，这很正常。</p>
+<p>结果我并没有道歉，我不想道歉，在这种两人都有点问题的局面。</p>
+<p>这通电话其实不了了之算是。</p>
+<p>但是很快她像平时一样给我发消息</p>
+<p><img src="https://easyimage.daoxuan.cc/i/2024/12/11/ugc9yg.jpg" alt=""></p>
+<p>当然，这并不代表她低头了，或者是在感情中卑微的一方，我们在一起还有十多天就4周年了，这也是一种磨合后的结果，我们都知道这件事情没什么，所以我们为什么要去争？</p>
+<p>正如题目所言，我开始思考，情侣之前，对与错真的重要么？在这种都认为自己有点道理的情况下。</p>
+<p>说重要的话有它的道理：</p>
+<p>一方面，先承认错误的那一方，便有一种在感情中地位低下的感觉，一次两次当然没有什么问题，可以说明这是一个温柔大度的人，先进行让步，希望感情不会出现问题，但问题是我们总要一起生活，一直一起生活，每次都是同一个人让步的话也总会不对劲的。所以我在考虑让步的时候，也会考虑到以后是否也需要这样，于是坚持自己的立场。</p>
+<p>另一方面，每次矛盾的出现都说明了一定的问题，我们是需要去深究其真正的原因的，然后进行改正，这样感情才能长久。</p>
+<p>如果说不重要的话：</p>
+<p>感觉，当真的是争论出来的对错的话，失败的那一方不会很舒服，而胜利的一方也不会很开心（当然如果辩论胜利就洋洋得意的话，其实就很不对劲了），本来就是相爱的两个人，干嘛要像竞争对手一样去争论呢？看似分出胜负，实则两败俱伤。</p>
+<p>人是复杂的动物，感情则更是复杂，我可以花四年时间摸透女朋友的性格，我清楚的知道怎么做可以快速结束这件小事，但是我没有去做。因为我知道感情与做题不同，不能如同做题一般：“有公式，秒了！”，</p>
+<p>我察觉到自己很矛盾，因此便有了这篇文章，我需要理一理自己的思路，需要思考，以一个认真的态度去思考，</p>
+<p>所以，情侣之前，对与错真的重要么？</p>
+<p>我觉得，恋爱的两个人的事情，观念统一才是最重要的，因此“对与错重不重要”并不重要，我们两个都觉得重要的话，它便是重要的，都觉得无所谓的话，它便不重要。</p>
+<p>所以还是静下心来一起聊个天吧</p>
+]]></content>
+      <categories>
+        <category>恋爱</category>
+      </categories>
+      <tags>
+        <tag>恋爱</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>网站雷达</title>
+    <url>/posts/41157/</url>
+    <content><![CDATA[<h1 id="网站雷达"><a href="#网站雷达" class="headerlink" title="网站雷达"></a>网站雷达</h1><blockquote>
+<p>发现了一个很厉害的设计师，他的博客我觉得很有价值，可以提高人的审美，也记录的博主的思考，我很喜欢故记录一下，防止忘记。</p>
+</blockquote>
+<p>博客地址：<a href="https://www.ianneo.xyz/">https://www.ianneo.xyz/</a></p>
+<p>github地址：<a href="https://github.com/helloianneo">https://github.com/helloianneo</a></p>
+<p><img src="https://image.daoxuan.cc/2026/07/37f3500c407cc3d262b7516ff22cdc7d.png" alt="f0788a0f406ee889de040b7b4045e094"></p>
+]]></content>
+      <tags>
+        <tag>推荐</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>观影最佳位置</title>
+    <url>/posts/9815/</url>
+    <content><![CDATA[<blockquote>
+<p>以下内容选取自青春山东公众号</p>
+</blockquote>
+<p><strong>2D电影</strong></p>
+<p>根据美国电影电视工程师协会公布的最佳观影位置准则，观看2D电影，<strong>首先需要画面尽量占满视野，观众与屏幕两侧的视线夹角至少要≥36°，</strong>示意图如下。</p>
+<p><img src="https://picture.daoxuan.cc/image/202402222156676.png" alt="图片"></p>
+<p>其次，为避免造成颈椎疲劳，<strong>观众与银幕水平线之间的仰角不宜超过35°，</strong>示意图如下。</p>
+<p><img src="https://picture.daoxuan.cc/image/202402222156076.png" alt="图片"></p>
+<p>基于这两条原则，与银幕一侧水平夹角过小的偏两侧的座位、仰角过大的最前排座位、离屏幕太远且离后置音响过近的最后排座位，都会影响观影视听效果体验，所以要想获得较好的观影体验，就不宜选择这几种座位。</p>
+<p>综合视听效果来考虑，为方便大家快速作出选择，我们将不同规格的影厅对应的位置总结如下。</p>
+<p><strong>·</strong> 如果是8~14排的小厅，最好选择第五、六排前后居中位置；</p>
+<p><strong>·</strong> 如果是15~20排的中厅，最好选择第七、八排前后居中位置；</p>
+<p><strong>·</strong> 如果是21~25排的大厅或者IMAX厅，最好选择第九、十排前后居中位置。</p>
+<p><strong>3D电影</strong></p>
+<p>由于3D眼镜会将银幕亮度削弱40%左右，所以观看3D电影时，为了更好的视觉效果，<strong>应该坐在银幕与放映窗口间1/2的位置，</strong>示意图如下。</p>
+<p><img src="https://picture.daoxuan.cc/image/202402222156510.png" alt="图片"></p>
+<p>电影院中同一放映厅不同位置的票价不同，也是根据观影效果决定的，不过，由于每个人的观影需求不尽相同，具体该怎么选择还要结合自身需求来决定。</p>
+]]></content>
+      <tags>
+        <tag>有趣的知识</tag>
       </tags>
   </entry>
   <entry>
@@ -3718,82 +3773,6 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       </tags>
   </entry>
   <entry>
-    <title>球球最爱吃的薯片</title>
-    <url>/posts/65143/</url>
-    <content><![CDATA[<h1>球球最爱吃的薯片合集</h1>
-
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>排名</th>
-<th>品牌</th>
-<th>名称</th>
-<th>口味</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>NO.1</td>
-<td>上好佳</td>
-<td>田园薯片</td>
-<td>甜辣口味</td>
-</tr>
-<tr>
-<td>NO.2</td>
-<td>上好佳</td>
-<td>田园薯片</td>
-<td>烤肉口味</td>
-</tr>
-<tr>
-<td>NO.3</td>
-<td>乐事</td>
-<td>西班牙火腿薯片</td>
-<td></td>
-</tr>
-<tr>
-<td>NO.4</td>
-<td>乐事</td>
-<td>玫瑰花瓣薯片</td>
-<td></td>
-</tr>
-<tr>
-<td>NO.5</td>
-<td>薯愿</td>
-<td></td>
-<td>红酒牛肉味</td>
-</tr>
-<tr>
-<td>NO.6</td>
-<td>好丽友</td>
-<td>好友趣</td>
-<td>多汁牛排味</td>
-</tr>
-<tr>
-<td>NO.7</td>
-<td>可比克</td>
-<td></td>
-<td>番茄味</td>
-</tr>
-<tr>
-<td>NO.8</td>
-<td>乐事</td>
-<td></td>
-<td>深井烧鹅味</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>下面附上图片（球球的亲笔记录）</p>
-</blockquote>
-<p><img src="http://picture.daoxuan.cc/image/202301301237798.webp" alt=""></p>
-]]></content>
-      <tags>
-        <tag>生活</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>软件性能工程--多角度讨论性能优化</title>
     <url>/posts/13888/</url>
     <content><![CDATA[<h1 id="软件性能工程—多角度讨论性能优化"><a href="#软件性能工程—多角度讨论性能优化" class="headerlink" title="软件性能工程—多角度讨论性能优化"></a>软件性能工程—多角度讨论性能优化</h1><blockquote>
@@ -4063,6 +4042,27 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       <tags>
         <tag>CDN</tag>
         <tag>重定向次数过多</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>解决在remoteapp中edge打不开的问题</title>
+    <url>/posts/52000/</url>
+    <content><![CDATA[<p>在remoteapp中点击edge打不开</p>
+<p><strong>分析原因：</strong></p>
+<p>remoteapp连接服务端机器时会使用一个用户对服务端进行登录</p>
+<p>远程桌面连接中重复使用同一用户登录时，默认情况下新连接会顶掉旧连接。如果允许同一用户多重登陆，则会建立多个 session，并存。但多个 session 之间内容并不共享。<br>我们称之为Session Shadowing Mode（会话重影模式）</p>
+<p>然而无论有多少个session，我们使用的机子始终是同一个，也就是说，对于不可以多开的应用例如微信，如果已经在一个session中打开了，那么在另一个session中便无法打开。</p>
+<blockquote>
+<p>所以我推测是因为edge始终在后台运行并且开机自启，因为关键重启之后依然无法使用<code>remoteapp</code>打开</p>
+</blockquote>
+<p>查看edge设置：edge://settings/system</p>
+<p>发现有一个：启动增强配置项，阅读原理后发现，因为这个配置导致edge有进程开机自启。</p>
+<p><strong>解决方案：</strong></p>
+<p>所以我们只需要关闭启动增强即可。</p>
+<p>PS：总结起来就是不允许多开的应用开机自启的话就无法使用<code>remoteapp</code>连接。</p>
+]]></content>
+      <tags>
+        <tag>remoteapp</tag>
       </tags>
   </entry>
 </search>
