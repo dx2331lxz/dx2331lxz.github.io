@@ -79,6 +79,7 @@ class MusicPlayer {
     const fallbackSource = sources[fallbackConfig.source]
       ? fallbackConfig.source
       : sourceKeys.find(key => sources[key].server === 'netease');
+    const daoliyuConfig = fallbackConfig.daoliyu || {};
 
     return {
       api: globalConfig.api || window.meting_api,
@@ -92,7 +93,12 @@ class MusicPlayer {
         enable: fallbackConfig.enable === true && Boolean(fallbackSource),
         source: fallbackSource,
         positiveTtl: Number(fallbackConfig.positiveTtl || fallbackConfig.positive_ttl) || 604800000,
-        negativeTtl: Number(fallbackConfig.negativeTtl || fallbackConfig.negative_ttl) || 86400000
+        negativeTtl: Number(fallbackConfig.negativeTtl || fallbackConfig.negative_ttl) || 86400000,
+        previewMaxDuration: Number(fallbackConfig.previewMaxDuration || fallbackConfig.preview_max_duration) || 35,
+        daoliyu: {
+          enable: daoliyuConfig.enable === true && Boolean(daoliyuConfig.api),
+          api: String(daoliyuConfig.api || '')
+        }
       }
     };
   }
@@ -413,29 +419,34 @@ class MusicPlayer {
       fallbackSource,
       positiveTtl: fallback.positiveTtl,
       negativeTtl: fallback.negativeTtl,
+      previewMaxDuration: fallback.previewMaxDuration,
+      daoliyu: fallback.daoliyu,
       isActive: player => !this.destroyed && this.getPageAPlayer() === player,
       onStatus: detail => this.handleFallbackStatus(detail)
     });
   }
 
-  handleFallbackStatus({ state, track }) {
+  handleFallbackStatus({ state, track, targetSource, resolvedSource }) {
     if (this.destroyed) return;
     const title = track?.name || track?.title || '当前歌曲';
+    const sourceLabels = { netease: '网易云', daoliyu: '道理鱼' };
 
     if (state === 'resolving') {
-      this.setStatus(`《${title}》的 QQ 音源不可用，正在匹配网易云…`, 'loading');
+      const label = sourceLabels[targetSource] || '替代';
+      this.setStatus(`《${title}》正在匹配${label}完整音源…`, 'loading');
       return;
     }
 
     if (state === 'resolved') {
-      this.setStatus(`《${title}》已切换至网易云音源`, 'ready');
-      window.utils?.snackbarShow?.(`《${title}》已切换至网易云音源`, false, 3000);
+      const label = sourceLabels[resolvedSource] || '替代';
+      this.setStatus(`《${title}》已切换至${label}完整音源`, 'ready');
+      window.utils?.snackbarShow?.(`《${title}》已切换至${label}完整音源`, false, 3000);
       return;
     }
 
     const message = state === 'fallback-error'
-      ? `《${title}》的网易云替代音源也无法播放，已自动跳过`
-      : `《${title}》暂无可用的网易云替代音源，已自动跳过`;
+      ? `《${title}》的${sourceLabels[resolvedSource] || '替代'}音源无法播放，已自动跳过`
+      : `《${title}》暂无可用的完整替代音源，已自动跳过`;
     this.setStatus(message, 'error');
     window.utils?.snackbarShow?.(message, false, 3500);
     this.setTrackedTimeout(() => {
@@ -639,6 +650,7 @@ class MusicPlayer {
     if (!aplayer) return;
     try {
       aplayer.pause();
+      window.utils?.releaseMusicFallbackUrls?.(aplayer);
       // APlayer keeps a private two-second skip timer after audio errors.
       // Triggering listswitch clears it before the detached list is destroyed.
       aplayer.events?.trigger('listswitch', { index: aplayer.list?.index });
