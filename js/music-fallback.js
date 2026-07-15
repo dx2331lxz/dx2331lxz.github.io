@@ -4,7 +4,8 @@
   const fallbackRequests = new Map();
   const sourceLabels = {
     netease: '网易云',
-    daoliyu: '道理鱼'
+    daoliyu: '道理鱼',
+    comparison: '网易云和道理鱼'
   };
 
   const releaseTrackBlobUrl = track => {
@@ -211,13 +212,12 @@
     }
   };
 
-  const resolveDaoliyuTrack = async (track, options) => {
+  const lookupDaoliyuTrack = async (track, options) => {
     const config = options.daoliyu || {};
     if (config.enable !== true || !config.api) return { track: null, reason: 'disabled' };
 
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 15000);
-    let blobUrl = null;
     try {
       let result = null;
       for (const query of getDaoliyuQueries(track)) {
@@ -240,35 +240,11 @@
         }
       }
       if (!result) return { track: null, reason: 'unavailable' };
-      window.clearTimeout(timeoutId);
-
-      const streamController = new AbortController();
-      const streamTimeoutId = window.setTimeout(() => streamController.abort(), 45000);
-      let streamResponse;
-      try {
-        streamResponse = await fetch(result.url, {
-          signal: streamController.signal,
-          credentials: 'omit',
-          cache: 'no-store'
-        });
-        if (!streamResponse.ok) {
-          throw new Error(`Daoliyu stream returned HTTP ${streamResponse.status}`);
-        }
-        const audioBlob = await streamResponse.blob();
-        if (!audioBlob.size) throw new Error('Daoliyu stream returned an empty audio file');
-        blobUrl = typeof URL.createObjectURL === 'function'
-          ? URL.createObjectURL(audioBlob)
-          : result.url;
-      } finally {
-        window.clearTimeout(streamTimeoutId);
-      }
-
       return {
         track: {
           title: result.title || getTrackTitle(track),
           author: result.artist || getTrackAuthor(track),
-          url: blobUrl,
-          blobUrl: blobUrl.startsWith('blob:') ? blobUrl : null,
+          url: result.url,
           source: 'daoliyu',
           duration: Number(result.duration) || null,
           expires: Number(result.expires) || null
@@ -276,14 +252,65 @@
         reason: 'resolved'
       };
     } catch (error) {
-      if (blobUrl?.startsWith('blob:')) {
-        try { URL.revokeObjectURL(blobUrl); } catch (revokeError) {}
-      }
       if (error?.name !== 'AbortError') console.warn('[Music] Daoliyu fallback lookup failed:', error);
       return { track: null, reason: 'error', transient: true };
     } finally {
       window.clearTimeout(timeoutId);
     }
+  };
+
+  const loadDaoliyuTrack = async lookupResult => {
+    const track = lookupResult?.track;
+    if (!track?.url) return { track: null, reason: lookupResult?.reason || 'unavailable' };
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 45000);
+    let blobUrl = null;
+    try {
+      const response = await fetch(track.url, {
+        signal: controller.signal,
+        credentials: 'omit',
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error(`Daoliyu stream returned HTTP ${response.status}`);
+
+      const audioBlob = await response.blob();
+      if (!audioBlob.size) throw new Error('Daoliyu stream returned an empty audio file');
+      blobUrl = typeof URL.createObjectURL === 'function'
+        ? URL.createObjectURL(audioBlob)
+        : track.url;
+      return {
+        track: {
+          ...track,
+          url: blobUrl,
+          blobUrl: blobUrl.startsWith('blob:') ? blobUrl : null
+        },
+        reason: 'resolved'
+      };
+    } catch (error) {
+      if (blobUrl?.startsWith('blob:')) {
+        try { URL.revokeObjectURL(blobUrl); } catch (revokeError) {}
+      }
+      if (error?.name !== 'AbortError') console.warn('[Music] Daoliyu stream loading failed:', error);
+      return { track: null, reason: 'error', transient: true };
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  const selectMoreCompleteSource = (neteaseTrack, daoliyuTrack) => {
+    if (!neteaseTrack) return daoliyuTrack ? 'daoliyu' : null;
+    if (!daoliyuTrack) return 'netease';
+
+    const neteaseDuration = Number(neteaseTrack.duration);
+    const daoliyuDuration = Number(daoliyuTrack.duration);
+    const hasNeteaseDuration = Number.isFinite(neteaseDuration) && neteaseDuration > 0;
+    const hasDaoliyuDuration = Number.isFinite(daoliyuDuration) && daoliyuDuration > 0;
+    if (hasNeteaseDuration && hasDaoliyuDuration) {
+      return daoliyuDuration > neteaseDuration ? 'daoliyu' : 'netease';
+    }
+    if (hasDaoliyuDuration) return 'daoliyu';
+    return 'netease';
   };
 
   const getMusicFallbackTrack = (api, track, fallbackSource, options = {}) => {
@@ -295,7 +322,7 @@
     const daoliyuEnabled = options.daoliyu?.enable === true && Boolean(options.daoliyu.api);
     const canUseCachedTrack = cached.track
       && !(skipNetease && cached.track.source === fallbackSource.server);
-    if (cached.hit && canUseCachedTrack) {
+    if (!daoliyuEnabled && cached.hit && canUseCachedTrack) {
       return Promise.resolve(cached.track);
     }
     // DaoLiYu's index can change at any time. Never let an old negative lookup
@@ -310,21 +337,32 @@
     const negativeTtl = Number(options.negativeTtl) > 0 ? Number(options.negativeTtl) : 86400000;
     const request = (async () => {
       let transientFailure = false;
-      if (!skipNetease) {
-        const neteaseResult = await resolveNeteaseTrack(api, track, fallbackSource, options);
-        transientFailure ||= neteaseResult.transient === true;
-        if (neteaseResult.track) {
-          writeCache(cacheKey, neteaseResult.track, positiveTtl);
-          return neteaseResult.track;
-        }
-        options.onProgress?.({ source: 'daoliyu', reason: neteaseResult.reason });
+      const neteasePromise = skipNetease
+        ? Promise.resolve({ track: null, reason: 'skipped' })
+        : canUseCachedTrack
+          ? Promise.resolve({ track: cached.track, reason: 'cached' })
+          : resolveNeteaseTrack(api, track, fallbackSource, options);
+      const daoliyuPromise = daoliyuEnabled
+        ? lookupDaoliyuTrack(track, options)
+        : Promise.resolve({ track: null, reason: 'disabled' });
+      const [neteaseResult, daoliyuResult] = await Promise.all([neteasePromise, daoliyuPromise]);
+
+      transientFailure ||= neteaseResult.transient === true || daoliyuResult.transient === true;
+      if (neteaseResult.track && neteaseResult.reason !== 'cached') {
+        writeCache(cacheKey, neteaseResult.track, positiveTtl);
       }
 
-      const daoliyuResult = await resolveDaoliyuTrack(track, options);
-      transientFailure ||= daoliyuResult.transient === true;
-      if (daoliyuResult.track) {
-        // Blob URLs are scoped to the current document and cannot be persisted.
-        return daoliyuResult.track;
+      const selectedSource = selectMoreCompleteSource(neteaseResult.track, daoliyuResult.track);
+      if (selectedSource === 'netease') return neteaseResult.track;
+      if (selectedSource === 'daoliyu') {
+        options.onProgress?.({ source: 'daoliyu', reason: 'more-complete' });
+        const loadedDaoliyu = await loadDaoliyuTrack(daoliyuResult);
+        transientFailure ||= loadedDaoliyu.transient === true;
+        if (loadedDaoliyu.track) {
+          // Blob URLs are scoped to the current document and cannot be persisted.
+          return loadedDaoliyu.track;
+        }
+        if (neteaseResult.track) return neteaseResult.track;
       }
 
       if (!transientFailure && !daoliyuEnabled) writeCache(cacheKey, null, negativeTtl);
@@ -382,7 +420,7 @@
       const shouldResume = !aplayer.paused;
       track._solitudeFallbackPending = true;
       aplayer.pause();
-      const initialTarget = skipNetease ? 'daoliyu' : fallbackSource.server;
+      const initialTarget = skipNetease ? 'daoliyu' : 'comparison';
       aplayer.notice?.(`正在匹配${sourceLabels[initialTarget]}完整音源…`, 0);
       notify('resolving', { track, index, targetSource: initialTarget });
 

@@ -432,7 +432,7 @@ class MusicPlayer {
   handleFallbackStatus({ state, track, targetSource, resolvedSource }) {
     if (this.destroyed) return;
     const title = track?.name || track?.title || '当前歌曲';
-    const sourceLabels = { netease: '网易云', daoliyu: '道理鱼' };
+    const sourceLabels = { netease: '网易云', daoliyu: '道理鱼', comparison: '网易云和道理鱼' };
 
     if (state === 'resolving') {
       const label = sourceLabels[targetSource] || '替代';
