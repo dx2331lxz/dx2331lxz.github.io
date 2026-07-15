@@ -31,6 +31,41 @@
     .map(normalizeText)
     .filter(Boolean);
 
+  const uniqueBy = (items, getKey) => {
+    const keys = new Set();
+    return items.filter(item => {
+      const key = getKey(item);
+      if (!key || keys.has(key)) return false;
+      keys.add(key);
+      return true;
+    });
+  };
+
+  const getDaoliyuQueries = track => {
+    const title = getTrackTitle(track);
+    const artist = getTrackAuthor(track);
+    const simplifiedTitle = title
+      .replace(/\s*[\[(（【][^\])）】]*[\])）】]\s*/g, ' ')
+      .replace(/\s+(?:feat\.?|ft\.?)\s+.*$/i, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const artistParts = artist
+      .normalize('NFKC')
+      .split(/[,，&、/;；]|\s+(?:feat\.?|ft\.?)\s+/i)
+      .map(value => value.trim())
+      .filter(Boolean);
+    const titleVariants = uniqueBy([title, simplifiedTitle], normalizeText);
+    const artistVariants = uniqueBy([artist, ...artistParts], normalizeText);
+
+    return uniqueBy(
+      titleVariants.flatMap(titleVariant => artistVariants.map(artistVariant => ({
+        title: titleVariant,
+        artist: artistVariant
+      }))),
+      query => `${normalizeText(query.title)}:${normalizeText(query.artist)}`
+    ).slice(0, 6);
+  };
+
   const isSameTrack = (sourceTrack, candidate) => {
     if (normalizeText(getTrackTitle(sourceTrack)) !== normalizeText(getTrackTitle(candidate))) return false;
 
@@ -54,7 +89,7 @@
   };
 
   const getCacheKey = (track, fallbackSource) => [
-    'solitude-music-fallback-v2',
+    'solitude-music-fallback-v3',
     fallbackSource.server,
     normalizeText(getTrackTitle(track)),
     getArtistTokens(getTrackAuthor(track)).sort().join('-')
@@ -152,23 +187,21 @@
       if (!Array.isArray(candidates)) return { track: null, reason: 'unavailable' };
 
       const matches = candidates.filter(candidate => isSameTrack(track, candidate)).slice(0, 5);
-      let previewDetected = false;
-      for (const candidate of matches) {
-        const inspection = await inspectAudio(candidate.url, options.previewMaxDuration);
-        if (!inspection.playable) continue;
-        if (inspection.preview) {
-          previewDetected = true;
-          continue;
-        }
+      const inspections = await Promise.all(matches.map(candidate => (
+        inspectAudio(candidate.url, options.previewMaxDuration)
+      )));
+      const resolvedIndex = inspections.findIndex(inspection => inspection.playable && !inspection.preview);
+      if (resolvedIndex !== -1) {
         return {
           track: {
-            ...candidate,
+            ...matches[resolvedIndex],
             source: fallbackSource.server,
-            duration: inspection.duration
+            duration: inspections[resolvedIndex].duration
           },
           reason: 'resolved'
         };
       }
+      const previewDetected = inspections.some(inspection => inspection.playable && inspection.preview);
       return { track: null, reason: previewDetected ? 'preview' : 'unavailable' };
     } catch (error) {
       if (error?.name !== 'AbortError') console.warn('[Music] NetEase fallback lookup failed:', error);
@@ -186,20 +219,27 @@
     const timeoutId = window.setTimeout(() => controller.abort(), 15000);
     let blobUrl = null;
     try {
-      const resolveUrl = new URL('/resolve', String(config.api).replace(/\/?$/, '/'));
-      resolveUrl.searchParams.set('title', getTrackTitle(track));
-      resolveUrl.searchParams.set('artist', getTrackAuthor(track));
+      let result = null;
+      for (const query of getDaoliyuQueries(track)) {
+        const resolveUrl = new URL('/resolve', String(config.api).replace(/\/?$/, '/'));
+        resolveUrl.searchParams.set('title', query.title);
+        resolveUrl.searchParams.set('artist', query.artist);
 
-      const response = await fetch(resolveUrl, {
-        signal: controller.signal,
-        credentials: 'omit',
-        cache: 'no-store'
-      });
-      if (response.status === 404) return { track: null, reason: 'unavailable' };
-      if (!response.ok) throw new Error(`Daoliyu fallback API returned HTTP ${response.status}`);
+        const response = await fetch(resolveUrl, {
+          signal: controller.signal,
+          credentials: 'omit',
+          cache: 'no-store'
+        });
+        if (response.status === 404) continue;
+        if (!response.ok) throw new Error(`Daoliyu fallback API returned HTTP ${response.status}`);
 
-      const result = await response.json();
-      if (!result?.url) return { track: null, reason: 'unavailable' };
+        const candidate = await response.json();
+        if (candidate?.url) {
+          result = candidate;
+          break;
+        }
+      }
+      if (!result) return { track: null, reason: 'unavailable' };
       window.clearTimeout(timeoutId);
 
       const streamController = new AbortController();
@@ -252,9 +292,15 @@
     const cacheKey = getCacheKey(track, fallbackSource);
     const cached = readCache(cacheKey);
     const skipNetease = options.skipNetease === true;
-    if (cached.hit && !(skipNetease && cached.track?.source === fallbackSource.server)) {
+    const daoliyuEnabled = options.daoliyu?.enable === true && Boolean(options.daoliyu.api);
+    const canUseCachedTrack = cached.track
+      && !(skipNetease && cached.track.source === fallbackSource.server);
+    if (cached.hit && canUseCachedTrack) {
       return Promise.resolve(cached.track);
     }
+    // DaoLiYu's index can change at any time. Never let an old negative lookup
+    // prevent a fresh Worker request for a track that may now be available.
+    if (cached.hit && !cached.track && !daoliyuEnabled) return Promise.resolve(null);
 
     const requestKey = `${cacheKey}:${skipNetease ? 'daoliyu' : 'all'}`;
     const existingRequest = fallbackRequests.get(requestKey);
@@ -281,7 +327,7 @@
         return daoliyuResult.track;
       }
 
-      if (!transientFailure) writeCache(cacheKey, null, negativeTtl);
+      if (!transientFailure && !daoliyuEnabled) writeCache(cacheKey, null, negativeTtl);
       return null;
     })().finally(() => fallbackRequests.delete(requestKey));
 
@@ -320,10 +366,13 @@
         notify('fallback-error', { track, index, resolvedSource: 'daoliyu' });
         return;
       }
-      if (track._solitudeFallbackFailed) {
+      const failedUntil = Number(track._solitudeFallbackFailedUntil) || 0;
+      if (track._solitudeFallbackFailed && failedUntil > Date.now()) {
         aplayer.notice?.('暂无可用的完整替代音源，将自动跳过', 2500);
         return;
       }
+      track._solitudeFallbackFailed = false;
+      track._solitudeFallbackFailedUntil = null;
 
       // Cancel APlayer's built-in two-second skip while the replacement is resolved.
       aplayer.events?.trigger('listswitch', { index });
@@ -356,6 +405,7 @@
           const isCurrentTrack = aplayer.list?.index === index && aplayer.list?.audios?.[index] === track;
           if (!fallbackTrack) {
             track._solitudeFallbackFailed = true;
+            track._solitudeFallbackFailedUntil = Date.now() + 60000;
             if (!isCurrentTrack) return;
 
             aplayer.notice?.('暂无可用的完整替代音源，已跳过', 2500);
@@ -377,6 +427,7 @@
           track._solitudeFallbackExpires = fallbackTrack.expires || null;
           track._solitudeFallbackBlobUrl = fallbackTrack.blobUrl || null;
           track._solitudeFallbackFailed = false;
+          track._solitudeFallbackFailedUntil = null;
           track.url = fallbackTrack.url;
           if (!track.cover && (fallbackTrack.pic || fallbackTrack.cover)) {
             track.cover = fallbackTrack.pic || fallbackTrack.cover;
