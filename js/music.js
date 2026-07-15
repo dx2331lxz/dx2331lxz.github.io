@@ -212,8 +212,11 @@ class MusicPlayer {
         return;
       }
 
-      if (previousSource && previousSource !== source && this.config.sources[previousSource]) {
-        await this.restoreSource(previousSource, source, generation);
+      const recoverySource = previousSource && previousSource !== source && this.config.sources[previousSource]
+        ? previousSource
+        : Object.keys(this.config.sources).find(candidate => candidate !== source);
+      if (recoverySource) {
+        await this.restoreSource(recoverySource, source, generation);
       } else {
         this.showLoadFailure(source, error);
       }
