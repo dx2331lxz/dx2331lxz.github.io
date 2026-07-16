@@ -15,7 +15,20 @@
     if (track?._solitudeFallbackBlobUrl === blobUrl) track._solitudeFallbackBlobUrl = null;
   };
 
+  const cancelMusicFallbackOperation = aplayer => {
+    const operation = aplayer?._solitudeFallbackOperation;
+    if (!operation) return false;
+    operation.cancelled = true;
+    operation.track._solitudeFallbackPending = false;
+    try { operation.controller.abort(); } catch (error) {}
+    if (aplayer._solitudeFallbackOperation === operation) {
+      aplayer._solitudeFallbackOperation = null;
+    }
+    return true;
+  };
+
   const releaseMusicFallbackUrls = aplayer => {
+    cancelMusicFallbackOperation(aplayer);
     aplayer?.list?.audios?.forEach(releaseTrackBlobUrl);
   };
 
@@ -128,9 +141,27 @@
     } catch (error) {}
   };
 
-  const inspectAudio = (url, previewMaxDuration) => {
+  const createAbortScope = (parentSignal, timeout) => {
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    if (parentSignal?.aborted) abort();
+    else parentSignal?.addEventListener('abort', abort, { once: true });
+    const timeoutId = window.setTimeout(abort, timeout);
+    return {
+      signal: controller.signal,
+      cleanup: () => {
+        window.clearTimeout(timeoutId);
+        parentSignal?.removeEventListener('abort', abort);
+      }
+    };
+  };
+
+  const inspectAudio = (url, previewMaxDuration, signal) => {
     if (!url || typeof window.Audio !== 'function') {
       return Promise.resolve({ playable: false, duration: null, preview: false });
+    }
+    if (signal?.aborted) {
+      return Promise.resolve({ playable: false, duration: null, preview: false, cancelled: true });
     }
 
     return new Promise(resolve => {
@@ -144,6 +175,7 @@
         audio.removeEventListener('loadedmetadata', handleMetadata);
         audio.removeEventListener('durationchange', handleMetadata);
         audio.removeEventListener('error', handleError);
+        signal?.removeEventListener('abort', handleAbort);
         audio.pause();
         audio.removeAttribute('src');
         try { audio.load(); } catch (error) {}
@@ -160,12 +192,14 @@
         });
       };
       const handleError = () => finish({ playable: false, duration: null, preview: false });
+      const handleAbort = () => finish({ playable: false, duration: null, preview: false, cancelled: true });
       const timeoutId = window.setTimeout(handleError, 12000);
 
       audio.preload = 'metadata';
       audio.addEventListener('loadedmetadata', handleMetadata);
       audio.addEventListener('durationchange', handleMetadata);
       audio.addEventListener('error', handleError);
+      signal?.addEventListener('abort', handleAbort, { once: true });
       audio.src = url;
       audio.load();
     });
@@ -174,12 +208,11 @@
   const resolveNeteaseTrack = async (api, track, fallbackSource, options) => {
     const query = [getTrackTitle(track), getTrackAuthor(track)].filter(Boolean).join(' ');
     const searchSource = { ...fallbackSource, type: 'search', id: query };
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+    const abortScope = createAbortScope(options.signal, 12000);
 
     try {
       const response = await fetch(buildApiUrl(api, searchSource), {
-        signal: controller.signal,
+        signal: abortScope.signal,
         credentials: 'omit'
       });
       if (!response.ok) throw new Error(`Music fallback API returned HTTP ${response.status}`);
@@ -189,7 +222,7 @@
 
       const matches = candidates.filter(candidate => isSameTrack(track, candidate)).slice(0, 5);
       const inspections = await Promise.all(matches.map(candidate => (
-        inspectAudio(candidate.url, options.previewMaxDuration)
+        inspectAudio(candidate.url, options.previewMaxDuration, abortScope.signal)
       )));
       const resolvedIndex = inspections.findIndex(inspection => inspection.playable && !inspection.preview);
       if (resolvedIndex !== -1) {
@@ -206,9 +239,10 @@
       return { track: null, reason: previewDetected ? 'preview' : 'unavailable' };
     } catch (error) {
       if (error?.name !== 'AbortError') console.warn('[Music] NetEase fallback lookup failed:', error);
-      return { track: null, reason: 'error', transient: true };
+      const cancelled = options.signal?.aborted === true;
+      return { track: null, reason: cancelled ? 'cancelled' : 'error', cancelled, transient: true };
     } finally {
-      window.clearTimeout(timeoutId);
+      abortScope.cleanup();
     }
   };
 
@@ -216,8 +250,7 @@
     const config = options.daoliyu || {};
     if (config.enable !== true || !config.api) return { track: null, reason: 'disabled' };
 
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+    const abortScope = createAbortScope(options.signal, 15000);
     try {
       let result = null;
       for (const query of getDaoliyuQueries(track)) {
@@ -226,7 +259,7 @@
         resolveUrl.searchParams.set('artist', query.artist);
 
         const response = await fetch(resolveUrl, {
-          signal: controller.signal,
+          signal: abortScope.signal,
           credentials: 'omit',
           cache: 'no-store'
         });
@@ -253,22 +286,22 @@
       };
     } catch (error) {
       if (error?.name !== 'AbortError') console.warn('[Music] Daoliyu fallback lookup failed:', error);
-      return { track: null, reason: 'error', transient: true };
+      const cancelled = options.signal?.aborted === true;
+      return { track: null, reason: cancelled ? 'cancelled' : 'error', cancelled, transient: true };
     } finally {
-      window.clearTimeout(timeoutId);
+      abortScope.cleanup();
     }
   };
 
-  const loadDaoliyuTrack = async lookupResult => {
+  const loadDaoliyuTrack = async (lookupResult, options) => {
     const track = lookupResult?.track;
     if (!track?.url) return { track: null, reason: lookupResult?.reason || 'unavailable' };
 
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 45000);
+    const abortScope = createAbortScope(options.signal, 45000);
     let blobUrl = null;
     try {
       const response = await fetch(track.url, {
-        signal: controller.signal,
+        signal: abortScope.signal,
         credentials: 'omit',
         cache: 'no-store'
       });
@@ -292,9 +325,10 @@
         try { URL.revokeObjectURL(blobUrl); } catch (revokeError) {}
       }
       if (error?.name !== 'AbortError') console.warn('[Music] Daoliyu stream loading failed:', error);
-      return { track: null, reason: 'error', transient: true };
+      const cancelled = options.signal?.aborted === true;
+      return { track: null, reason: cancelled ? 'cancelled' : 'error', cancelled, transient: true };
     } finally {
-      window.clearTimeout(timeoutId);
+      abortScope.cleanup();
     }
   };
 
@@ -329,7 +363,11 @@
     // prevent a fresh Worker request for a track that may now be available.
     if (cached.hit && !cached.track && !daoliyuEnabled) return Promise.resolve(null);
 
-    const requestKey = `${cacheKey}:${skipNetease ? 'daoliyu' : 'all'}`;
+    const requestKey = [
+      cacheKey,
+      skipNetease ? 'daoliyu' : 'all',
+      options.requestId || 'shared'
+    ].join(':');
     const existingRequest = fallbackRequests.get(requestKey);
     if (existingRequest) return existingRequest;
 
@@ -346,6 +384,7 @@
         ? lookupDaoliyuTrack(track, options)
         : Promise.resolve({ track: null, reason: 'disabled' });
       const [neteaseResult, daoliyuResult] = await Promise.all([neteasePromise, daoliyuPromise]);
+      if (options.signal?.aborted) return null;
 
       transientFailure ||= neteaseResult.transient === true || daoliyuResult.transient === true;
       if (neteaseResult.track && neteaseResult.reason !== 'cached') {
@@ -356,7 +395,11 @@
       if (selectedSource === 'netease') return neteaseResult.track;
       if (selectedSource === 'daoliyu') {
         options.onProgress?.({ source: 'daoliyu', reason: 'more-complete' });
-        const loadedDaoliyu = await loadDaoliyuTrack(daoliyuResult);
+        const loadedDaoliyu = await loadDaoliyuTrack(daoliyuResult, options);
+        if (options.signal?.aborted) {
+          releaseTrackBlobUrl(loadedDaoliyu.track);
+          return null;
+        }
         transientFailure ||= loadedDaoliyu.transient === true;
         if (loadedDaoliyu.track) {
           // Blob URLs are scoped to the current document and cannot be persisted.
@@ -388,6 +431,29 @@
         console.warn('[Music] Fallback status handler failed:', error);
       }
     };
+    const finishOperation = operation => {
+      operation.track._solitudeFallbackPending = false;
+      if (aplayer._solitudeFallbackOperation === operation) {
+        aplayer._solitudeFallbackOperation = null;
+      }
+    };
+
+    aplayer.on('listswitch', detail => {
+      const operation = aplayer._solitudeFallbackOperation;
+      const nextIndex = Number(detail?.index);
+      if (!operation || !Number.isInteger(nextIndex) || nextIndex === operation.index) return;
+
+      operation.cancelled = true;
+      try { operation.controller.abort(); } catch (error) {}
+      finishOperation(operation);
+      aplayer.notice?.('已取消上一首的音源匹配', 1200);
+      notify('cancelled', { track: operation.track, index: operation.index, nextIndex });
+
+      window.setTimeout(() => {
+        if (!operation.shouldResume || !isActive() || aplayer.list?.index !== nextIndex) return;
+        aplayer.play();
+      }, 0);
+    });
 
     aplayer.on('error', () => {
       if (!isActive()) return;
@@ -420,6 +486,15 @@
       const shouldResume = !aplayer.paused;
       track._solitudeFallbackPending = true;
       aplayer.pause();
+      const operation = {
+        id: `${Date.now()}-${Math.random()}`,
+        controller: new AbortController(),
+        track,
+        index,
+        shouldResume,
+        cancelled: false
+      };
+      aplayer._solitudeFallbackOperation = operation;
       const initialTarget = skipNetease ? 'daoliyu' : 'comparison';
       aplayer.notice?.(`正在匹配${sourceLabels[initialTarget]}完整音源…`, 0);
       notify('resolving', { track, index, targetSource: initialTarget });
@@ -427,14 +502,21 @@
       getMusicFallbackTrack(config.api, track, fallbackSource, {
         ...config,
         skipNetease,
+        signal: operation.controller.signal,
+        requestId: operation.id,
         onProgress: ({ source, reason }) => {
+          if (operation.cancelled) return;
           if (!isActive() || aplayer.list?.audios?.[index] !== track) return;
           aplayer.notice?.(`正在匹配${sourceLabels[source] || source}完整音源…`, 0);
           notify('resolving', { track, index, targetSource: source, reason });
         }
       })
         .then(fallbackTrack => {
-          track._solitudeFallbackPending = false;
+          if (operation.cancelled) {
+            releaseTrackBlobUrl(fallbackTrack);
+            return;
+          }
+          finishOperation(operation);
           if (!isActive()) {
             releaseTrackBlobUrl(fallbackTrack);
             return;
@@ -480,7 +562,8 @@
           notify('resolved', { track, fallbackTrack, index, resolvedSource });
         })
         .catch(error => {
-          track._solitudeFallbackPending = false;
+          finishOperation(operation);
+          if (operation.cancelled) return;
           console.warn('[Music] Failed to apply fallback track:', error);
         });
     });

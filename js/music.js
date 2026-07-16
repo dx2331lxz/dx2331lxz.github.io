@@ -434,6 +434,11 @@ class MusicPlayer {
     const title = track?.name || track?.title || '当前歌曲';
     const sourceLabels = { netease: '网易云', daoliyu: '道理鱼', comparison: '网易云和道理鱼' };
 
+    if (state === 'cancelled') {
+      this.setStatus(`当前音源：${this.getSourceLabel(this.currentSource)}`, 'ready');
+      return;
+    }
+
     if (state === 'resolving') {
       const label = sourceLabels[targetSource] || '替代';
       this.setStatus(`《${title}》正在匹配${label}完整音源…`, 'loading');
