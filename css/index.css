@@ -4475,7 +4475,9 @@ span.tags-punctuation i {
   flex-direction: column;
 }
 .back-home-button .back-menu-list-group .back-menu-list-title {
-  margin: 8px 0 0 16px;
+  margin: 8px 10px 4px;
+  font-size: 12px;
+  line-height: 1;
   transition: 0.3s;
 }
 .back-home-button .back-menu-list-group:hover .back-menu-list-title {
@@ -4499,6 +4501,10 @@ span.tags-punctuation i {
   pointer-events: none;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  padding: 6px 8px 10px;
+  max-height: calc(100vh - 120px);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 @media screen and (max-width: 768px) {
   .back-home-button .back-menu-list-groups {
@@ -4508,8 +4514,29 @@ span.tags-punctuation i {
 .back-home-button .back-menu-list-groups:hover {
   border: var(--style-border-hover);
 }
+.back-home-button .back-menu-list {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  width: max-content;
+  min-width: 160px;
+}
 .back-home-button .back-menu-list .back-menu-item {
-  width: 150px;
+  width: auto;
+  margin: 2px 0;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+.back-home-button .back-menu-list .back-menu-item .back-menu-item-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.back-home-button .back-menu-list .back-menu-item .back-menu-item-text {
+  font-size: 15px;
+  margin-left: 10px;
+  white-space: nowrap;
 }
 .nav-fixed #nav a {
   color: var(--efu-fontcolor);
