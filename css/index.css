@@ -4502,9 +4502,14 @@ span.tags-punctuation i {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: 6px 8px 10px;
-  max-height: calc(100vh - 120px);
-  overflow-x: hidden;
-  overflow-y: auto;
+}
+.back-home-button .back-menu-list-groups::before {
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 100%;
+  height: 14px;
+  content: '';
 }
 @media screen and (max-width: 768px) {
   .back-home-button .back-menu-list-groups {
@@ -4521,6 +4526,12 @@ span.tags-punctuation i {
   align-items: stretch;
   width: max-content;
   min-width: 160px;
+  max-height: calc(100vh - 160px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.back-home-button .back-menu-list::before {
+  display: none;
 }
 .back-home-button .back-menu-list .back-menu-item {
   width: auto;
