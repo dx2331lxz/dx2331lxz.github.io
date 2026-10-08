@@ -4296,4 +4296,29 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
         <tag>性能</tag>
       </tags>
   </entry>
+  <entry>
+    <title>如何使用 AI 对 AI 文章进行洗稿</title>
+    <url>/posts/56981/</url>
+    <content><![CDATA[<h1 id="如何使用AI对AI文章进行洗稿"><a href="#如何使用AI对AI文章进行洗稿" class="headerlink" title="如何使用AI对AI文章进行洗稿"></a>如何使用AI对AI文章进行洗稿</h1><p>现在我们的文章中很多内容都是由AI生成的，或者说我们希望所有内容都是AI生成的，这样我们一个字都不需要敲了，但是目前的AI对于文本的输出并没有进行专项训练，导致我们常说AI生成的内容有一股AI味。</p>
+<p>这段时间接了一个写论文综述的任务，AI在调研完输出的综述文档就有很明显的AI味道。我在进行洗稿的过程中总结了我认为比较有效的工作流，可以供大家借鉴参考。</p>
+<h2 id="AI洗稿通用款"><a href="#AI洗稿通用款" class="headerlink" title="AI洗稿通用款"></a>AI洗稿通用款</h2><p>其实没有一个很通用的提示词，可以直接去除AI味道，如果你追求一套通用的方案，且不考虑精细的效果，那么你可以试试这个项目<a href="https://github.com/ai-zixun/humanizer-zh，这个项目里面包含了很多典型的AI容易出现的文本问题。">https://github.com/ai-zixun/humanizer-zh，这个项目里面包含了很多典型的AI容易出现的文本问题。</a></p>
+<blockquote>
+<p>当然我不喜欢这个方案，下面介绍我用的另一个方案</p>
+</blockquote>
+<h2 id="AI洗稿专用款"><a href="#AI洗稿专用款" class="headerlink" title="AI洗稿专用款"></a>AI洗稿专用款</h2><p>没有一成不变的提示词，所以我们需要根据具体情况去调整提示词，需要使用AI洗稿的文章一般体量都不少，而问题一般都会是全局出现并且是共性问题，因此我们可以针对前百分之20的内容进行人工清洗，并且让AI整理一个md文件，专门用来对我们提出的问题进行抽象总结，这个文件就是我们人工干预的AI洗稿的行动大纲，当我们找出我们所认为的AI味道很浓厚的问题，交给AI修改并且总结后，我们就能让AI根据这个文档对后面的内容进行洗稿了。<br>这样的话准确又快。</p>
+<p>需要注意的是，这个方案的前提是我们具备察觉到AI味的能力。几个常见的问题以及如何精确的描述我们要懂得：</p>
+<ul>
+<li>不是，而是：这种句式是典型的AI味道句子，这个句子的病灶在于，AI会在<strong>不是</strong>的后面提出一个从来没有提到过，并且读者也不会想到的思路，然后否定它，引出而是的内容，然而这里的不是后面的内容没有任何意义。</li>
+<li>防御性描述：这个也是很常见的表述，AI会去解释自己的行为，或者说一些多余的话让前文逻辑更加完善。但是这对文章逻辑表述很多时候是割裂的，并且会让读者抓不到重点。</li>
+</ul>
+<h1 id="AI文章专用洗稿工作流"><a href="#AI文章专用洗稿工作流" class="headerlink" title="AI文章专用洗稿工作流"></a>AI文章专用洗稿工作流</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[AI生成的长篇文章] --&gt; B[选取文章前约20%作为样本]</span><br><span class="line"></span><br><span class="line">    B --&gt; C[人工阅读、修改和标注]</span><br><span class="line">    C --&gt; C1[删除无意义的“不是，而是”]</span><br><span class="line">    C --&gt; C2[删除防御性描述]</span><br><span class="line">    C --&gt; C3[调整机械化表达、重复句式和生硬衔接]</span><br><span class="line"></span><br><span class="line">    C1 --&gt; D[让AI总结人工修改意见]</span><br><span class="line">    C2 --&gt; D</span><br><span class="line">    C3 --&gt; D</span><br><span class="line"></span><br><span class="line">    D --&gt; E[生成专用洗稿规则文档]</span><br><span class="line">    E --&gt; F&#123;人工检查规则是否准确、可执行？&#125;</span><br><span class="line"></span><br><span class="line">    F -- 否 --&gt; C</span><br><span class="line">    F -- 是 --&gt; G[将规则文档交给AI]</span><br><span class="line"></span><br><span class="line">    G --&gt; H[AI按照规则批量处理剩余全文]</span><br><span class="line">    H --&gt; I[人工抽检修改结果]</span><br><span class="line">    I --&gt; J&#123;是否仍有明显AI味或误改？&#125;</span><br><span class="line"></span><br><span class="line">    J -- 是 --&gt; K[记录新问题和修改方式]</span><br><span class="line">    K --&gt; E</span><br><span class="line"></span><br><span class="line">    J -- 否 --&gt; L[完成洗稿并定稿]</span><br><span class="line"></span><br><span class="line">    classDef input fill:#e8f1ed,stroke:#286b55,color:#202b30</span><br><span class="line">    classDef human fill:#f7e9e4,stroke:#a34f41,color:#202b30</span><br><span class="line">    classDef ai fill:#e7f0f4,stroke:#376b86,color:#202b30</span><br><span class="line">    classDef decision fill:#f5efd9,stroke:#946b1d,color:#202b30</span><br><span class="line">    classDef output fill:#e4f0e9,stroke:#286b55,color:#202b30</span><br><span class="line"></span><br><span class="line">    class A input</span><br><span class="line">    class B,C,C1,C2,C3,I,K human</span><br><span class="line">    class D,E,G,H ai</span><br><span class="line">    class F,J decision</span><br><span class="line">    class L output</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>AI</category>
+      </categories>
+      <tags>
+        <tag>AI</tag>
+        <tag>写作</tag>
+      </tags>
+  </entry>
 </search>
