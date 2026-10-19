@@ -4322,83 +4322,50 @@ Hi dx2331lxz! You&#39;ve successfully authenticated, but GitHub does not provide
       </tags>
   </entry>
   <entry>
-    <title>RMSNorm：均方根层归一化</title>
-    <url>/posts/21578/</url>
-    <content><![CDATA[<h1 id="RMSNorm：均方根层归一化"><a href="#RMSNorm：均方根层归一化" class="headerlink" title="RMSNorm：均方根层归一化"></a>RMSNorm：均方根层归一化</h1><p>RMSNorm（Root Mean Square Layer Normalization，均方根层归一化）是一种对特征向量的幅值进行归一化的方法。它与 LayerNorm 一样，通常沿着每个 token 的隐藏维度计算；不同之处在于，RMSNorm 不减去特征均值，只用均方根（RMS）作为缩放因子。</p>
-<h2 id="为什么要做归一化？"><a href="#为什么要做归一化？" class="headerlink" title="为什么要做归一化？"></a>为什么要做归一化？</h2><p>在深层网络中，信号经过多层变换，激活的尺度可能逐渐变大或变小。反向传播的梯度也会经过多层雅可比矩阵连乘，因此可能出现梯度爆炸或消失。归一化会对中间表示的尺度进行约束，通常能让训练更稳定。</p>
-<p>不过，归一化不是直接“修复梯度”的保证。它主要改变每层看到的激活分布和网络的梯度传播性质；效果还取决于网络结构、初始化、学习率等因素。</p>
-<h2 id="RMSNorm-的计算方式"><a href="#RMSNorm-的计算方式" class="headerlink" title="RMSNorm 的计算方式"></a>RMSNorm 的计算方式</h2><p>设某个 token 的隐藏状态为 $\mathbf{x} \in \mathbb{R}^d$，其均方根为：</p>
-<script type="math/tex; mode=display">
-\operatorname{RMS}(\mathbf{x}) = \sqrt{\frac{1}{d}\sum_{i=1}^{d}x_i^2 + \epsilon}</script><p>RMSNorm 的输出通常写作：</p>
-<script type="math/tex; mode=display">
-y_i = \frac{x_i}{\operatorname{RMS}(\mathbf{x})} g_i</script><p>其中，$\epsilon$ 是避免除零并提高数值稳定性的微小常数，$g_i$ 是可学习的逐维缩放参数。原始 RMSNorm 不包含可学习偏置；具体实现可能略有差异。</p>
-<p>计算时，每个 token 独立地在隐藏维度上求 RMS，不会跨 batch 中的样本计算统计量。归一化后的数值再乘以可学习参数，因此模型可以学习各个特征维度需要的尺度。</p>
-<h2 id="RMSNorm-与-LayerNorm-有什么区别？"><a href="#RMSNorm-与-LayerNorm-有什么区别？" class="headerlink" title="RMSNorm 与 LayerNorm 有什么区别？"></a>RMSNorm 与 LayerNorm 有什么区别？</h2><p>LayerNorm 会先减去均值，再除以标准差：</p>
-<script type="math/tex; mode=display">
-\mu = \frac{1}{d}\sum_{i=1}^{d}x_i, \qquad
-\sigma = \sqrt{\frac{1}{d}\sum_{i=1}^{d}(x_i-\mu)^2 + \epsilon}</script><script type="math/tex; mode=display">
-y_i^{\text{LN}} = \frac{x_i-\mu}{\sigma}\gamma_i + \beta_i</script><p>常见实现之间在偏置项、方差定义和数值细节上可能不同。两者的核心区别如下：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>方法</th>
-<th>归一化前的处理</th>
-<th>主要计算</th>
-<th>常见可学习参数</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>LayerNorm</td>
-<td>减均值，再按标准差缩放</td>
-<td>均值、方差和缩放</td>
-<td>缩放 $\gamma$ 与偏置 $\beta$</td>
-</tr>
-<tr>
-<td>RMSNorm</td>
-<td>不减均值，直接按 RMS 缩放</td>
-<td>平方、求均值和开方</td>
-<td>缩放 $g$</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>计算 RMSNorm 时不必先求均值并计算中心化方差，因此通常能减少一些计算。实际速度提升取决于张量形状、硬件和算子实现；两种方法都需要沿特征维度做归约。</p>
-<h2 id="为什么许多模型会选择-RMSNorm？"><a href="#为什么许多模型会选择-RMSNorm？" class="headerlink" title="为什么许多模型会选择 RMSNorm？"></a>为什么许多模型会选择 RMSNorm？</h2><p>RMSNorm 的提出者认为，在他们研究的设置中，LayerNorm 的重新缩放不变性已经足以带来有效的归一化效果，显式减均值带来的再中心化不变性并非总是必要。RMSNorm 因而保留了更简单的计算路径，并且不会主动把输入的特征均值移到零。</p>
-<p>这是一种经验结论，不意味着 RMSNorm 在所有模型和任务上都优于 LayerNorm。是否适用需要结合具体架构和训练结果判断。</p>
-<h2 id="几何意义"><a href="#几何意义" class="headerlink" title="几何意义"></a>几何意义</h2><p>先忽略 $\epsilon$ 和可学习缩放参数 $g$。RMSNorm 把向量除以自己的 RMS：</p>
-<script type="math/tex; mode=display">
-\left\|\frac{\mathbf{x}}{\operatorname{RMS}(\mathbf{x})}\right\|_2 = \sqrt{d}</script><p>所以归一化后的向量位于 $d$ 维空间中半径为 $\sqrt{d}$ 的球面上。直观地看，它保留向量方向，主要调整向量的整体长度。这里说“投影到球面”是指沿径向缩放；加入 $\epsilon$ 后，半径会略小于 $\sqrt{d}$，再乘以逐维的 $g$ 后也不再严格落在这个球面上。</p>
-<p><img src="https://image.daoxuan.cc/2026/10/c800d2382a8c64ebbc3f3db6a2f6e877.png" alt="RMSNorm 的几何示意图"></p>
-<h2 id="在-Transformer-中怎么用？"><a href="#在-Transformer-中怎么用？" class="headerlink" title="在 Transformer 中怎么用？"></a>在 Transformer 中怎么用？</h2><p>在常见的 Pre-Norm Transformer 中，归一化层通常放在注意力子层或前馈子层之前，例如：</p>
-<script type="math/tex; mode=display">
-\mathbf{h}' = \mathbf{h} + \operatorname{Attention}(\operatorname{Norm}(\mathbf{h}))</script><p>这里的 <code>Norm</code> 可以是 LayerNorm，也可以是 RMSNorm。归一化层控制送入子层的隐藏状态尺度，残差连接则提供跨层的信息通路。不同模型的归一化位置和残差结构可能不同。</p>
-<h2 id="一个简化的-PyTorch-实现"><a href="#一个简化的-PyTorch-实现" class="headerlink" title="一个简化的 PyTorch 实现"></a>一个简化的 PyTorch 实现</h2><p>下面的实现把平方和均值计算提升到 FP32，减少低精度输入下的数值误差；生产环境通常会使用融合算子以减少额外的内存读写。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">rms_norm</span>(<span class="params">x, weight, eps=<span class="number">1e-6</span></span>):</span><br><span class="line">    x_fp32 = x.<span class="built_in">float</span>()</span><br><span class="line">    inv_rms = torch.rsqrt(x_fp32.square().mean(dim=-<span class="number">1</span>, keepdim=<span class="literal">True</span>) + eps)</span><br><span class="line">    y = x_fp32 * inv_rms * weight.<span class="built_in">float</span>()</span><br><span class="line">    <span class="keyword">return</span> y.to(dtype=x.dtype)</span><br></pre></td></tr></table></figure>
-<p>这里假设 <code>weight</code> 的形状为 <code>(hidden_size,)</code>，并且归一化维度是最后一维。实际模型还需要根据框架约定处理参数 dtype、张量布局和混合精度。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RMSNorm 可以看作“按均方根缩放，但不减均值”的 LayerNorm 变体。它计算简单，已广泛用于 Transformer 等模型；它是否比 LayerNorm 更合适，则应由目标模型上的训练稳定性、效果和运行效率共同决定。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li>Biao Zhang, Rico Sennrich, <a href="https://arxiv.org/abs/1910.07467">Root Mean Square Layer Normalization</a>, NeurIPS 2019.</li>
-</ul>
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']],
-      displayMath: [['$$', '$$'], ['\\[', '\\]']],
-      processEscapes: true
-    }
-  });
-</script>
-<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS_CHTML"></script>
+    <title>Strata：面向长上下文语言模型服务的分层上下文缓存</title>
+    <url>/posts/18002/</url>
+    <content><![CDATA[<h1 id="Strata：面向长上下文语言模型服务的分层上下文缓存"><a href="#Strata：面向长上下文语言模型服务的分层上下文缓存" class="headerlink" title="Strata：面向长上下文语言模型服务的分层上下文缓存"></a>Strata：面向长上下文语言模型服务的分层上下文缓存</h1><h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><h3 id="长上下文-LLM-推理"><a href="#长上下文-LLM-推理" class="headerlink" title="长上下文 LLM 推理"></a>长上下文 LLM 推理</h3><p>LLM 推理分预填充和解码两阶段。预填充同时处理用户查询新 token 与上下文 token，产出 KV 缓存，使后续 token 无需重算即可关注历史。解码阶段自回归生成 token，持续复用并扩展 KV 缓存。长上下文会放大两阶段成本：更长前缀增加预填充延迟，缓存被驱逐或不可用时重算代价更高；解码时 KV 缓存随序列长度线性增长，内存占用与数据移动可能成为主要瓶颈，因此高效的缓存复用、放置和驱逐对高吞吐、低延迟服务至关重要。</p>
+<h3 id="KVCache-的内存管理"><a href="#KVCache-的内存管理" class="headerlink" title="KVCache 的内存管理"></a>KVCache 的内存管理</h3><p>PagedAttention通过使用动态的、基于页的分配方式，避免为 KV 缓存预留大的连续块，缓存被划分为多个固定大小的小页面，这些页面保持逻辑顺序，但在内存中可以非连续放置，从而提高利用率。典型的页面大小很小，TensorRT‑LLM 、 vLLM 和 SGLang 中分别为 32 、 16 和 1 个 token， 而单个 token 的 KV 状态可能跨越数千字节到数兆字节。虽然这种细粒度对计算内核来说是可管理的，但它对跨内存层级的数据移动带来了效率挑战</p>
+<h3 id="LLM-服务中的上下文缓存"><a href="#LLM-服务中的上下文缓存" class="headerlink" title="LLM 服务中的上下文缓存"></a>LLM 服务中的上下文缓存</h3><p>除了请求内复用之外，系统还通过使用前缀树或哈希映射 等结构识别公共前缀，从而在请求之间利用上下文缓存。为扩展容量，缓存被存储在较慢的层级中，如 CPU 内存、分布式内存池, 甚至磁盘。</p>
+<h2 id="Observation"><a href="#Observation" class="headerlink" title="Observation"></a>Observation</h2><h3 id="KV-缓存传输中的低带宽利用率"><a href="#KV-缓存传输中的低带宽利用率" class="headerlink" title="KV 缓存传输中的低带宽利用率"></a>KV 缓存传输中的低带宽利用率</h3><p>根据利特尔法则，我们得到：最大化数据吞吐量=高并发性✖️大传输尺寸➗低延迟。</p>
+<p>对于并发性，虽然可以通过启动大量异步 I/O 操作来增加并发性，但实际限制来自可用的应用级并行性（例如，在 CPU 上）以及 GPU 驱动程序 （例如，CUDA 驱动程序）和硬件内的队列容量 。</p>
+<p>对于延迟，在 CPU 和 GPU 内存之间传输数据，通常使用诸如 cudaMemcpyAsync 之类的异步操作来启用 GPU 的直接内存访问（ DMA ）引擎。然而，此场景中的延迟包含不可忽略的 CPU‑GPU 通信开销和调度延迟。</p>
+<p>由此看来，并发性和延迟都是有优化限制的，增加传输尺寸才是提高带宽利用率最实用的手段。</p>
+<p>增大页面大小是一种增加传输尺寸的方案，但是它会给 LLM 推理带来显 著的性能损失：</p>
+<p><img src="/img/posts/strata/kv-cache-page-size.png" alt="不同页面大小对 KV 缓存命中率的影响" style="zoom: 50%;" /></p>
+<p>增大页面大小会导致 KV 缓存命中率显著下降。这种退化直接导致 TTFT 大幅增加。这种对小页面的偏好导致 KV 缓存操作的有效传输大小非常小，从而导致 I/O 带宽严重利用不足。</p>
+<h3 id="资源编排与延迟命中"><a href="#资源编排与延迟命中" class="headerlink" title="资源编排与延迟命中"></a>资源编排与延迟命中</h3><p>资源编排：现有工作要么认为从 CPU 到 GPU 的 KV 缓存加 载可以忽略不计，假设通过 PCIe 加载第 N +1 层缓存数据的延迟可以通过将 I/O 与第 N 层的计算重叠来有效隐藏，要么在成本合理时选择重新计算，当服务具有长缓存上下文但需要预填充的新 token 相对较少的请求时，这一假设便不再成立。一方面，批量 KV 缓存传输的延迟可能超过层级计算所能隐藏的程度；另一方面，随着上下文长度增长，重新计算的成本越来越高，使其成为一种不具吸引力的替代方案。 因此，逐层重叠的预填充可能退化为受 PCIe 带宽限制的任务。</p>
+<p>延迟命中：当针对同一数据对象的多个请求在 初始缓存未命中仍在解决时到达，后续请求实际上被当作缓存未命中处理，尽管如果第一个请求已完成，它们本应是缓存命中</p>
+<h2 id="design"><a href="#design" class="headerlink" title="design"></a>design</h2><p><img src="/img/posts/strata/strata-cache-controller.png" alt="Strata 缓存控制器" style="zoom:50%;" /></p>
+<h3 id="Strata-缓存控制器"><a href="#Strata-缓存控制器" class="headerlink" title="Strata 缓存控制器"></a>Strata 缓存控制器</h3><p>为了解决KV 缓存传输中的带宽利用率低的问题，Strata 利用 GPU 辅助 I/O 在 CPU 和 GPU 内存之间传输 KV 缓存页，从而对小而碎片化的数据实现低延迟 I/O。具体而言，GPU 辅助 I/O 作业不是通过反复调用标准的 cudaMemcpyAsync API 来进行小数据传输，而是通过启动一个 CUDA 内核来运行。该内核会生成数千个线程。每个线程负责从源（ GPU 全局内存或 CPU 注册的固定内存）加载一小块数据到其本地寄存器文件中，然后将此数据流式传输到目标（ GPU 全局内存或注册的 CPU 固定内存）。</p>
+<p>GPU 辅助 I/O具有：增强并发性、兼容小传输、允许灵活的内存布局等优势。</p>
+<p>当涉及外部存储时，缓存控制器会在存储层检测到缓存命中时，机会性地将数据从存储预取到主机内存中。预取延迟与请求的排队延迟重叠。一旦调度器选择该请求执行，缓存控制器会终止任何正在进行的预取，并使用 主机或 GPU 内存中已有的缓存。这种默认的尽力而为策略的动机在于，存储层相对于主机 ‑GPU 传输的延迟显著更高且更难以预测</p>
+<p><img src="/img/posts/strata/strata-layout-conversion.png" alt="Strata 布局转换" style="zoom:50%;" /></p>
+<p>Strata通过实现计算友好与传输友好布局之间几乎零开销的即时转换，使得GPU 可以保持其计算友好的层优先布局，而其他介质 （如主机内存和外部存储）可以采用页优先布局。</p>
+<video controls preload="metadata" src="/img/posts/strata/strata-gpu-io-demo.mp4" style="width: 100%; max-width: 960px;"></video>
+
+<h3 id="Strata-调度器"><a href="#Strata-调度器" class="headerlink" title="Strata 调度器"></a>Strata 调度器</h3><p>调度器通过三个阶段实现通过避免延迟命中和加载停顿来最大化缓存收益。</p>
+<h4 id="延迟命中时的推迟"><a href="#延迟命中时的推迟" class="headerlink" title="延迟命中时的推迟"></a>延迟命中时的推迟</h4><p>延迟命中可能在两种情况下导致冗余计算：</p>
+<ol>
+<li>当多个共享同一缓存未命中的请求被调度到同一批次中时</li>
+<li>当请求的执行被异步准备，而未意识到相应的上下文缓存仍在计算中时</li>
+</ol>
+<p>Strata在 HiRadixTree 中引入了瞬态节点，它们使用 token ID 作为遍历键，但是它们不指向内存索引，而是携带两种标记之一：in‑queue， 表示某个请求正在引用新的上下文；in‑flight，表示对应 token 的缓存正在计算中。</p>
+<p>通过in-queue标记，请求可以识别出来是否有共享同一缓存的情况（情况1），通过in-flight标记，可以防止异步准备的情况。（情况2）</p>
+<p>然后使用一个可配置阈值：只有当瞬态节点上的 token 匹配数超过该值时从而选择是等候下一批次还是直接进入同一批次计算。</p>
+<h4 id="均衡批次形成"><a href="#均衡批次形成" class="headerlink" title="均衡批次形成"></a>均衡批次形成</h4><p><img src="/img/posts/strata/balanced-batch-formation.png" alt="均衡批次形成" /></p>
+<p>在每个批次形成之前， 调度器使用 HiRadixTree 获取每个请求的负载和计算需求，在批次形成期间，当调度器遍历队列时，它会检查添加请求是否会使批次达到加载受限上限，该上限定义为聚合负载 与计算量的比率。当该比率超过阈值时，批次被视为加载受限。如果请求能够加入批次而不会使批次变为加载受限，则将其加入批次。否则，该请求被移至降优先级列表。</p>
+<h4 id="使用气泡填充隐藏加载停顿"><a href="#使用气泡填充隐藏加载停顿" class="headerlink" title="使用气泡填充隐藏加载停顿"></a>使用气泡填充隐藏加载停顿</h4><p>将加载停顿与有用计算重叠，如图中的G加载的同时插入了decoding气泡来提高利用率</p>
+<h2 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h2><p>略</p>
+<h2 id="conclusion"><a href="#conclusion" class="headerlink" title="conclusion"></a>conclusion</h2><p> Strata通过结合 GPU 辅助 I/O 以缓解 KV 缓存碎片化，以及平衡计算与数据传输的缓存感知调度，Strata 提高了在不同延迟区间下的利用率。</p>
 ]]></content>
       <categories>
-        <category>AI</category>
+        <category>AI Infra</category>
       </categories>
       <tags>
-        <tag>AI</tag>
-        <tag>Transformer</tag>
-        <tag>深度学习</tag>
+        <tag>LLM</tag>
+        <tag>AI Infra</tag>
+        <tag>KV Cache</tag>
       </tags>
   </entry>
 </search>
