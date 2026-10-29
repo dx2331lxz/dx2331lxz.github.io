@@ -11,7 +11,7 @@
     }
   });
 </script>
-<script defer src="https://fastly.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS_CHTML"></script><script>(()=>{
+<script async src="https://fastly.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS_CHTML"></script><script>(()=>{
         const musicPlaylistRequests = new Map();
         const cloneMusicPlaylist = playlist => playlist.map(track => ({ ...track }));
         const musicPlaylistStaleTtl = 7 * 86400000;
@@ -1875,16 +1875,32 @@ utils.addGlobalFn('pjaxSend', () => {
 }, 'pace_restart')
 </script><script src="https://fastly.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><script>
   (function () {
+    let retryTimer;
+
     function typesetMath() {
       if (window.MathJax && MathJax.Hub) {
-        MathJax.Hub.Queue(['Typeset', MathJax.Hub, document]);
+        MathJax.Hub.Queue(['Typeset', MathJax.Hub, document.querySelector('.article-container') || document]);
+        return true;
       }
+      return false;
     }
 
-    document.addEventListener('DOMContentLoaded', typesetMath);
-    window.addEventListener('load', typesetMath);
-    document.addEventListener('pjax:complete', typesetMath);
-    typesetMath();
+    function waitForMathJax(retries = 0) {
+      if (typesetMath() || retries >= 100) {
+        retryTimer = null;
+        return;
+      }
+      if (retryTimer) return;
+      retryTimer = window.setTimeout(() => {
+        retryTimer = null;
+        waitForMathJax(retries + 1);
+      }, 100);
+    }
+
+    document.addEventListener('DOMContentLoaded', waitForMathJax, { once: true });
+    window.addEventListener('load', waitForMathJax, { once: true });
+    document.addEventListener('pjax:complete', waitForMathJax);
+    waitForMathJax();
   })();
 </script>
 <div class="js-pjax"></div></div><script>const links = [{"name":"道宣的窝","link":"/"},{"name":"Akilarの糖果屋","link":"https://akilar.top/"},{"name":"张洪Heo","link":"https://blog.zhheo.com/"},{"name":"百里飞洋","link":"https://blog.meta-code.top/"},{"name":"Leonus","link":"https://blog.leonus.cn/"},{"name":"安知鱼`Blog","link":"https://anzhiy.cn/"},{"name":"ichika","link":"https://ichika.cc"},{"name":"Ordis","link":"https://imbhj.com"},{"name":"我不是咕咕鸽——VPS折腾不完全记录","link":"https://blog.laoda.de"},{"name":"冰屋小站","link":"https://blog.biduang.cn/"},{"name":"呆鱼","link":"https://daiyu.fun/"},{"name":"Cream薄荷糖","link":"https://www.creammint.cn/"},{"name":"JrHimself","link":"https://www.jrhim.com/"}]
