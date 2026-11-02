@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2026-10-28T09:37:14.695Z</updated>
+  <updated>2026-11-02T09:34:35.444Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -15,6 +15,34 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>在 AdamW 优化器中 β 和“记忆力”的关系</title>
+    <link href="https://daoxuan.cc/posts/40710/"/>
+    <id>https://daoxuan.cc/posts/40710/</id>
+    <published>2026-11-01T16:00:00.000Z</published>
+    <updated>2026-11-02T09:34:35.444Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="在-AdamW-优化器中-β-和“记忆力”的关系"><a href="#在-AdamW-优化器中-β-和“记忆力”的关系" class="headerlink" title="在 AdamW 优化器中 β 和“记忆力”的关系"></a>在 AdamW 优化器中 β 和“记忆力”的关系</h1><p>在 Adam 优化器（以及所有指数移动平均 EMA 算法）中，$\beta$ 的值直接决定了“记忆力”的长度。</p><p>$\beta$ 越大，记忆力越长；$\beta$ 越小，记忆力越短，越容易“遗忘”过去，只关注眼前的梯度。</p><p>我们可以用直观的“半衰期”和“有效记忆窗口”两个概念来把这种关系具体化：</p><h2 id="1-半衰期：多久遗忘一半"><a href="#1-半衰期：多久遗忘一半" class="headerlink" title="1. 半衰期：多久遗忘一半"></a>1. 半衰期：多久遗忘一半</h2><p>在指数移动平均中，历史信息按 $\beta$ 的比例衰减。我们可以算一下，经过多少步，旧信息的权重会衰减到原来的一半（也就是 $\beta^t = 0.5$）：</p><script type="math/tex; mode=display">t = \frac{\ln(0.5)}{\ln(\beta)} \approx \frac{0.693}{1 - \beta}</script><ul><li><strong>对于一阶动量 $m$（$\beta_1 = 0.9$）</strong>：半衰期 $t \approx 0.693 / 0.1 \approx \mathbf{6.9}$ <strong>步</strong>。也就是说，大约 7 步之前的梯度，其权重就减半了。它主要反映最近十来步的梯度趋势。</li><li><strong>对于二阶动量 $v$（$\beta_2 = 0.999$）</strong>：半衰期 $t \approx 0.693 / 0.001 \approx \mathbf{693}$ <strong>步</strong>。这意味着，大约 700 步之前的梯度平方，其权重才减半。它的记忆极其漫长。</li></ul><h2 id="2-有效记忆窗口：实际上记住了多少步"><a href="#2-有效记忆窗口：实际上记住了多少步" class="headerlink" title="2. 有效记忆窗口：实际上记住了多少步"></a>2. 有效记忆窗口：实际上记住了多少步</h2><p>虽然数学上历史信息永远不会完全归零，但从工程角度看，当权重衰减到原来的 $1/e$（约 36.8%）时，就可以认为它离开“有效记忆窗口”了：</p><script type="math/tex; mode=display">t = \frac{1}{1 - \beta}</script><ul><li><strong>一阶动量 $m$（$\beta_1 = 0.9$）</strong>：有效记忆大约是 <strong>10 步</strong>。</li><li><strong>二阶动量 $v$（$\beta_2 = 0.999$）</strong>：有效记忆大约是 <strong>1000 步</strong>。</li></ul><p>这里的 10 和 1000 是“单步权重掉到 $1/e$”的口径。它不是唯一口径，但足够用来比较两个 β 的量级差别。</p><h2 id="3-更新公式里的直接体现"><a href="#3-更新公式里的直接体现" class="headerlink" title="3. 更新公式里的直接体现"></a>3. 更新公式里的直接体现</h2><p>从最基础的更新公式也能直接看出：</p><script type="math/tex; mode=display">m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t</script><ul><li><strong>保留率（$\beta$）</strong>：$\beta$ 有多大，上一个时刻的 $m_{t-1}$ 就保留了多少。</li><li><strong>更新率（$1-\beta$）</strong>：当前梯度 $g_t$ 分到的权重是 $1-\beta$。$\beta_2 = 0.999$ 意味着每一次只允许 $0.1\%$ 的新信息进入，这自然导致了极长的记忆平滑效应。</li></ul><h2 id="4-把-EMA-递推式展开"><a href="#4-把-EMA-递推式展开" class="headerlink" title="4. 把 EMA 递推式展开"></a>4. 把 EMA 递推式展开</h2><h3 id="4-1-逐层往回代"><a href="#4-1-逐层往回代" class="headerlink" title="4.1 逐层往回代"></a>4.1 逐层往回代</h3><p>从最基础的一条递推出发，先不带下标：</p><script type="math/tex; mode=display">m_t = \beta m_{t-1} + (1-\beta) g_t</script><p>把 $m_{t-1}$ 用同一条式子写开，再代回去：</p><script type="math/tex; mode=display">\begin{aligned}m_t &= \beta m_{t-1} + (1-\beta) g_t \\&= \beta\bigl(\beta m_{t-2} + (1-\beta) g_{t-1}\bigr) + (1-\beta) g_t \\&= \beta^2 m_{t-2} + (1-\beta)\bigl(\beta g_{t-1} + g_t\bigr)\end{aligned}</script><p>再代一层：</p><script type="math/tex; mode=display">m_t = \beta^3 m_{t-3} + (1-\beta)\bigl(\beta^2 g_{t-2} + \beta g_{t-1} + g_t\bigr)</script><p>括号里那一串是等比数列，越老的梯度指数越小。代到第 $k$ 层，形式固定下来：</p><script type="math/tex; mode=display">m_t = \beta^k m_{t-k} + (1-\beta)\sum_{i=0}^{k-1}\beta^i g_{t-i}</script><p>取 $k = t$，一直代到初值：</p><script type="math/tex; mode=display">m_t = (1-\beta)\sum_{i=0}^{t-1}\beta^i g_{t-i} + \beta^t m_0</script><p>初始化时 $m_0 = 0$，最后一项消失：</p><script type="math/tex; mode=display">\boxed{m_t = (1-\beta)\sum_{i=0}^{t-1}\beta^i g_{t-i}}</script><p>这里的 $i$ 是“往回数第几步”。$i=0$ 对应当前梯度，$i=1$ 对应上一步，依此类推。</p><h3 id="4-2-权重是几何级数"><a href="#4-2-权重是几何级数" class="headerlink" title="4.2 权重是几何级数"></a>4.2 权重是几何级数</h3><p>展开式最直接的含义：EMA 就是一次加权平均，第 $i$ 步之前的梯度拿到的权重是</p><script type="math/tex; mode=display">w_i = (1-\beta)\beta^i</script><p>权重随 $i$ 按公比 $\beta$ 等比衰减。下面把两个常用 $\beta$ 的权重列出来对比：</p><div class="table-container"><table><thead><tr><th>往回步数 $i$</th><th>$\beta=0.9$ 的权重</th><th>相对 $i=0$</th><th>$\beta=0.999$ 的权重</th><th>相对 $i=0$</th></tr></thead><tbody><tr><td>0</td><td>$1.0\times10^{-1}$</td><td>100%</td><td>$1.0\times10^{-3}$</td><td>100%</td></tr><tr><td>1</td><td>$9.0\times10^{-2}$</td><td>90%</td><td>$9.99\times10^{-4}$</td><td>99.9%</td></tr><tr><td>10</td><td>$3.49\times10^{-2}$</td><td>34.9%</td><td>$9.90\times10^{-4}$</td><td>99.0%</td></tr><tr><td>100</td><td>$2.66\times10^{-6}$</td><td>0.0027%</td><td>$9.05\times10^{-4}$</td><td>90.5%</td></tr><tr><td>693</td><td>$\approx0$</td><td>$\approx0$</td><td>$5.00\times10^{-4}$</td><td>50.0%</td></tr><tr><td>1000</td><td>$\approx0$</td><td>$\approx0$</td><td>$3.68\times10^{-4}$</td><td>36.8%</td></tr></tbody></table></div><p>两种 $\beta$ 的差别一眼就能看出。$\beta=0.9$ 时，一百步之前的梯度相对权重只剩 0.0027%，实际上等于被扔掉了；$\beta=0.999$ 时，一千步之前的梯度还剩 36.8% 的权重，仍然在起作用。</p><p>顺带把半衰期的来源也落实一下。相邻两步的权重比是常数：</p><script type="math/tex; mode=display">\frac{w_{i+k}}{w_i} = \beta^k</script><p>要让它等于 $1/2$，就得到 $\beta^k = 0.5$，也就是前面那个 $t = \ln 0.5 / \ln\beta$。半衰期不是什么额外定义，它就是等比数列的性质。</p><h3 id="4-3-权重和为什么是-1-beta-t"><a href="#4-3-权重和为什么是-1-beta-t" class="headerlink" title="4.3 权重和为什么是 $1-\beta^t$"></a>4.3 权重和为什么是 $1-\beta^t$</h3><p>把展开式里的系数加起来：</p><script type="math/tex; mode=display">(1-\beta)\sum_{i=0}^{t-1}\beta^i = (1-\beta)\cdot\frac{1-\beta^t}{1-\beta} = 1-\beta^t</script><p>等比数列求和用的是 $\sum_{i=0}^{t-1}\beta^i = (1-\beta^t)/(1-\beta)$，这里 $\beta \ne 1$，没问题。</p><p>$t \to \infty$ 时 $\beta^t \to 0$，权重和收敛到 1，是个合格的加权平均。但在有限步，权重和只有 $1-\beta^t$，缺的正好是 $\beta^t$，这部分就是零初始化残留在 $m_0$ 上没被冲掉的部分。展开式里那个 $\beta^t m_0$ 项说的就是同一件事。</p><p>这也解释了偏差修正在干什么。把展开式两边除以 $1-\beta^t$：</p><script type="math/tex; mode=display">\frac{m_t}{1-\beta^t} = \sum_{i=0}^{t-1}\frac{(1-\beta)\beta^i}{1-\beta^t}\,g_{t-i}</script><p>原来的权重是 $w_i = (1-\beta)\beta^i$，现在每一项都除以了 $1-\beta^t$，加起来正好是 1。所以 Adam 里的 $\hat m_t = m_t/(1-\beta_1^t)$ 本质上就是把权重重新归一化，把零初始化带来的系统性偏小补回去。</p><h2 id="5-为什么-ln-beta-可以被近似看作-1-beta"><a href="#5-为什么-ln-beta-可以被近似看作-1-beta" class="headerlink" title="5. 为什么 $\ln(\beta)$ 可以被近似看作 $-(1-\beta)$"></a>5. 为什么 $\ln(\beta)$ 可以被近似看作 $-(1-\beta)$</h2><p>这主要基于<strong>泰勒展开（Taylor Expansion）</strong>，并且针对 Adam 优化器中 $\beta$ 接近 1 的特定场景。</p><p>我们可以分两步来理解：</p><h3 id="5-1-推导过程：泰勒展开"><a href="#5-1-推导过程：泰勒展开" class="headerlink" title="5.1 推导过程：泰勒展开"></a>5.1 推导过程：泰勒展开</h3><p>我们先看对数函数 $\ln(x)$ 在 $x=1$ 处的泰勒展开式：</p><script type="math/tex; mode=display">\ln(x) = (x - 1) - \frac{(x - 1)^2}{2} + \frac{(x - 1)^3}{3} - \dots</script><p>现在，把 $x$ 替换成 $\beta$：</p><script type="math/tex; mode=display">\begin{aligned}\ln(\beta) &= (\beta - 1) - \frac{(\beta - 1)^2}{2} + \frac{(\beta - 1)^3}{3} - \dots \\&= - (1 - \beta) - \frac{(1 - \beta)^2}{2} - \frac{(1 - \beta)^3}{3} - \dots\end{aligned}</script><p>在 Adam 优化器中，$\beta$ 通常取 $0.9$ 或 $0.999$，这意味着 <strong>$\beta$ 非常接近 1</strong>。当 $\beta \to 1$ 时，$(1-\beta)$ 是一个很小的数（比如 $0.1$ 或 $0.001$）。</p><p>在这个前提下，<strong>高阶项可以忽略不计</strong>：</p><ul><li>$(1-\beta)^2$ 是 $(1-\beta)$ 的平方，极小（例如 $0.001^2 = 0.000001$）。</li><li>因此，后面的项衰减得非常快，整个式子主要被第一项主导。</li></ul><p>所以，我们得到了<strong>一阶近似</strong>：</p><script type="math/tex; mode=display">\ln(\beta) \approx -(1 - \beta) = \beta - 1</script><blockquote><p>举个实际数字的例子：</p><ul><li>当 $\beta = 0.9$ 时，$\ln(0.9) \approx -0.10536$，而 $-(1-0.9) = -0.1$，误差约 $5\%$。</li><li>当 $\beta = 0.999$ 时，$\ln(0.999) \approx -0.0010005$，而 $-(1-0.999) = -0.001$，误差微乎其微（仅 $0.05\%$）。</li></ul></blockquote><h3 id="5-2-结合到“半衰期”公式中"><a href="#5-2-结合到“半衰期”公式中" class="headerlink" title="5.2 结合到“半衰期”公式中"></a>5.2 结合到“半衰期”公式中</h3><p>回过头来看我们之前用的半衰期公式：我们要解的是 $\beta^t = 0.5$（即经过 $t$ 步后，历史信息衰减到一半）。</p><p>两边取自然对数（$\ln$）：</p><script type="math/tex; mode=display">\begin{aligned}t \cdot \ln(\beta) &= \ln(0.5) \\t &= \frac{\ln(0.5)}{\ln(\beta)}\end{aligned}</script><p>因为 $\ln(0.5) \approx -0.693$，且我们刚才证明了 $\ln(\beta) \approx -(1-\beta)$，代入进去：</p><script type="math/tex; mode=display">t \approx \frac{-0.693}{-(1 - \beta)} = \frac{0.693}{1 - \beta}</script><p>同理，如果我们不找“一半”，而是找“衰减到原来的 $1/e$（约 36.8%）”所需的时间，即 $\beta^t = 1/e$：</p><script type="math/tex; mode=display">\begin{aligned}t \cdot \ln(\beta) &= -1 \\t = \frac{-1}{\ln(\beta)} &\approx \frac{-1}{-(1-\beta)} = \frac{1}{1 - \beta}\end{aligned}</script><p>这就是为什么在计算 EMA 的有效记忆窗口时，会出现 $1/(1-\beta)$ 这个极其简洁实用的式子。它的背后，正是对数函数的一阶泰勒近似。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;在-AdamW-优化器中-β-和“记忆力”的关系&quot;&gt;&lt;a href=&quot;#在-AdamW-优化器中-β-和“记忆力”的关系&quot; class=&quot;headerlink&quot; title=&quot;在 AdamW 优化器中 β 和“记忆力”的关系&quot;&gt;&lt;/a&gt;在 AdamW 优化器中 β</summary>
+      
+    
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/tags/AI/"/>
+    
+    <category term="深度学习" scheme="https://daoxuan.cc/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="优化器" scheme="https://daoxuan.cc/tags/%E4%BC%98%E5%8C%96%E5%99%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>相对精度与绝对精度：为什么同一个数字，换个地方就“消失”了</title>
@@ -122,9 +150,9 @@
     
     <category term="AI" scheme="https://daoxuan.cc/tags/AI/"/>
     
-    <category term="Transformer" scheme="https://daoxuan.cc/tags/Transformer/"/>
-    
     <category term="深度学习" scheme="https://daoxuan.cc/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="Transformer" scheme="https://daoxuan.cc/tags/Transformer/"/>
     
   </entry>
   
