@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2026-11-03T16:43:58.464Z</updated>
+  <updated>2026-11-04T02:55:22.327Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -15,6 +15,36 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练</title>
+    <link href="https://daoxuan.cc/posts/57954/"/>
+    <id>https://daoxuan.cc/posts/57954/</id>
+    <published>2026-11-04T02:50:00.000Z</published>
+    <updated>2026-11-04T02:55:22.327Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="COAT：压缩优化器状态和激活以实现内存高效的-FP8-训练"><a href="#COAT：压缩优化器状态和激活以实现内存高效的-FP8-训练" class="headerlink" title="COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练"></a>COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练</h1><p>H100 上做 FP8 训练，主流做法是让线性层的矩阵乘法跑在 FP8 里，Transformer Engine 就是这么干的。但训练显存的大头并不在这些矩阵乘法上。优化器状态、以及为了反向传播而保存的激活，仍然以 BF16 甚至 FP32 的形式躺在显存里。COAT 这篇工作的目标就是把这两块也压到 FP8，端到端省下 1.54 倍显存、提速 1.43 倍。</p><p>难点在于，这两块恰恰是不能随便压的。下面按三个问题展开：为什么二阶动量比一阶动量更怕量化，为什么激活难压，以及组量化和逐张量量化到底怎么分工。</p><h2 id="为什么二阶动量对量化比一阶动量更敏感"><a href="#为什么二阶动量对量化比一阶动量更敏感" class="headerlink" title="为什么二阶动量对量化比一阶动量更敏感"></a>为什么二阶动量对量化比一阶动量更敏感</h2><p>记第 $t$ 步的梯度为 $g_t$，AdamW 的更新规则是</p><script type="math/tex; mode=display">\begin{aligned}m_t &= \beta_1 m_{t-1} + (1-\beta_1)\,g_t \\v_t &= \beta_2 v_{t-1} + (1-\beta_2)\,g_t^2 \\\hat{m}_t &= \frac{m_t}{1-\beta_1^{t}}, \qquad \hat{v}_t = \frac{v_t}{1-\beta_2^{t}} \\\theta_t &= \theta_{t-1} - \eta\left(\frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} + \lambda\,\theta_{t-1}\right)\end{aligned}</script><p>其中 $\beta_1$ 和 $\beta_2$ 是两个动量的衰减系数，$\eta$ 是学习率，$\epsilon$ 是防止除零的微小常数，$\lambda$ 是权重衰减系数。</p><p>最后那个 $\lambda\theta_{t-1}$ 是 AdamW 相对 Adam 的改动：权重衰减直接作用在参数上，不经过 $m_t$ 和 $v_t$ 的统计。</p><p>二阶动量 $v_t$ 是梯度平方的滑动平均，量级跨度很大，早期训练时数值还接近零。量化误差会直接传递到 $v_t$ 上，而这一项是更新步长的缩放因子。有实验记录显示，对二阶动量做 8-bit 线性量化后，AdamW 会立刻发散；同样条件下，SGD with momentum 因为没有分母项，量化训练仍然稳定。FP8-LM 这个开源实现也明确写了这一点：二阶动量跨越多个数量级且早期接近零，量化后落进更新公式的分母会导致步长爆炸，所以它只量化一阶动量，二阶动量保留 float32。</p><p>一阶动量 $m_t$ 位于分子，量化误差主要影响更新方向的精度，通常不会造成步长的数量级跳变。这就是「二阶动量对量化更敏感」的机制来源。</p><p>顺带说一句容易绕进去的地方：二阶动量虽然是梯度平方，但敏感和平方本身关系不大，因为分母上还套了一层开方，平方的量纲被开回来了。真正的问题出在它的位置，在分母上。</p><h2 id="二阶动量的动态范围反而更小"><a href="#二阶动量的动态范围反而更小" class="headerlink" title="二阶动量的动态范围反而更小"></a>二阶动量的动态范围反而更小</h2><p>COAT 论文里有个反直觉的观察：FP8 E4M3 的可表示范围是 $448 \div 2^{-9} \approx 2 \times 10^{5}$，而实测中一阶动量的动态范围通常小于 $10^{4}$，二阶动量甚至小于 $10^{1}$。越敏感的那个，反而把 FP8 的表示能力浪费得越狠。</p><p>这背后是两件事叠在一起。</p><p>第一件是 $\beta$ 的平滑强度不同。一阶动量取 $\beta_1 = 0.9$，等效平均窗口约 $1/(1-\beta_1) = 10$ 步；二阶动量取 $\beta_2 = 0.999$，窗口约 1000 步。窗口越长，$v$ 对历史梯度平方的平滑越强，波动被压得越平，分布自然更集中。这一条有利于收窄动态范围，但还不是主因。</p><p>主因是梯度平方的非负性。一阶动量是带符号的梯度和，正负梯度相互抵消，$m$ 可以因为抵消而变得非常接近零，也可以因为梯度持续同号而堆得很大，两端都被拉开。二阶动量则是 $g_t^2$ 的累积，每一项都非负，永远不会抵消。它本质上衡量的是梯度的典型能量水平，值域被压在一个较窄的能量区间里。</p><p>一句话对照：$m$ 能小到接近 0、也能大到离谱，动态范围被拉宽；$v$ 只有正数、只会累积，动态范围被压窄。而 FP8 的量化误差取决于「这个量化组用掉了几成表示范围」，$v$ 用得少，误差就大。</p><h2 id="扩展函数：把窄分布拉宽"><a href="#扩展函数：把窄分布拉宽" class="headerlink" title="扩展函数：把窄分布拉宽"></a>扩展函数：把窄分布拉宽</h2><p>既然问题是分布太窄、够不到 FP8 的上下限，解法就是在量化之前先做一次保形的拉伸。COAT 用的扩展函数是</p><script type="math/tex; mode=display">f(x) = \operatorname{sign}(x)\,|x|^{k}</script><p>这里 $\operatorname{sign}(x)$ 是符号函数，只看正负、丢掉大小：$x &gt; 0$ 时取 1，$x &lt; 0$ 时取 $-1$，$x = 0$ 时取 0。它保证拉伸之后符号不变，负的动量还是负的。</p><p>$|x|^k$ 只作用于绝对值。当 $k &gt; 1$ 时，大值被抬得比小值更快，一个组的动态范围就从 $\mathcal{R}_X$ 变成 $(\mathcal{R}_X)^k$。要让拉伸后的分布正好铺满 E4M3 的区间，取</p><script type="math/tex; mode=display">k = \log_{\mathcal{R}_X}\left(\mathcal{R}_{\text{E4M3}}\right)</script><p>实际统计中，一阶动量的 $k$ 通常落在 1 到 3 之间，二阶动量则在 5 到 15 之间。二阶动量的 $k$ 明显更大，正好对应它原本的动态范围更窄。这个 $k$ 在每个优化器步、每个量化组上现算，不是全局超参。</p><p>反量化时再取一次幂的倒数 $x^{1/k}$ 就能还原原值。论文附录证明了这种形式在给定动态范围约束下是最优的，量化误差相比朴素做法降低了 1.63 倍。有个细节值得记：一阶动量上 E4M3 明显优于 E5M2；二阶动量原本也是 E4M3 更好，但套上扩展函数之后两者误差几乎持平，所以 COAT 允许 E4M3 + E4M3 和 E4M3 + E5M2 两种组合。</p><h2 id="激活为什么难压"><a href="#激活为什么难压" class="headerlink" title="激活为什么难压"></a>激活为什么难压</h2><p>优化器状态之外的另一块是激活。前向算出来的中间结果要留到反向用，Llama 系列里非线性层（LayerNorm/RMSNorm 加激活函数）大约占了激活显存的 50%，线性层反而不到 25%。只优化线性层，等于放弃了最大的一块。</p><p>激活难压的原因和动量不同。在 LLM 里，尤其是用了 GLU 类激活函数的模型，某些激活值会比大多数值大出一两个数量级，形成尖峰或离群值。而 FP8 E4M3 的最大可表示值只有 448，E5M2 范围更大但精度更低，两头都不好办。</p><p>于是缩放因子的选择变成两难。为了覆盖尖峰把缩放因子设大，绝大多数正常幅度的激活就被挤进很窄的量化区间，误差变大；按大多数值来设，尖峰又会溢出或者严重失真。GLU 的乘法还会把尖峰进一步放大，问题更严重。</p><h2 id="混合粒度：线性层和非线性层分开处理"><a href="#混合粒度：线性层和非线性层分开处理" class="headerlink" title="混合粒度：线性层和非线性层分开处理"></a>混合粒度：线性层和非线性层分开处理</h2><p>COAT 的做法是让线性层和非线性层用不同的量化粒度。</p><p>线性层用逐张量量化。原因很实际：FP8 的峰值吞吐依赖 TensorCore 的 per-tensor scaling，粒度再细就会拖慢矩阵乘法，省下的显存要用算力来换，不划算。</p><p>非线性层用组量化，粒度是 $1 \times G$。这里有个经验性的发现值得单独说：同样是固定共享缩放因子的元素个数，如果沿着 token 轴跨多个 token 去量化 LayerNorm 的输入，精度会明显变差。所以 COAT 没有采用 $B \times B$ 的分块，而是改成 $1 \times G$ 的分组，取 $G = B^2$ 保持粒度不变。</p><p>那既然组量化已经做了，为什么还要逐张量缩放？这两者不是叠加关系，是按层分工。逐张量量化服务线性层的 TensorCore，组量化服务非线性层的精度，各管一段。</p><p>逐张量量化本身有个开销问题：要算整个张量的最大绝对值，就得做一次全量 max 归约。COAT 的 Group Scaling 把这次归约拆成两步：先对每个 $1 \times G$ 的小段做 max 并缓存结果，再在这个小得多的中间张量上做一次 max。第一步可以直接和前一个算子融合，几乎不额外花钱；第二步的输入比原张量小 $G$ 倍，也就快了 $G$ 倍。</p><p>顺带一提，Transformer Engine 为了避开这个即时 max 归约，用的是延迟缩放，拿历史统计量估算缩放因子。COAT 的实测结论是，用当前张量自己的统计量并不更差，精度上甚至更好，所以它选择了 Group Scaling 这条更简单也更灵活的路。</p><h2 id="结果和边界"><a href="#结果和边界" class="headerlink" title="结果和边界"></a>结果和边界</h2><p>在 OLMo-1B（300B token）和 OLMo-7B（160B token）上做预训练，损失曲线和下游任务表现与 BF16 基线一致；微调和视觉语言模型训练上也基本无损。端到端显存降低 1.54 倍，训练提速 1.43 倍，并且在所有多卡配置下都能把 micro-batch 翻倍。</p><p>适用范围也说清楚：这套方法的收益建立在 Hopper 及之后支持 FP8 的硬件上，E4M3 的 448 上限和 2e5 的动态范围是整个论证的出发点。换到其他低精度格式，扩展函数里那个 $k$ 要重新按目标格式的范围算。</p><p>参考：<a href="https://arxiv.org/abs/2410.19313">论文</a>、<a href="https://hanlab.mit.edu/projects/coat">项目主页</a>、<a href="https://github.com/NVlabs/COAT">代码</a>。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;COAT：压缩优化器状态和激活以实现内存高效的-FP8-训练&quot;&gt;&lt;a href=&quot;#COAT：压缩优化器状态和激活以实现内存高效的-FP8-训练&quot; class=&quot;headerlink&quot; title=&quot;COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练&quot;&gt;</summary>
+      
+    
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/tags/AI/"/>
+    
+    <category term="深度学习" scheme="https://daoxuan.cc/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="FP8" scheme="https://daoxuan.cc/tags/FP8/"/>
+    
+    <category term="量化" scheme="https://daoxuan.cc/tags/%E9%87%8F%E5%8C%96/"/>
+    
+  </entry>
   
   <entry>
     <title>Transformer 的几何角度梳理</title>
