@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2026-11-04T02:55:22.327Z</updated>
+  <updated>2026-11-08T12:18:36.171Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -15,6 +15,34 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Dropout（随机失活）</title>
+    <link href="https://daoxuan.cc/posts/21253/"/>
+    <id>https://daoxuan.cc/posts/21253/</id>
+    <published>2026-11-07T16:00:00.000Z</published>
+    <updated>2026-11-08T12:18:36.171Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="dropout"><a href="#dropout" class="headerlink" title="dropout"></a>dropout</h1><p><strong>Dropout（随机失活）</strong> 是深度学习中一种非常经典且重要的<strong>正则化（Regularization）</strong>技术，简单用一句话概括：<strong>在训练神经网络时，Dropout 会按一定的概率（比如 0.1 或 0.5）随机“关掉”（丢弃）一部分神经元，让它们在这个批次的前向传播和反向传播中不工作。</strong></p><h2 id="dropout-现在也在使用么？"><a href="#dropout-现在也在使用么？" class="headerlink" title="dropout 现在也在使用么？"></a>dropout 现在也在使用么？</h2><ol><li><p>在小模型和微调中依然活跃：<strong>微调场景：</strong> 当你在小数据集上微调一个大模型时，过拟合风险很高，此时 Dropout 非常有效，几乎是必选项</p></li><li><p>大规模 LLM 预训练：标准 Dropout 基本“退场”，数据量太大了，模型在整个训练周期里往往只过一遍数据（单 epoch），根本来不及过拟合。此时加 Dropout 反而会减慢收敛速度，甚至损害下游性能。</p></li><li><p>变体依然重要：层 Dropout（Stochastic Depth）：</p><ul><li>2026 年 ICML 的研究表明，通过优化策略（如前期多丢、后期少丢），层 Dropout 不仅能降低训练成本（节省约 20%-25% 的算力），还能让模型在推理时支持“早退”（Early Exit），实现高达 1.5 倍的加速。</li><li>另外，在注意力机制中，<strong>Attention Dropout</strong> 在 Llama 等模型的训练中仍有启用，主要用于提升泛化性。</li></ul></li></ol>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;dropout&quot;&gt;&lt;a href=&quot;#dropout&quot; class=&quot;headerlink&quot; title=&quot;dropout&quot;&gt;&lt;/a&gt;dropout&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;Dropout（随机失活）&lt;/strong&gt; 是深度学习中一种非常经典且重要的&lt;st</summary>
+      
+    
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/tags/AI/"/>
+    
+    <category term="深度学习" scheme="https://daoxuan.cc/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="正则化" scheme="https://daoxuan.cc/tags/%E6%AD%A3%E5%88%99%E5%8C%96/"/>
+    
+  </entry>
   
   <entry>
     <title>COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练</title>
