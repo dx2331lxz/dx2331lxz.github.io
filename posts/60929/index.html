@@ -1,0 +1,615 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>GEMM（矩阵乘） | DaoXuan</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="https://picture.daoxuan.cc/image/202301301254377.webp"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=2.1.19"><!-- inject head--><link rel="canonical" href="https://daoxuan.cc/posts/60929/"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.1/css/all.min.css"><!-- aplayer (capsule music loads this stylesheet on first interaction)--><!-- swiper--><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/swiper@11.0.5/swiper-bundle.min.css"><!-- fancybox ui--><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.min.css"><!-- katex--><!-- Open Graph--><meta name="description" content="GEMM（矩阵乘）分块（tiling）几乎是所有 GEMM 优化的第一步，目的就是少读几遍数据。这个说法没错，把输出矩阵切成 4×4 的块之后，A、B 里的同一份数据被重复加载的次数确实降到原来的四分之一。但「分块边长就是带宽节省倍数」这句话要真站得住，得补两个限定条件：分块切在哪一层存储上，以及省"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="DaoXuan"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="https://picture.daoxuan.cc/image/202301301254377.webp"><link rel="apple-touch-icon" href="https://picture.daoxuan.cc/image/202301301254377.webp" sizes="180x180"><script>console.log(' %c Solitude %c ' + '2.1.19' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    }
+  });
+</script>
+<script async src="https://fastly.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS_CHTML"></script><script>(()=>{
+        const musicPlaylistRequests = new Map();
+        const cloneMusicPlaylist = playlist => playlist.map(track => ({ ...track }));
+        const musicPlaylistStaleTtl = 7 * 86400000;
+        const musicPlaylistRequestTimeout = 15000;
+        const musicPlaylistMaxAttempts = 2;
+        const waitForMusicRetry = delay => new Promise(resolve => window.setTimeout(resolve, delay));
+        const readMusicPlaylistCache = (storage, cacheKey) => {
+            try {
+                const cached = JSON.parse(storage.getItem(cacheKey));
+                if (!cached || !Array.isArray(cached.data) || !cached.data.length || !Number(cached.createdAt)) {
+                    if (cached) storage.removeItem(cacheKey);
+                    return null;
+                }
+                if (Date.now() - cached.createdAt >= musicPlaylistStaleTtl) {
+                    storage.removeItem(cacheKey);
+                    return null;
+                }
+                return cached;
+            } catch (error) {
+                try { storage.removeItem(cacheKey) } catch (storageError) {}
+                return null;
+            }
+        };
+        const writeMusicPlaylistCache = (storage, cacheKey, playlist) => {
+            try {
+                storage.setItem(cacheKey, JSON.stringify({ createdAt: Date.now(), data: playlist }));
+            } catch (error) {}
+        };
+        const getMusicPlaylist = (api, source, ttl = 600000) => {
+            if (!api || !source || source.id == null || !source.server || !source.type) {
+                return Promise.reject(new Error('Invalid music source configuration'))
+            }
+
+            const cacheTtl = Number(ttl) > 0 ? Number(ttl) : 600000
+            const cacheKey = ['solitude-music-playlist-v2', source.server, source.type, source.id].join(':')
+            const sessionCached = readMusicPlaylistCache(sessionStorage, cacheKey)
+            const localCached = readMusicPlaylistCache(localStorage, cacheKey)
+            const cached = sessionCached || localCached
+            if (cached && Date.now() - cached.createdAt < cacheTtl) {
+                if (!sessionCached) writeMusicPlaylistCache(sessionStorage, cacheKey, cached.data)
+                return Promise.resolve(cloneMusicPlaylist(cached.data))
+            }
+
+            const existingRequest = musicPlaylistRequests.get(cacheKey)
+            if (existingRequest) return existingRequest.then(cloneMusicPlaylist)
+
+            const replaceToken = (input, token, value) => input.split(token).join(encodeURIComponent(value ?? ''))
+            let requestUrlTemplate = String(api)
+            requestUrlTemplate = replaceToken(requestUrlTemplate, ':server', source.server)
+            requestUrlTemplate = replaceToken(requestUrlTemplate, ':type', source.type)
+            requestUrlTemplate = replaceToken(requestUrlTemplate, ':id', source.id)
+            requestUrlTemplate = replaceToken(requestUrlTemplate, ':auth', source.auth || '')
+
+            const fetchPlaylist = async () => {
+                const controller = new AbortController()
+                const timeoutId = window.setTimeout(() => controller.abort(), musicPlaylistRequestTimeout)
+                try {
+                    const requestUrl = replaceToken(requestUrlTemplate, ':r', Math.random())
+                    const response = await fetch(requestUrl, {
+                        signal: controller.signal,
+                        credentials: 'omit',
+                        cache: 'no-store'
+                    })
+                    if (!response.ok) throw new Error('Music API returned HTTP ' + response.status)
+                    const playlist = await response.json()
+                    if (!Array.isArray(playlist) || !playlist.length) {
+                        throw new Error('Music API returned an empty or invalid playlist')
+                    }
+                    return playlist
+                } finally {
+                    window.clearTimeout(timeoutId)
+                }
+            }
+
+            const request = (async () => {
+                let lastError
+                for (let attempt = 0; attempt < musicPlaylistMaxAttempts; attempt++) {
+                    try {
+                        const playlist = await fetchPlaylist()
+                        writeMusicPlaylistCache(sessionStorage, cacheKey, playlist)
+                        writeMusicPlaylistCache(localStorage, cacheKey, playlist)
+                        return playlist
+                    } catch (error) {
+                        lastError = error
+                        if (attempt + 1 < musicPlaylistMaxAttempts) {
+                            await waitForMusicRetry(500 * (attempt + 1))
+                        }
+                    }
+                }
+                if (cached) {
+                    console.warn('[Music] Playlist API failed; using cached playlist:', lastError)
+                    writeMusicPlaylistCache(sessionStorage, cacheKey, cached.data)
+                    return cached.data
+                }
+                throw lastError
+            })().finally(() => musicPlaylistRequests.delete(cacheKey))
+
+            musicPlaylistRequests.set(cacheKey, request)
+            return request.then(cloneMusicPlaylist)
+        };
+
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getMusicPlaylist: getMusicPlaylist,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+          },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: {"appId":"1OJ1BF2Q30","apiKey":"e0354e1485bfa103c026e8feed33fa10","indexName":"my-hexo-blog","hits":{"per_page":6}},
+    localsearch: undefined,
+    runtime: '2022-12-10 00:00:00',
+    lazyload: {
+        enable: true,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: true,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可","search":{"empty":"找不到你查询的内容：${query}","hit":"找到 ${hits} 条结果，用时 ${time} 毫秒","placeholder":"输入关键词快速查找","count":"共 <b>${count}</b> 条结果。","loading":"搜索中..."},"barrage":{"title":"热评"}},
+    aside: {
+        sayhello: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        sayhello2: ["你可以的","你一定可以的","祝你好运，陌生人"],
+        sayhello3: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: true
+    },
+    comment: {"avatar":"https://gravatar.com/avatar","commentBarrage":true},
+    lightbox: 'fancybox',
+    post_ai: false,
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: {"time":120,"position":"top","text_prev":"This article expired ","text_next":" day ago, if the content does not match, please contact the webmaster to update it."},
+};</script><!-- page-config head--><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: true,
+    ai_text: false,
+    color: false,
+}</script><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-tag-plugins-plus@latest/lib/assets/font-awesome-animation.min.css" media="defer" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-tag-plugins-plus@latest/lib/tag_plugins.css" media="defer" onload="this.media='all'"><script src="https://npm.elemecdn.com/hexo-butterfly-tag-plugins-plus@latest/lib/assets/carousel-touch.js"></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="DaoXuan" type="application/atom+xml">
+</head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- background img--><!-- loading--><div id="loading-box" onclick="preloader.endLoading();" style="zoom:1"><div class="loading-bg"><img class="loading-img nolazyload" src="/img/favicon.png" alt="loading image"></div></div><script>const preloader = {
+    isLoaded: false,
+    endLoading: () => {
+        if (!preloader.isLoaded) {
+            document.getElementById('loading-box').classList.add('loaded');
+            preloader.isLoaded = true;
+            preloader.togglePaceDone();
+        }
+    },
+    initLoading: () => {
+        document.getElementById('loading-box').classList.remove('loaded');
+        preloader.isLoaded = false;
+        preloader.togglePaceDone();
+    },
+    togglePaceDone: () => {
+        document.getElementById('body').className = preloader.isLoaded ? 'pace-done' : '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    requestAnimationFrame(() => preloader.endLoading());
+});
+
+window.addEventListener('pjax:send', () => {
+    preloader.initLoading();
+});
+
+document.addEventListener('pjax:complete', () => {
+    preloader.endLoading();
+});
+
+setTimeout(() => {
+    preloader.endLoading();
+}, 1500);</script><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fa-solid fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card tags" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">标签</div><div class="author-content-item-title">寻找感兴趣的领域</div></div><div class="card-tag-cloud"><a href="/tags/AI/">AI<sup>14</sup></a><a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习<sup>11</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/">优化器<sup>1</sup></a><a href="/tags/Beego/">Beego<sup>1</sup></a><a href="/tags/FP8/">FP8<sup>2</sup></a><a href="/tags/%E9%87%8F%E5%8C%96/">量化<sup>2</sup></a><a href="/tags/C%E8%AF%AD%E8%A8%80/">C语言<sup>2</sup></a><a href="/tags/c%E8%AF%AD%E8%A8%80/">c语言<sup>1</sup></a><a href="/tags/django/">django<sup>8</sup></a><a href="/tags/Django/">Django<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C/">网络<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BA%8A/">图床<sup>1</sup></a><a href="/tags/Fire/">Fire<sup>1</sup></a><a href="/tags/%E7%88%AC%E8%99%AB/">爬虫<sup>2</sup></a><a href="/tags/Transformer/">Transformer<sup>3</sup></a><a href="/tags/python/">python<sup>4</sup></a><a href="/tags/VisualGLM-6B/">VisualGLM-6B<sup>1</sup></a><a href="/tags/%E5%B7%A5%E4%BD%9C%E6%B5%81/">工作流<sup>1</sup></a><a href="/tags/butterfly/">butterfly<sup>1</sup></a><a href="/tags/%E6%8A%A5%E9%94%99/">报错<sup>5</sup></a><a href="/tags/chatgpt/">ChatGPT<sup>2</sup></a><a href="/tags/LLM/">LLM<sup>1</sup></a><a href="/tags/AI-Infra/">AI Infra<sup>1</sup></a><a href="/tags/KV-Cache/">KV Cache<sup>1</sup></a><a href="/tags/%E5%90%8E%E7%AB%AF/">后端<sup>2</sup></a><a href="/tags/copilot/">copilot<sup>1</sup></a><a href="/tags/claude/">claude<sup>1</sup></a><a href="/tags/vscode/">vscode<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E5%8C%96/">正则化<sup>1</sup></a><a href="/tags/github/">github<sup>1</sup></a><a href="/tags/DNS/">DNS<sup>1</sup></a><a href="/tags/%E6%95%99%E7%A8%8B/">教程<sup>1</sup></a><a href="/tags/go/">go<sup>4</sup></a><a href="/tags/hexo/">hexo<sup>4</sup></a><a href="/tags/algolia/">algolia<sup>1</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>1</sup></a><a href="/tags/openclaw/">openclaw<sup>2</sup></a><a href="/tags/mac/">mac<sup>1</sup></a><a href="/tags/wireguard/">wireguard<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E4%B8%BB%E9%A2%98%E5%9B%A2%E6%97%A5/">主题团日<sup>1</sup></a><a href="/tags/%E6%96%B0%E5%B9%B4%E6%84%BF%E6%9C%9B/">新年愿望<sup>1</sup></a><a href="/tags/%E7%94%B5%E5%BD%B1%E6%8E%A8%E8%8D%90/">电影推荐<sup>1</sup></a><a href="/tags/%E4%B8%AA%E4%BA%BA%E5%8F%98%E5%8C%96/">个人变化<sup>1</sup></a><a href="/tags/%E5%85%85%E7%94%B5%E6%A1%A9/">充电桩<sup>1</sup></a><a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/">内网穿透<sup>1</sup></a><a href="/tags/%E5%B7%A6%E5%80%BC/">左值<sup>1</sup></a><a href="/tags/%E6%BC%94%E8%AE%B2%E7%A8%BF/">演讲稿<sup>1</sup></a><a href="/tags/English/">English<sup>3</sup></a><a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型<sup>1</sup></a><a href="/tags/SSH/">SSH<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/%E5%8A%A0%E5%A5%BD%E5%8F%8B/">加好友<sup>1</sup></a><a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结<sup>1</sup></a><a href="/tags/%E6%A0%87%E7%AD%BE%E5%A4%96%E6%8C%82%E7%9A%84%E4%BD%BF%E7%94%A8/">标签外挂的使用<sup>1</sup></a><a href="/tags/%E6%81%8B%E7%88%B1/">恋爱<sup>1</sup></a><a href="/tags/%E6%B5%B7%E5%A4%A7/">海大<sup>1</sup></a><a href="/tags/%E7%94%9F%E6%B4%BB/">生活<sup>1</sup></a><a href="/tags/%E5%A4%96%E5%8C%85/">外包<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">数值计算<sup>1</sup></a><a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全<sup>1</sup></a><a href="/tags/%E6%8E%A8%E8%8D%90/">推荐<sup>1</sup></a><a href="/tags/%E6%9C%89%E8%B6%A3%E7%9A%84%E7%9F%A5%E8%AF%86/">有趣的知识<sup>1</sup></a><a href="/tags/remoteapp/">remoteapp<sup>1</sup></a><a href="/tags/CDN/">CDN<sup>1</sup></a><a href="/tags/%E9%87%8D%E5%AE%9A%E5%90%91%E6%AC%A1%E6%95%B0%E8%BF%87%E5%A4%9A/">重定向次数过多<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>1</sup></a></div></div><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/11/"><span class="card-archive-list-date">2026/11</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">8</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/10/"><span class="card-archive-list-date">2026/10</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/07/"><span class="card-archive-list-date">2026/07</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">6</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/06/"><span class="card-archive-list-date">2026/06</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/04/"><span class="card-archive-list-date">2026/04</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/03/"><span class="card-archive-list-date">2026/03</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">3</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/09/"><span class="card-archive-list-date">2025/09</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/08/"><span class="card-archive-list-date">2025/08</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/07/"><span class="card-archive-list-date">2025/07</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/06/"><span class="card-archive-list-date">2025/06</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/05/"><span class="card-archive-list-date">2025/05</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/04/"><span class="card-archive-list-date">2025/04</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/03/"><span class="card-archive-list-date">2025/03</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/02/"><span class="card-archive-list-date">2025/02</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/12/"><span class="card-archive-list-date">2024/12</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">9</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/10/"><span class="card-archive-list-date">2024/10</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/09/"><span class="card-archive-list-date">2024/09</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/06/"><span class="card-archive-list-date">2024/06</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">3</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/02/"><span class="card-archive-list-date">2024/02</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/01/"><span class="card-archive-list-date">2024/01</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/11/"><span class="card-archive-list-date">2023/11</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/10/"><span class="card-archive-list-date">2023/10</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/09/"><span class="card-archive-list-date">2023/09</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">2023/07</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/05/"><span class="card-archive-list-date">2023/05</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/04/"><span class="card-archive-list-date">2023/04</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/03/"><span class="card-archive-list-date">2023/03</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/02/"><span class="card-archive-list-date">2023/02</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/01/"><span class="card-archive-list-date">2023/01</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">8</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2022/12/"><span class="card-archive-list-date">2022/12</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/"><span class="card-archive-list-date">全部文章</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">89</span><span class="card-archive-list-count-unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fa-solid fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div><div class="console-btn-item on" id="consoleCommentBarrage" onclick="sco.switchCommentBarrage()"><span class="commentBarrage"><i class="solitude fa-solid fa-comment"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">89</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">73</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fa-solid fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">我的</div><div class="back-menu-list"><a class="back-menu-item" href="https://daoxuan.cc" title="个人主页"><img class="nolazyload back-menu-item-icon" src="https://picture.daoxuan.cc/image/202301301254377.webp" alt="个人主页"><span class="back-menu-item-text">个人主页</span></a><a class="back-menu-item" target="_blank" rel="noopener" href="https://ai-infra-textbook.vercel.app/" title="AI Infra 自学教材"><img class="nolazyload back-menu-item-icon" src="/img/ai-infra-textbook.svg" alt="AI Infra 自学教材"><span class="back-menu-item-text">AI Infra 自学教材</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  fas fa-folder-closed"></i><span>全部文章</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  fas fa-clone"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  fas fa-tags"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  fas fa-user-group"></i><span>友情链接</span></a></li><li><a class="site-page child" href="javascript:travelling()"><i class="solitude  fas fa-gift"></i><span>宝藏博主</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  fas fa-laptop"></i><span>我的装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  fas fa-toolbox"></i><span>在线工具</span></a></li><li><a class="site-page child" href="/music/"><i class="solitude  fas fa-music"></i><span>音乐馆</span></a></li><li><a class="site-page child" href="/about/"><i class="solitude  fas fa-user"></i><span>关于本站</span></a></li><li><a class="site-page child" href="/bangumis/"><i class="solitude  fa-brands fa-bilibili"></i><span>追番页面</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/AI/">AI<sup>14</sup></a><a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习<sup>11</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/">优化器<sup>1</sup></a><a href="/tags/Beego/">Beego<sup>1</sup></a><a href="/tags/FP8/">FP8<sup>2</sup></a><a href="/tags/%E9%87%8F%E5%8C%96/">量化<sup>2</sup></a><a href="/tags/C%E8%AF%AD%E8%A8%80/">C语言<sup>2</sup></a><a href="/tags/c%E8%AF%AD%E8%A8%80/">c语言<sup>1</sup></a><a href="/tags/django/">django<sup>8</sup></a><a href="/tags/Django/">Django<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C/">网络<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BA%8A/">图床<sup>1</sup></a><a href="/tags/Fire/">Fire<sup>1</sup></a><a href="/tags/%E7%88%AC%E8%99%AB/">爬虫<sup>2</sup></a><a href="/tags/Transformer/">Transformer<sup>3</sup></a><a href="/tags/python/">python<sup>4</sup></a><a href="/tags/VisualGLM-6B/">VisualGLM-6B<sup>1</sup></a><a href="/tags/%E5%B7%A5%E4%BD%9C%E6%B5%81/">工作流<sup>1</sup></a><a href="/tags/butterfly/">butterfly<sup>1</sup></a><a href="/tags/%E6%8A%A5%E9%94%99/">报错<sup>5</sup></a><a href="/tags/chatgpt/">ChatGPT<sup>2</sup></a><a href="/tags/LLM/">LLM<sup>1</sup></a><a href="/tags/AI-Infra/">AI Infra<sup>1</sup></a><a href="/tags/KV-Cache/">KV Cache<sup>1</sup></a><a href="/tags/%E5%90%8E%E7%AB%AF/">后端<sup>2</sup></a><a href="/tags/copilot/">copilot<sup>1</sup></a><a href="/tags/claude/">claude<sup>1</sup></a><a href="/tags/vscode/">vscode<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E5%8C%96/">正则化<sup>1</sup></a><a href="/tags/github/">github<sup>1</sup></a><a href="/tags/DNS/">DNS<sup>1</sup></a><a href="/tags/%E6%95%99%E7%A8%8B/">教程<sup>1</sup></a><a href="/tags/go/">go<sup>4</sup></a><a href="/tags/hexo/">hexo<sup>4</sup></a><a href="/tags/algolia/">algolia<sup>1</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>1</sup></a><a href="/tags/openclaw/">openclaw<sup>2</sup></a><a href="/tags/mac/">mac<sup>1</sup></a><a href="/tags/wireguard/">wireguard<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E4%B8%BB%E9%A2%98%E5%9B%A2%E6%97%A5/">主题团日<sup>1</sup></a><a href="/tags/%E6%96%B0%E5%B9%B4%E6%84%BF%E6%9C%9B/">新年愿望<sup>1</sup></a><a href="/tags/%E7%94%B5%E5%BD%B1%E6%8E%A8%E8%8D%90/">电影推荐<sup>1</sup></a><a href="/tags/%E4%B8%AA%E4%BA%BA%E5%8F%98%E5%8C%96/">个人变化<sup>1</sup></a><a href="/tags/%E5%85%85%E7%94%B5%E6%A1%A9/">充电桩<sup>1</sup></a><a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/">内网穿透<sup>1</sup></a><a href="/tags/%E5%B7%A6%E5%80%BC/">左值<sup>1</sup></a><a href="/tags/%E6%BC%94%E8%AE%B2%E7%A8%BF/">演讲稿<sup>1</sup></a><a href="/tags/English/">English<sup>3</sup></a><a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型<sup>1</sup></a><a href="/tags/SSH/">SSH<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/%E5%8A%A0%E5%A5%BD%E5%8F%8B/">加好友<sup>1</sup></a><a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结<sup>1</sup></a><a href="/tags/%E6%A0%87%E7%AD%BE%E5%A4%96%E6%8C%82%E7%9A%84%E4%BD%BF%E7%94%A8/">标签外挂的使用<sup>1</sup></a><a href="/tags/%E6%81%8B%E7%88%B1/">恋爱<sup>1</sup></a><a href="/tags/%E6%B5%B7%E5%A4%A7/">海大<sup>1</sup></a><a href="/tags/%E7%94%9F%E6%B4%BB/">生活<sup>1</sup></a><a href="/tags/%E5%A4%96%E5%8C%85/">外包<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">数值计算<sup>1</sup></a><a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全<sup>1</sup></a><a href="/tags/%E6%8E%A8%E8%8D%90/">推荐<sup>1</sup></a><a href="/tags/%E6%9C%89%E8%B6%A3%E7%9A%84%E7%9F%A5%E8%AF%86/">有趣的知识<sup>1</sup></a><a href="/tags/remoteapp/">remoteapp<sup>1</sup></a><a href="/tags/CDN/">CDN<sup>1</sup></a><a href="/tags/%E9%87%8D%E5%AE%9A%E5%90%91%E6%AC%A1%E6%95%B0%E8%BF%87%E5%A4%9A/">重定向次数过多<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>1</sup></a></div></div></div></div><!-- keyboard--><!-- righhtside--><div class="needEndHide" id="rightside"><div class="rs_hide"><button class="translate" type="button" title="简繁转换">简</button><button class="mode" type="button" title="显示模式切换" onclick="sco.switchDarkMode()"><i class="fas fa-circle-half-stroke"></i></button><button class="aside pc" type="button" title="侧边栏" onclick="sco.switchHideAside()"><i class="fas fa-arrows-alt-h"></i></button></div><div class="rs_show"><button class="config" type="button" title="扩展" onclick="document.querySelector(&quot;.rs_hide&quot;).classList.toggle(&quot;show&quot;)"><i class="fas fa-gear fa-spin"></i></button><button class="mobile toc" type="button" title="目录" onclick="document.querySelector('#card-toc').classList.toggle('open')"><i class="fas fa-list"></i></button><button class="comment" type="button" title="评论" onclick="sco.scrollTo('post-comment')"><i class="fas fa-comment"></i></button><button class="barrage pc" type="button" title="弹" onclick="sco.switchCommentBarrage()"><span>弹</span></button><button class="top" type="button" title="返回顶部" onclick="sco.toTop()"><i class="fas fa-arrow-up"></i><span id="percent">0</span></button></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude fas fa-bars-progress"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">我的</div><div class="back-menu-list"><a class="back-menu-item" href="https://daoxuan.cc" title="个人主页"><img class="nolazyload back-menu-item-icon" src="https://picture.daoxuan.cc/image/202301301254377.webp" alt="个人主页"><span class="back-menu-item-text">个人主页</span></a><a class="back-menu-item" target="_blank" rel="noopener" href="https://ai-infra-textbook.vercel.app/" title="AI Infra 自学教材"><img class="nolazyload back-menu-item-icon" src="/img/ai-infra-textbook.svg" alt="AI Infra 自学教材"><span class="back-menu-item-text">AI Infra 自学教材</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">道宣的窝</span><i class="solitude fa-solid fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">GEMM（矩阵乘）</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  fas fa-folder-closed"></i><span>全部文章</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  fas fa-clone"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  fas fa-tags"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  fas fa-user-group"></i><span>友情链接</span></a></li><li><a class="site-page child" href="javascript:travelling()"><i class="solitude  fas fa-gift"></i><span>宝藏博主</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  fas fa-laptop"></i><span>我的装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  fas fa-toolbox"></i><span>在线工具</span></a></li><li><a class="site-page child" href="/music/"><i class="solitude  fas fa-music"></i><span>音乐馆</span></a></li><li><a class="site-page child" href="/about/"><i class="solitude  fas fa-user"></i><span>关于本站</span></a></li><li><a class="site-page child" href="/bangumis/"><i class="solitude  fa-brands fa-bilibili"></i><span>追番页面</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索"><i class="solitude fa-solid fa-magnifying-glass"></i></a></div><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);"><label><i class="left"></i><i class="center"></i><i class="right"></i></label></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fa-solid fa-bars"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/img/posts/gemm-matrix-multiply-cover.png" alt="GEMM（矩阵乘）"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/AI/">AI</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/"><span class="tags-name tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>AI</span></a><a class="post-meta__tags" href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"><span class="tags-name tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>深度学习</span></a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"><span class="tags-name tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>性能优化</span></a></div></div></div></div><h1 class="post-title">GEMM（矩阵乘）</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2026-11-12 00:00:00"><i class="post-meta-icon solitude fas fa-calendar-days"></i><time datetime="2026-11-11T16:00:00.000Z">2026-11-11T16:00:00.000Z</time></span><span class="post-meta-date" title="最后更新于 2026-11-12 13:42:03"><i class="post-meta-icon solitude fa-solid fa-arrows-rotate"></i><time datetime="2026-11-12T05:42:03.810Z">2026-11-12T05:42:03.810Z</time></span><span class="post-meta-position" title="作者IP归属地为青岛"><i class="post-meta-icon solitude fas fa-location-dot"></i><span>青岛</span></span><span class="post-meta-commentcount" title="评论数" onclick="sco.scrollTo('post-comment')"><i class="solitude fa-solid fa-comment"></i><a href="/posts/60929/#post-comment"><span class="twikoo-count"><i class="solitude fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div id="post"><article class="post-content article-container"><h1 id="GEMM（矩阵乘）"><a href="#GEMM（矩阵乘）" class="headerlink" title="GEMM（矩阵乘）"></a>GEMM（矩阵乘）</h1><p>分块（tiling）几乎是所有 GEMM 优化的第一步，目的就是少读几遍数据。这个说法没错，把输出矩阵切成 4×4 的块之后，A、B 里的同一份数据被重复加载的次数确实降到原来的四分之一。但「分块边长就是带宽节省倍数」这句话要真站得住，得补两个限定条件：分块切在哪一层存储上，以及省下来的读取会不会被别的东西吃回去。</p>
+<h2 id="先把重复读取的次数数清楚"><a href="#先把重复读取的次数数清楚" class="headerlink" title="先把重复读取的次数数清楚"></a>先把重复读取的次数数清楚</h2><p>设 $A$ 是 $M$ 乘 $K$ 的矩阵，$B$ 是 $K$ 乘 $N$，$C$ 是 $M$ 乘 $N$，三者都以行主序躺在 HBM 里。整个乘法的计算量是 $2MNK$ 次浮点运算，每个输出元素一次乘加。</p>
+<p>最朴素的写法里，算一个输出元素就要把 A 的一整行和 B 的一整列读完，也就是 2K 个元素。全部算完，读取量是 $2MNK$ 个元素；而这三份数据本身加起来只有 $MK+KN+MN$ 个元素。多出来的部分全是重复加载。</p>
+<p>切块之后，一次只负责一个边长 T 的输出块，需要 A 的一段 T 乘 K 和 B 的一段 K 乘 T。代价是 A 的每一行会被 N/T 个输出块重复用到，B 的每一列会被 M/T 个输出块重复用到。两边的读取量都是 $MNK/T$，加起来正好是 $2MNK/T$。</p>
+<p>平均到每个输出元素头上，读取次数就从 2K 降到 2K/T，降幅恰好是 T 倍。原文举的分块大小为 4 对应 4 倍带宽节省，就是这么来的。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>分块边长 T</th>
+<th>每个输出元素的读取次数</th>
+<th>相对不分块</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2K</td>
+<td>1×</td>
+</tr>
+<tr>
+<td>4</td>
+<td>K/2</td>
+<td>4×</td>
+</tr>
+<tr>
+<td>8</td>
+<td>K/4</td>
+<td>8×</td>
+</tr>
+<tr>
+<td>32</td>
+<td>K/16</td>
+<td>32×</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>拿一个 $4096 \times 4096$、K 也是 4096 的方阵算笔账。不分块时元素读取量是 $2MNK$，约 $1.37 \times 10^{11}$ 次，按 FP16 每元素两字节算就是 275 GB。假设全部走 HBM，H100 的 3.35 TB/s 带宽需要 82 毫秒；而同样的计算量在 989 TFLOPS 的 FP16 张量核上是 0.14 毫秒。差了两个数量级，这就是不分块时 GPU 的真实处境，算力几乎全程在等数据。</p>
+<h2 id="倍数取决于分块放在哪层存储"><a href="#倍数取决于分块放在哪层存储" class="headerlink" title="倍数取决于分块放在哪层存储"></a>倍数取决于分块放在哪层存储</h2><p>GEMM 里的分块不止一层。block tile 放在 shared memory，线程再各自持有一小块 register tile。真正决定 HBM 流量的是 block tile 的边长，register tile 决定的是 shared memory 和寄存器的读写压力，两者不能混着说。</p>
+<p>有一种常见说法是「分块把重复读取从 p 倍降到 √p 倍」。这句话和 T 倍并不矛盾：p 个处理器排成方阵时，每块 tile 的边长就是 √p，说的还是同一件事，只是把 tile 边长换成了处理器数量。</p>
+<p>用算术强度可以更直接地判断分块够不够。分块边长 T、K 方向每步走 k 时，每个 block 的计算量是 $2T^2k$，从 HBM 读进来的字节数是 $4Tk$。两者相除，算术强度就是 T/2，单位 FLOP 每字节。</p>
+<p>H100 上要跑满算力，这个数是 989 TFLOPS 除以 3.35 TB/s，约 295 FLOP 每字节。也就是说 T 得达到 590 才能靠一级分块自己撑住。现实中 T 取到 128 已经算大块，算术强度只有 64，对应带宽上限 214 TFLOPS。</p>
+<p>中间那段差距靠的是 L2。相邻的 block 往往共用同一段 A 或 B，L2 命中之后这些读取不会落到 HBM 上，实际带宽压力比公式算出来的低。所以「分块边长 T 倍」只描述 HBM 这一层的最坏情况，真正跑起来是 block tile、L2 复用、K 方向流水三者叠出来的结果。</p>
+<h2 id="分块不是越大越好"><a href="#分块不是越大越好" class="headerlink" title="分块不是越大越好"></a>分块不是越大越好</h2><p>H100 每个 SM 的 shared memory 是 228 KB。FP16 下 block tile 取 128、K 步长取 32，A 和 B 各占 8 KB，还有余量做双缓冲；取到 256 就变成各 32 KB，双缓冲翻倍之后很快撞墙，占用率掉下来，反而盖不住访存延迟。</p>
+<p>寄存器是另一道墙。每个线程最多 255 个 32 位寄存器，register tile 取 8×8 意味着要拿 64 个寄存器存累加结果，再留出 A、B 片段的寄存器，剩下的空间已经不多。</p>
+<p>还有两个容易被忽略的细节。M、N 不能被 T 整除时会出现边界块，tile 里一半的计算是浪费的；B 没有转置时要么在拷贝进 shared memory 时顺手转置，要么用 ldmatrix 处理，这部分开销在 K 比较小的矩阵上占比不低。</p>
+<h2 id="什么时候这个倍数不成立"><a href="#什么时候这个倍数不成立" class="headerlink" title="什么时候这个倍数不成立"></a>什么时候这个倍数不成立</h2><p>矩阵本身很小的时候，比如 128×128 乘 128×128，一次调用连一个完整 tile 都喂不满，分块带来的收益很有限。</p>
+<p>K 很小时收益也会缩水。读取次数 2K/T 里的 K 本身就只有几十，档位拉开得再多，绝对值还是很小，反而分块的固定开销更显眼。</p>
+<p>L2 已经把重复读取挡住的情况同样如此。这时候 HBM 流量本来就低于公式的估计值，切更大的块只是把压力从 HBM 挪到 shared memory，端到端未必变快。</p>
+<p>回到开头那句话。分块省带宽的机制是提高算术强度，让每次访存能换来更多计算，省下的倍数在理想情况下等于分块边长，但它是 HBM 这一层的数字。判断一个 GEMM kernel 究竟卡在哪，与其记住 4 块对应 4 倍，不如把算术强度和 $T/2$ 摆在一起看一眼，缺的部分要靠 L2 和流水补。</p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><a class="post-copyright__author_img" href="/about/"><img class="post-copyright__author_img_front" src= "" data-lazy-src="https://picture.daoxuan.cc/image/202301301254377.webp"></a><div class="post-copyright__author_name">DaoXuan</div><div class="post-copyright__author_desc">道宣的窝</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div><div class="reward-link mode"><a class="reward-link-button" href="/atom.xml"><i class="solitude fa-solid fa-seedling"></i>订阅</a></div></div></div><div class="social-share"><a class="social-share-ico icon-qq" target="_blank" rel="noopener" href="https://connect.qq.com/widget/shareqq/index.html?url=https%3A%2F%2Fdaoxuan.cc%2Fposts%2F60929%2F&amp;title=GEMM%EF%BC%88%E7%9F%A9%E9%98%B5%E4%B9%98%EF%BC%89&amp;desc=undefined&amp;summary=undefined&amp;site=GEMM%EF%BC%88%E7%9F%A9%E9%98%B5%E4%B9%98%EF%BC%89&amp;pics=%2Fimg%2Fposts%2Fgemm-matrix-multiply-cover.png" title="分享到QQ"><i class="solitude fab fa-qq"></i></a><a class="social-share-ico icon-twitter" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fdaoxuan.cc%2Fposts%2F60929%2F&amp;text=GEMM%EF%BC%88%E7%9F%A9%E9%98%B5%E4%B9%98%EF%BC%89" title="分享到Twitter"><i class="solitude fab fa-twitter"></i></a><a class="social-share-ico icon-facebook" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdaoxuan.cc%2Fposts%2F60929%2F" title="分享到Facebook"><i class="solitude fab fa-facebook"></i></a><a class="social-share-ico icon-telegram" target="_blank" rel="noopener" href="https://t.me/share/url?url=https%3A%2F%2Fdaoxuan.cc%2Fposts%2F60929%2F&amp;text=GEMM%EF%BC%88%E7%9F%A9%E9%98%B5%E4%B9%98%EF%BC%89" title="分享到Telegram"><i class="solitude fab fa-telegram"></i></a><div class="social-share-ico icon-link" onclick="utils.copy(&quot;https://daoxuan.cc/posts/60929/&quot;)" title="复制文章链接"><i class="solitude fas fa-link"></i></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">DaoXuan</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/"><span class="tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>AI<span class="tagsPageCount">14</span></span></a><a class="post-meta__tags" href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"><span class="tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>深度学习<span class="tagsPageCount">11</span></span></a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"><span class="tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>性能优化<span class="tagsPageCount">1</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/posts/32114/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">将 FP8 训练扩展到万亿代币的 LLMs</div></div></a></div></nav><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="solitude fa-solid fa-comment"></i><span> 评论</span><span class="count"> (<span class="twikoo-count"><i class="solitude fa-solid fa-spinner fa-spin"></i></span>)</span></div></div><div class="comment-wrap"><div id="twikoo-wrap"></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-bg-top"><div class="is-center"><div class="author-info__top-group"><div class="author-info__sayhi" id="author-info__sayhi" onclick="sco.changeSayHelloText()">sayhello.morning</div></div></div></div><a class="card-info-avatar" href="/about/" title="头像"><div class="avatar-img"><img src= "" data-lazy-src="https://picture.daoxuan.cc/image/202301301254377.webp" alt="头像"></div></a><div class="card-info__desc_group"><div class="author-info__name">道宣</div><div class="author-info__desc">道宣的窝</div><div class="card-info__data is-center"><a href="/archives/" title="累计文章数:89"><div class="length-num">89</div><div class="headline">文章</div></a><a href="/tags/" title="标签总数:73"><div class="length-num">73</div><div class="headline">标签</div></a><a href="/categories/" title="分类总数:9"><div class="length-num">9</div><div class="headline">分类</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" target="_blank" rel="noopener" href="https://github.com/dx2331lxz" title="Github"><i class="solitude  fab fa-github"></i></a><a class="social-icon" target="_blank" rel="noopener" href="https://space.bilibili.com/510400220" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a></div></div></div></div><div class="card-widget card-platform"><div id="flip-wrapper"><div id="flip-content"><div class="face"></div><div class="back face"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fa-solid fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#GEMM%EF%BC%88%E7%9F%A9%E9%98%B5%E4%B9%98%EF%BC%89"><span class="toc-text">GEMM（矩阵乘）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E6%8A%8A%E9%87%8D%E5%A4%8D%E8%AF%BB%E5%8F%96%E7%9A%84%E6%AC%A1%E6%95%B0%E6%95%B0%E6%B8%85%E6%A5%9A"><span class="toc-text">先把重复读取的次数数清楚</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%80%8D%E6%95%B0%E5%8F%96%E5%86%B3%E4%BA%8E%E5%88%86%E5%9D%97%E6%94%BE%E5%9C%A8%E5%93%AA%E5%B1%82%E5%AD%98%E5%82%A8"><span class="toc-text">倍数取决于分块放在哪层存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E4%B8%8D%E6%98%AF%E8%B6%8A%E5%A4%A7%E8%B6%8A%E5%A5%BD"><span class="toc-text">分块不是越大越好</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%BF%99%E4%B8%AA%E5%80%8D%E6%95%B0%E4%B8%8D%E6%88%90%E7%AB%8B"><span class="toc-text">什么时候这个倍数不成立</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fa-solid fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/posts/60929/" title="GEMM（矩阵乘）"><div class="thumbnail"><img alt="GEMM（矩阵乘）" src= "" data-lazy-src="/img/posts/gemm-matrix-multiply-cover.png"></div><div class="content"><span class="title" href="/posts/60929/" title="GEMM（矩阵乘）">GEMM（矩阵乘）</span><span class="article-recent_post_categories" href="/posts/60929/">AI</span></div></a><a class="aside-list-item" href="/posts/32114/" title="将 FP8 训练扩展到万亿代币的 LLMs"><div class="thumbnail"><img alt="将 FP8 训练扩展到万亿代币的 LLMs" src= "" data-lazy-src="/img/posts/fp8-trillion-tokens-cover.png"></div><div class="content"><span class="title" href="/posts/32114/" title="将 FP8 训练扩展到万亿代币的 LLMs">将 FP8 训练扩展到万亿代币的 LLMs</span><span class="article-recent_post_categories" href="/posts/32114/">AI</span></div></a><a class="aside-list-item" href="/posts/57198/" title="从 Sigmoid 到 SwiGLU：理解 Transformer 中的激活函数"><div class="thumbnail"><img alt="从 Sigmoid 到 SwiGLU：理解 Transformer 中的激活函数" src= "" data-lazy-src="/img/posts/activation-functions-cover.png"></div><div class="content"><span class="title" href="/posts/57198/" title="从 Sigmoid 到 SwiGLU：理解 Transformer 中的激活函数">从 Sigmoid 到 SwiGLU：理解 Transformer 中的激活函数</span><span class="article-recent_post_categories" href="/posts/57198/">AI</span></div></a><a class="aside-list-item" href="/posts/21253/" title="Dropout（随机失活）"><div class="thumbnail"><img alt="Dropout（随机失活）" src= "" data-lazy-src="/img/posts/dropout-cover.png"></div><div class="content"><span class="title" href="/posts/21253/" title="Dropout（随机失活）">Dropout（随机失活）</span><span class="article-recent_post_categories" href="/posts/21253/">AI</span></div></a><a class="aside-list-item" href="/posts/57954/" title="COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练"><div class="thumbnail"><img alt="COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练" src= "" data-lazy-src="/img/posts/coat-fp8-cover.png"></div><div class="content"><span class="title" href="/posts/57954/" title="COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练">COAT：压缩优化器状态和激活以实现内存高效的 FP8 训练</span><span class="article-recent_post_categories" href="/posts/57954/">AI</span></div></a></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span>道宣的窝</span></div><div class="footer-bar-description">Articles from DaoXuan / 文章来自 DaoXuan</div><a class="footer-bar-link" href="/about/">Learn more / 了解更多</a></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2022 - 2026 By&nbsp;<a class="footer-bar-link" href="/"><img class="author-avatar" src= "" data-lazy-src="https://picture.daoxuan.cc/image/202301301254377.webp">道宣</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://beian.mps.gov.cn/#/query/webSearch" title="黑ICP备2024021258号"><img class="beian-icon" src= "" data-lazy-src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" alt="黑ICP备2024021258号"><span class="beian-name">黑ICP备2024021258号</span></a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://beian.miit.gov.cn/" title="黑ICP备2024021258号-1"><span class="beian-name">黑ICP备2024021258号-1</span></a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/everfu/hexo-theme-solitude" alt="Theme">Theme</a></div></div></div><div class="comment-barrage needEndHide"></div></footer></div><!-- right_menu--><!-- inject body--><div><script src="/js/utils.js?v=2.1.19"></script><script src="/js/main.js?v=2.1.19"></script><script src="/js/third_party/waterfall.min.js?v=2.1.19"></script><script src="https://fastly.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script src="/js/third_party/universe.min.js?v=2.1.19"></script><script>dark()
+</script><script src="/js/tw_cn.js?v=2.1.19"></script><script src="https://fastly.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.iife.min.js"></script><script src="https://fastly.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script src="https://fastly.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.min.js"></script><script src="https://fastly.jsdelivr.net/npm/swiper@11.0.5/swiper-bundle.min.js"></script><script>(() => {
+  let musicAssetsPromise;
+  const aplayerCss = 'https://fastly.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css';
+  const aplayerJs = 'https://fastly.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js';
+  const metingJs = 'https://fastly.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js';
+  const musicFallbackJs = '/js/music-fallback.js?v=2.1.19';
+  const metingApi = 'https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&r=:r';
+
+  const hasStylesheet = url => {
+    const absoluteUrl = new URL(url, document.baseURI).href;
+    return Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .some(link => link.href === absoluteUrl);
+  };
+
+  window.loadMetingAssets = () => {
+    window.meting_api = metingApi;
+    if (musicAssetsPromise) return musicAssetsPromise;
+
+    const cssPromise = hasStylesheet(aplayerCss)
+      ? Promise.resolve()
+      : utils.getCSS(aplayerCss, 'aplayer-lazy-css');
+
+    const aplayerPromise = typeof window.APlayer === 'undefined'
+      ? utils.getScript(aplayerJs)
+      : Promise.resolve();
+    const fallbackPromise = typeof window.utils?.attachMusicFallback === 'function'
+      ? Promise.resolve()
+      : utils.getScript(musicFallbackJs);
+
+    musicAssetsPromise = Promise.all([cssPromise, aplayerPromise, fallbackPromise])
+      .then(() => {
+        if (typeof window.APlayer === 'undefined') throw new Error('APlayer failed to initialize');
+        if (window.customElements?.get('meting-js')) return undefined;
+        return utils.getScript(metingJs);
+      })
+      .then(() => {
+        if (!window.customElements?.get('meting-js')) throw new Error('MetingJS failed to initialize');
+      })
+      .catch(error => {
+        musicAssetsPromise = null;
+        throw error;
+      });
+
+    return musicAssetsPromise;
+  };
+})();
+</script><script>const coverColorConfig = {
+  time: 43200000
+}</script><script src="/js/covercolor/local.js?v=2.1.19"></script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://fastly.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><script>
+  (function () {
+    let retryTimer;
+
+    function typesetMath() {
+      if (window.MathJax && MathJax.Hub) {
+        MathJax.Hub.Queue(['Typeset', MathJax.Hub, document.querySelector('.article-container') || document]);
+        return true;
+      }
+      return false;
+    }
+
+    function waitForMathJax(retries = 0) {
+      if (typesetMath() || retries >= 100) {
+        retryTimer = null;
+        return;
+      }
+      if (retryTimer) return;
+      retryTimer = window.setTimeout(() => {
+        retryTimer = null;
+        waitForMathJax(retries + 1);
+      }, 100);
+    }
+
+    document.addEventListener('DOMContentLoaded', waitForMathJax, { once: true });
+    window.addEventListener('load', waitForMathJax, { once: true });
+    document.addEventListener('pjax:complete', waitForMathJax);
+    waitForMathJax();
+  })();
+</script>
+<div class="js-pjax"><script>(() => {
+    const getCount = () => {
+        const ele = document.querySelectorAll('.twikoo-count')
+        if (!ele) return
+        twikoo.getCommentsCount({
+            envId: 'https://twikoo.daoxuan.cc/',
+            region: '',
+            urls: [window.location.pathname],
+            includeReply: false
+        }).then(res => {
+            ele.forEach(item => item.textContent = res[0].count)
+        }).catch(err => {
+            console.error(err)
+        })
+    }
+    const init = () => {
+        twikoo.init(Object.assign({
+            el: '#twikoo-wrap',
+            envId: 'https://twikoo.daoxuan.cc/',
+            region: '',
+            path: window.location.pathname,
+            onCommentLoaded: () => {
+                GLOBAL_CONFIG.lightbox && utils.lightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+            }
+        }, null))
+
+         && getCount()
+        sco.owoBig({
+            body: '.OwO-body',
+            item: '.OwO-items li'
+        })
+
+        true && barrageTwikoo()
+    }
+
+    const loadTwikoo = () => {
+        if (typeof twikoo === 'object') setTimeout(init,0)
+        else utils.getScript('https://fastly.jsdelivr.net/npm/twikoo@1.6.40/dist/twikoo.all.min.js').then(init)
+    }
+
+    if ('Twikoo' === 'Twikoo' || true) {
+        if (true) utils.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+        else loadTwikoo()
+    } else {
+        window.loadTwoComment = loadTwikoo
+    }
+})()
+</script><script>async function barrageTwikoo() {
+    await fetch("https://twikoo.daoxuan.cc/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            event: "COMMENT_GET",
+            accessToken: "",
+            url: window.location.pathname
+        })
+    }).then(async res => {
+        if (!res.ok) throw new Error("HTTP error! status: " + res.status)
+        const data = await res.json();
+        const init = () => {
+            initializeCommentBarrage((data.data).map(item => Object.assign({
+                content: item.comment,
+                nick: item.nick,
+                mailMd5: item.mailMd5,
+                id: item.id
+            })))
+        }
+        if (typeof initializeCommentBarrage === "undefined") await utils.getScript('/js/third_party/barrage.min.js?v=2.1.19').then(init)
+        else init()
+    }).catch(error => console.error("An error occurred while fetching comments: ", error))
+}</script></div></div><script>const links = [{"name":"道宣的窝","link":"/"},{"name":"Akilarの糖果屋","link":"https://akilar.top/"},{"name":"张洪Heo","link":"https://blog.zhheo.com/"},{"name":"百里飞洋","link":"https://blog.meta-code.top/"},{"name":"Leonus","link":"https://blog.leonus.cn/"},{"name":"安知鱼`Blog","link":"https://anzhiy.cn/"},{"name":"ichika","link":"https://ichika.cc"},{"name":"Ordis","link":"https://imbhj.com"},{"name":"我不是咕咕鸽——VPS折腾不完全记录","link":"https://blog.laoda.de"},{"name":"冰屋小站","link":"https://blog.biduang.cn/"},{"name":"呆鱼","link":"https://daiyu.fun/"},{"name":"Cream薄荷糖","link":"https://www.creammint.cn/"},{"name":"JrHimself","link":"https://www.jrhim.com/"}]
+const randomText = '点击前往按钮进入随机一个友链，不保证跳转网站的安全性和可用性。本次随机到的是本站友链：⌈ ${name} ⌋'
+function travelling() {
+    const link = links[utils.randomNum(links.length)];
+    Snackbar.show({
+        text: randomText.replace(/\$\{name}/,link.name),
+        duration: 8000,
+        pos: 'top-center',
+        actionText: '前往',
+        onActionClick: function(element) {
+            element.style.opacity = 0;
+            window.open(link.link, '_blank');
+        }
+    });
+}
+</script><script>function randomLinksList() {
+    const linkcard = document.getElementById('friend-links-in-footer');
+    if (linkcard == null) return;
+
+    let data = '';
+    let linksCopy = [...links];
+    let count = Math.min(3, linksCopy.length);
+
+    for (let i = 0; i < count; i++) {
+        let index = utils.randomNum(linksCopy.length);
+        const {link, name} = linksCopy[index];
+        data += `<a class="footer-item" href="${link}" target="_blank" rel="noopener noreferrer nofollow">${name}</a>`;
+        linksCopy.splice(index, 1);
+    }
+
+    linkcard.innerHTML = data + '<a class="footer-item" href="/links/">更多</a>';
+}</script><!-- pjax--><script>const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- google adsense--><!-- search--><div id="algolia-search"><div class="search-dialog"><div class="algolia-navbar"><div class="search-dialog__title" id="algolia-search-title">搜索</div><div class="algolia-tips"><i class="solitude fab fa-algolia"></i><span class="algolia-tips-text">Algolia</span></div><span class="search-close-button"><i class="solitude fa-solid fa-xmark"></i></span></div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><div id="search-results"><div id="algolia-hits"></div></div><div id="algolia-tips"><div id="algolia-pagination"></div><div id="algolia-stats"></div></div></div><div id="search-mask"></div></div><script>(() => {
+    let searchPromise;
+
+    const loadSearch = () => {
+        if (window.openSearch) return Promise.resolve();
+        if (searchPromise) return searchPromise;
+
+        searchPromise = utils.getScript('https://fastly.jsdelivr.net/npm/instantsearch.js@4.75.5/dist/instantsearch.production.min.js')
+            .then(() => utils.getScript('https://fastly.jsdelivr.net/npm/algoliasearch@5.14.2/dist/algoliasearch.umd.min.js'))
+            .then(() => utils.getScript('/js/search/algolia.js?v=2.1.19'))
+            .then(() => {
+                const trigger = document.querySelector('#search-button > .search');
+                trigger?.removeEventListener('click', openSearchWhenReady);
+                if (trigger) delete trigger.dataset.lazySearchBound;
+            })
+            .catch(error => {
+                searchPromise = null;
+                console.error('Search assets failed to load:', error);
+                throw error;
+            });
+
+        return searchPromise;
+    };
+
+    const openSearchWhenReady = event => {
+        event?.preventDefault();
+        loadSearch().then(() => window.openSearch?.());
+    };
+
+    const bindSearchTrigger = () => {
+        const trigger = document.querySelector('#search-button > .search');
+        if (trigger && !trigger.dataset.lazySearchBound) {
+            trigger.addEventListener('click', openSearchWhenReady);
+            trigger.dataset.lazySearchBound = 'true';
+        }
+    };
+
+    bindSearchTrigger();
+    document.addEventListener('pjax:complete', bindSearchTrigger);
+    document.addEventListener('keydown', event => {
+        if (event.ctrlKey && event.key === 'k' && !window.openSearch) {
+            openSearchWhenReady(event);
+        }
+    });
+})();</script><!-- Tianli-Talk--><!-- music--></body></html>
+        <script>
+            const posts = ["posts/60929/","posts/32114/","posts/57198/","posts/21253/","posts/57954/","posts/15574/","posts/31246/","posts/40710/","posts/46918/","posts/47382/","posts/18002/","posts/21578/","posts/56981/","posts/54119/","posts/42170/","posts/64295/","posts/41157/","posts/22620/","posts/11103/","posts/28864/","posts/39828/","posts/35461/","posts/52161/","posts/20296/","posts/25626/","posts/43834/","posts/14971/","posts/23147/","posts/30621/","posts/58955/","posts/59863/","posts/39530/","posts/48977/","posts/25443/","posts/48193/","posts/12233/","posts/8583/","posts/13888/","posts/9118/","posts/50029/","posts/20760/","posts/45899/","posts/31606/","posts/54641/","posts/63511/","posts/14505/","posts/27467/","posts/5430/","posts/51950/","posts/3200/","posts/26473/","posts/52000/","posts/16342/","posts/44613/","posts/9815/","posts/64064/","posts/55779/","posts/16961/","posts/64089/","posts/10030/","posts/59715/","posts/58914/","posts/64135/","posts/55030/","posts/53297/","posts/55622/","posts/20868/","posts/64429/","posts/49711/","posts/46458/","posts/22520/","posts/371/","posts/54468/","posts/30117/","posts/20439/","posts/49774/","posts/12972/","posts/25087/","posts/6890/","posts/50092/","posts/54218/","posts/2500/","posts/12709/","posts/24979/","posts/65143/","posts/36714/","posts/41761/","posts/22678/","posts/24059/"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>

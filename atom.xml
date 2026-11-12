@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2026-11-09T16:05:07.994Z</updated>
+  <updated>2026-11-12T05:42:03.810Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -15,6 +15,34 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>GEMM（矩阵乘）</title>
+    <link href="https://daoxuan.cc/posts/60929/"/>
+    <id>https://daoxuan.cc/posts/60929/</id>
+    <published>2026-11-11T16:00:00.000Z</published>
+    <updated>2026-11-12T05:42:03.810Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="GEMM（矩阵乘）"><a href="#GEMM（矩阵乘）" class="headerlink" title="GEMM（矩阵乘）"></a>GEMM（矩阵乘）</h1><p>分块（tiling）几乎是所有 GEMM 优化的第一步，目的就是少读几遍数据。这个说法没错，把输出矩阵切成 4×4 的块之后，A、B 里的同一份数据被重复加载的次数确实降到原来的四分之一。但「分块边长就是带宽节省倍数」这句话要真站得住，得补两个限定条件：分块切在哪一层存储上，以及省下来的读取会不会被别的东西吃回去。</p><h2 id="先把重复读取的次数数清楚"><a href="#先把重复读取的次数数清楚" class="headerlink" title="先把重复读取的次数数清楚"></a>先把重复读取的次数数清楚</h2><p>设 $A$ 是 $M$ 乘 $K$ 的矩阵，$B$ 是 $K$ 乘 $N$，$C$ 是 $M$ 乘 $N$，三者都以行主序躺在 HBM 里。整个乘法的计算量是 $2MNK$ 次浮点运算，每个输出元素一次乘加。</p><p>最朴素的写法里，算一个输出元素就要把 A 的一整行和 B 的一整列读完，也就是 2K 个元素。全部算完，读取量是 $2MNK$ 个元素；而这三份数据本身加起来只有 $MK+KN+MN$ 个元素。多出来的部分全是重复加载。</p><p>切块之后，一次只负责一个边长 T 的输出块，需要 A 的一段 T 乘 K 和 B 的一段 K 乘 T。代价是 A 的每一行会被 N/T 个输出块重复用到，B 的每一列会被 M/T 个输出块重复用到。两边的读取量都是 $MNK/T$，加起来正好是 $2MNK/T$。</p><p>平均到每个输出元素头上，读取次数就从 2K 降到 2K/T，降幅恰好是 T 倍。原文举的分块大小为 4 对应 4 倍带宽节省，就是这么来的。</p><div class="table-container"><table><thead><tr><th>分块边长 T</th><th>每个输出元素的读取次数</th><th>相对不分块</th></tr></thead><tbody><tr><td>1</td><td>2K</td><td>1×</td></tr><tr><td>4</td><td>K/2</td><td>4×</td></tr><tr><td>8</td><td>K/4</td><td>8×</td></tr><tr><td>32</td><td>K/16</td><td>32×</td></tr></tbody></table></div><p>拿一个 $4096 \times 4096$、K 也是 4096 的方阵算笔账。不分块时元素读取量是 $2MNK$，约 $1.37 \times 10^{11}$ 次，按 FP16 每元素两字节算就是 275 GB。假设全部走 HBM，H100 的 3.35 TB/s 带宽需要 82 毫秒；而同样的计算量在 989 TFLOPS 的 FP16 张量核上是 0.14 毫秒。差了两个数量级，这就是不分块时 GPU 的真实处境，算力几乎全程在等数据。</p><h2 id="倍数取决于分块放在哪层存储"><a href="#倍数取决于分块放在哪层存储" class="headerlink" title="倍数取决于分块放在哪层存储"></a>倍数取决于分块放在哪层存储</h2><p>GEMM 里的分块不止一层。block tile 放在 shared memory，线程再各自持有一小块 register tile。真正决定 HBM 流量的是 block tile 的边长，register tile 决定的是 shared memory 和寄存器的读写压力，两者不能混着说。</p><p>有一种常见说法是「分块把重复读取从 p 倍降到 √p 倍」。这句话和 T 倍并不矛盾：p 个处理器排成方阵时，每块 tile 的边长就是 √p，说的还是同一件事，只是把 tile 边长换成了处理器数量。</p><p>用算术强度可以更直接地判断分块够不够。分块边长 T、K 方向每步走 k 时，每个 block 的计算量是 $2T^2k$，从 HBM 读进来的字节数是 $4Tk$。两者相除，算术强度就是 T/2，单位 FLOP 每字节。</p><p>H100 上要跑满算力，这个数是 989 TFLOPS 除以 3.35 TB/s，约 295 FLOP 每字节。也就是说 T 得达到 590 才能靠一级分块自己撑住。现实中 T 取到 128 已经算大块，算术强度只有 64，对应带宽上限 214 TFLOPS。</p><p>中间那段差距靠的是 L2。相邻的 block 往往共用同一段 A 或 B，L2 命中之后这些读取不会落到 HBM 上，实际带宽压力比公式算出来的低。所以「分块边长 T 倍」只描述 HBM 这一层的最坏情况，真正跑起来是 block tile、L2 复用、K 方向流水三者叠出来的结果。</p><h2 id="分块不是越大越好"><a href="#分块不是越大越好" class="headerlink" title="分块不是越大越好"></a>分块不是越大越好</h2><p>H100 每个 SM 的 shared memory 是 228 KB。FP16 下 block tile 取 128、K 步长取 32，A 和 B 各占 8 KB，还有余量做双缓冲；取到 256 就变成各 32 KB，双缓冲翻倍之后很快撞墙，占用率掉下来，反而盖不住访存延迟。</p><p>寄存器是另一道墙。每个线程最多 255 个 32 位寄存器，register tile 取 8×8 意味着要拿 64 个寄存器存累加结果，再留出 A、B 片段的寄存器，剩下的空间已经不多。</p><p>还有两个容易被忽略的细节。M、N 不能被 T 整除时会出现边界块，tile 里一半的计算是浪费的；B 没有转置时要么在拷贝进 shared memory 时顺手转置，要么用 ldmatrix 处理，这部分开销在 K 比较小的矩阵上占比不低。</p><h2 id="什么时候这个倍数不成立"><a href="#什么时候这个倍数不成立" class="headerlink" title="什么时候这个倍数不成立"></a>什么时候这个倍数不成立</h2><p>矩阵本身很小的时候，比如 128×128 乘 128×128，一次调用连一个完整 tile 都喂不满，分块带来的收益很有限。</p><p>K 很小时收益也会缩水。读取次数 2K/T 里的 K 本身就只有几十，档位拉开得再多，绝对值还是很小，反而分块的固定开销更显眼。</p><p>L2 已经把重复读取挡住的情况同样如此。这时候 HBM 流量本来就低于公式的估计值，切更大的块只是把压力从 HBM 挪到 shared memory，端到端未必变快。</p><p>回到开头那句话。分块省带宽的机制是提高算术强度，让每次访存能换来更多计算，省下的倍数在理想情况下等于分块边长，但它是 HBM 这一层的数字。判断一个 GEMM kernel 究竟卡在哪，与其记住 4 块对应 4 倍，不如把算术强度和 $T/2$ 摆在一起看一眼，缺的部分要靠 L2 和流水补。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;GEMM（矩阵乘）&quot;&gt;&lt;a href=&quot;#GEMM（矩阵乘）&quot; class=&quot;headerlink&quot; title=&quot;GEMM（矩阵乘）&quot;&gt;&lt;/a&gt;GEMM（矩阵乘）&lt;/h1&gt;&lt;p&gt;分块（tiling）几乎是所有 GEMM 优化的第一步，目的就是少读几遍数据。这个说</summary>
+      
+    
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/tags/AI/"/>
+    
+    <category term="深度学习" scheme="https://daoxuan.cc/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="性能优化" scheme="https://daoxuan.cc/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"/>
+    
+  </entry>
   
   <entry>
     <title>将 FP8 训练扩展到万亿代币的 LLMs</title>
