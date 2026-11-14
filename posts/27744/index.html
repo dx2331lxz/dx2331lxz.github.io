@@ -1,0 +1,702 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MXFP4 和 NVFP4 的区别 | DaoXuan</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="https://picture.daoxuan.cc/image/202301301254377.webp"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=2.1.19"><!-- inject head--><link rel="canonical" href="https://daoxuan.cc/posts/27744/"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.1/css/all.min.css"><!-- aplayer (capsule music loads this stylesheet on first interaction)--><!-- swiper--><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/swiper@11.0.5/swiper-bundle.min.css"><!-- fancybox ui--><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.min.css"><!-- katex--><!-- Open Graph--><meta name="description" content="MXFP4 和 NVFP4 的区别MXFP4：开放标准，但精度较粗MXFP（Microscaling Floating-Point）是 Open Compute Project 推动的微缩放格式标准。它的 4 位版本 MXFP4 有三个特点： 共享尺度较粗：每 32 个数值共用一块的缩放因子，而这"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="DaoXuan"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="https://picture.daoxuan.cc/image/202301301254377.webp"><link rel="apple-touch-icon" href="https://picture.daoxuan.cc/image/202301301254377.webp" sizes="180x180"><script>console.log(' %c Solitude %c ' + '2.1.19' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    }
+  });
+</script>
+<script async src="https://fastly.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS_CHTML"></script><script>(()=>{
+        const musicPlaylistRequests = new Map();
+        const cloneMusicPlaylist = playlist => playlist.map(track => ({ ...track }));
+        const musicPlaylistStaleTtl = 7 * 86400000;
+        const musicPlaylistRequestTimeout = 15000;
+        const musicPlaylistMaxAttempts = 2;
+        const waitForMusicRetry = delay => new Promise(resolve => window.setTimeout(resolve, delay));
+        const readMusicPlaylistCache = (storage, cacheKey) => {
+            try {
+                const cached = JSON.parse(storage.getItem(cacheKey));
+                if (!cached || !Array.isArray(cached.data) || !cached.data.length || !Number(cached.createdAt)) {
+                    if (cached) storage.removeItem(cacheKey);
+                    return null;
+                }
+                if (Date.now() - cached.createdAt >= musicPlaylistStaleTtl) {
+                    storage.removeItem(cacheKey);
+                    return null;
+                }
+                return cached;
+            } catch (error) {
+                try { storage.removeItem(cacheKey) } catch (storageError) {}
+                return null;
+            }
+        };
+        const writeMusicPlaylistCache = (storage, cacheKey, playlist) => {
+            try {
+                storage.setItem(cacheKey, JSON.stringify({ createdAt: Date.now(), data: playlist }));
+            } catch (error) {}
+        };
+        const getMusicPlaylist = (api, source, ttl = 600000) => {
+            if (!api || !source || source.id == null || !source.server || !source.type) {
+                return Promise.reject(new Error('Invalid music source configuration'))
+            }
+
+            const cacheTtl = Number(ttl) > 0 ? Number(ttl) : 600000
+            const cacheKey = ['solitude-music-playlist-v2', source.server, source.type, source.id].join(':')
+            const sessionCached = readMusicPlaylistCache(sessionStorage, cacheKey)
+            const localCached = readMusicPlaylistCache(localStorage, cacheKey)
+            const cached = sessionCached || localCached
+            if (cached && Date.now() - cached.createdAt < cacheTtl) {
+                if (!sessionCached) writeMusicPlaylistCache(sessionStorage, cacheKey, cached.data)
+                return Promise.resolve(cloneMusicPlaylist(cached.data))
+            }
+
+            const existingRequest = musicPlaylistRequests.get(cacheKey)
+            if (existingRequest) return existingRequest.then(cloneMusicPlaylist)
+
+            const replaceToken = (input, token, value) => input.split(token).join(encodeURIComponent(value ?? ''))
+            let requestUrlTemplate = String(api)
+            requestUrlTemplate = replaceToken(requestUrlTemplate, ':server', source.server)
+            requestUrlTemplate = replaceToken(requestUrlTemplate, ':type', source.type)
+            requestUrlTemplate = replaceToken(requestUrlTemplate, ':id', source.id)
+            requestUrlTemplate = replaceToken(requestUrlTemplate, ':auth', source.auth || '')
+
+            const fetchPlaylist = async () => {
+                const controller = new AbortController()
+                const timeoutId = window.setTimeout(() => controller.abort(), musicPlaylistRequestTimeout)
+                try {
+                    const requestUrl = replaceToken(requestUrlTemplate, ':r', Math.random())
+                    const response = await fetch(requestUrl, {
+                        signal: controller.signal,
+                        credentials: 'omit',
+                        cache: 'no-store'
+                    })
+                    if (!response.ok) throw new Error('Music API returned HTTP ' + response.status)
+                    const playlist = await response.json()
+                    if (!Array.isArray(playlist) || !playlist.length) {
+                        throw new Error('Music API returned an empty or invalid playlist')
+                    }
+                    return playlist
+                } finally {
+                    window.clearTimeout(timeoutId)
+                }
+            }
+
+            const request = (async () => {
+                let lastError
+                for (let attempt = 0; attempt < musicPlaylistMaxAttempts; attempt++) {
+                    try {
+                        const playlist = await fetchPlaylist()
+                        writeMusicPlaylistCache(sessionStorage, cacheKey, playlist)
+                        writeMusicPlaylistCache(localStorage, cacheKey, playlist)
+                        return playlist
+                    } catch (error) {
+                        lastError = error
+                        if (attempt + 1 < musicPlaylistMaxAttempts) {
+                            await waitForMusicRetry(500 * (attempt + 1))
+                        }
+                    }
+                }
+                if (cached) {
+                    console.warn('[Music] Playlist API failed; using cached playlist:', lastError)
+                    writeMusicPlaylistCache(sessionStorage, cacheKey, cached.data)
+                    return cached.data
+                }
+                throw lastError
+            })().finally(() => musicPlaylistRequests.delete(cacheKey))
+
+            musicPlaylistRequests.set(cacheKey, request)
+            return request.then(cloneMusicPlaylist)
+        };
+
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getMusicPlaylist: getMusicPlaylist,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+          },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: {"appId":"1OJ1BF2Q30","apiKey":"e0354e1485bfa103c026e8feed33fa10","indexName":"my-hexo-blog","hits":{"per_page":6}},
+    localsearch: undefined,
+    runtime: '2022-12-10 00:00:00',
+    lazyload: {
+        enable: true,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: true,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可","search":{"empty":"找不到你查询的内容：${query}","hit":"找到 ${hits} 条结果，用时 ${time} 毫秒","placeholder":"输入关键词快速查找","count":"共 <b>${count}</b> 条结果。","loading":"搜索中..."},"barrage":{"title":"热评"}},
+    aside: {
+        sayhello: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        sayhello2: ["你可以的","你一定可以的","祝你好运，陌生人"],
+        sayhello3: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: true
+    },
+    comment: {"avatar":"https://gravatar.com/avatar","commentBarrage":true},
+    lightbox: 'fancybox',
+    post_ai: false,
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: {"time":120,"position":"top","text_prev":"This article expired ","text_next":" day ago, if the content does not match, please contact the webmaster to update it."},
+};</script><!-- page-config head--><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: true,
+    ai_text: false,
+    color: false,
+}</script><!-- hexo injector head_end start --><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-tag-plugins-plus@latest/lib/assets/font-awesome-animation.min.css" media="defer" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-tag-plugins-plus@latest/lib/tag_plugins.css" media="defer" onload="this.media='all'"><script src="https://npm.elemecdn.com/hexo-butterfly-tag-plugins-plus@latest/lib/assets/carousel-touch.js"></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="DaoXuan" type="application/atom+xml">
+</head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- background img--><!-- loading--><div id="loading-box" onclick="preloader.endLoading();" style="zoom:1"><div class="loading-bg"><img class="loading-img nolazyload" src="/img/favicon.png" alt="loading image"></div></div><script>const preloader = {
+    isLoaded: false,
+    endLoading: () => {
+        if (!preloader.isLoaded) {
+            document.getElementById('loading-box').classList.add('loaded');
+            preloader.isLoaded = true;
+            preloader.togglePaceDone();
+        }
+    },
+    initLoading: () => {
+        document.getElementById('loading-box').classList.remove('loaded');
+        preloader.isLoaded = false;
+        preloader.togglePaceDone();
+    },
+    togglePaceDone: () => {
+        document.getElementById('body').className = preloader.isLoaded ? 'pace-done' : '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    requestAnimationFrame(() => preloader.endLoading());
+});
+
+window.addEventListener('pjax:send', () => {
+    preloader.initLoading();
+});
+
+document.addEventListener('pjax:complete', () => {
+    preloader.endLoading();
+});
+
+setTimeout(() => {
+    preloader.endLoading();
+}, 1500);</script><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fa-solid fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card tags" onclick="sco.hideConsole()"><div class="card-content"><div class="author-content-item-tips">标签</div><div class="author-content-item-title">寻找感兴趣的领域</div></div><div class="card-tag-cloud"><a href="/tags/AI/">AI<sup>16</sup></a><a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习<sup>13</sup></a><a href="/tags/FP8/">FP8<sup>3</sup></a><a href="/tags/%E9%87%8F%E5%8C%96/">量化<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/">优化器<sup>1</sup></a><a href="/tags/c%E8%AF%AD%E8%A8%80/">c语言<sup>1</sup></a><a href="/tags/Beego/">Beego<sup>1</sup></a><a href="/tags/C%E8%AF%AD%E8%A8%80/">C语言<sup>2</sup></a><a href="/tags/Django/">Django<sup>1</sup></a><a href="/tags/django/">django<sup>8</sup></a><a href="/tags/FP4/">FP4<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BA%8A/">图床<sup>1</sup></a><a href="/tags/python/">python<sup>4</sup></a><a href="/tags/Fire/">Fire<sup>1</sup></a><a href="/tags/%E7%88%AC%E8%99%AB/">爬虫<sup>2</sup></a><a href="/tags/LLM/">LLM<sup>1</sup></a><a href="/tags/AI-Infra/">AI Infra<sup>1</sup></a><a href="/tags/KV-Cache/">KV Cache<sup>1</sup></a><a href="/tags/Transformer/">Transformer<sup>3</sup></a><a href="/tags/%E5%B7%A5%E4%BD%9C%E6%B5%81/">工作流<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C/">网络<sup>1</sup></a><a href="/tags/butterfly/">butterfly<sup>1</sup></a><a href="/tags/%E6%8A%A5%E9%94%99/">报错<sup>5</sup></a><a href="/tags/chatgpt/">ChatGPT<sup>2</sup></a><a href="/tags/VisualGLM-6B/">VisualGLM-6B<sup>1</sup></a><a href="/tags/%E5%90%8E%E7%AB%AF/">后端<sup>2</sup></a><a href="/tags/%E6%95%99%E7%A8%8B/">教程<sup>1</sup></a><a href="/tags/copilot/">copilot<sup>1</sup></a><a href="/tags/claude/">claude<sup>1</sup></a><a href="/tags/vscode/">vscode<sup>1</sup></a><a href="/tags/github/">github<sup>1</sup></a><a href="/tags/DNS/">DNS<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E5%8C%96/">正则化<sup>1</sup></a><a href="/tags/go/">go<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>1</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>1</sup></a><a href="/tags/openclaw/">openclaw<sup>2</sup></a><a href="/tags/hexo/">hexo<sup>4</sup></a><a href="/tags/algolia/">algolia<sup>1</sup></a><a href="/tags/mac/">mac<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E4%B8%BB%E9%A2%98%E5%9B%A2%E6%97%A5/">主题团日<sup>1</sup></a><a href="/tags/%E6%96%B0%E5%B9%B4%E6%84%BF%E6%9C%9B/">新年愿望<sup>1</sup></a><a href="/tags/%E7%94%B5%E5%BD%B1%E6%8E%A8%E8%8D%90/">电影推荐<sup>1</sup></a><a href="/tags/%E4%B8%AA%E4%BA%BA%E5%8F%98%E5%8C%96/">个人变化<sup>1</sup></a><a href="/tags/wireguard/">wireguard<sup>1</sup></a><a href="/tags/%E5%85%85%E7%94%B5%E6%A1%A9/">充电桩<sup>1</sup></a><a href="/tags/%E5%B7%A6%E5%80%BC/">左值<sup>1</sup></a><a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/">内网穿透<sup>1</sup></a><a href="/tags/English/">English<sup>3</sup></a><a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型<sup>1</sup></a><a href="/tags/SSH/">SSH<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/%E5%8A%A0%E5%A5%BD%E5%8F%8B/">加好友<sup>1</sup></a><a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结<sup>1</sup></a><a href="/tags/%E6%A0%87%E7%AD%BE%E5%A4%96%E6%8C%82%E7%9A%84%E4%BD%BF%E7%94%A8/">标签外挂的使用<sup>1</sup></a><a href="/tags/%E6%BC%94%E8%AE%B2%E7%A8%BF/">演讲稿<sup>1</sup></a><a href="/tags/%E6%B5%B7%E5%A4%A7/">海大<sup>1</sup></a><a href="/tags/%E6%81%8B%E7%88%B1/">恋爱<sup>1</sup></a><a href="/tags/%E5%A4%96%E5%8C%85/">外包<sup>1</sup></a><a href="/tags/%E7%94%9F%E6%B4%BB/">生活<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记<sup>1</sup></a><a href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">数值计算<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全<sup>1</sup></a><a href="/tags/%E6%9C%89%E8%B6%A3%E7%9A%84%E7%9F%A5%E8%AF%86/">有趣的知识<sup>1</sup></a><a href="/tags/CDN/">CDN<sup>1</sup></a><a href="/tags/%E9%87%8D%E5%AE%9A%E5%90%91%E6%AC%A1%E6%95%B0%E8%BF%87%E5%A4%9A/">重定向次数过多<sup>1</sup></a><a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习<sup>1</sup></a><a href="/tags/remoteapp/">remoteapp<sup>1</sup></a><a href="/tags/%E6%8E%A8%E8%8D%90/">推荐<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>1</sup></a></div></div><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/11/"><span class="card-archive-list-date">2026/11</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">10</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/10/"><span class="card-archive-list-date">2026/10</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/07/"><span class="card-archive-list-date">2026/07</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">6</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/06/"><span class="card-archive-list-date">2026/06</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/04/"><span class="card-archive-list-date">2026/04</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/03/"><span class="card-archive-list-date">2026/03</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">3</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/09/"><span class="card-archive-list-date">2025/09</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/08/"><span class="card-archive-list-date">2025/08</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/07/"><span class="card-archive-list-date">2025/07</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/06/"><span class="card-archive-list-date">2025/06</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/05/"><span class="card-archive-list-date">2025/05</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/04/"><span class="card-archive-list-date">2025/04</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/03/"><span class="card-archive-list-date">2025/03</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/02/"><span class="card-archive-list-date">2025/02</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/12/"><span class="card-archive-list-date">2024/12</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">9</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/10/"><span class="card-archive-list-date">2024/10</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/09/"><span class="card-archive-list-date">2024/09</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/06/"><span class="card-archive-list-date">2024/06</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">3</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/02/"><span class="card-archive-list-date">2024/02</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/01/"><span class="card-archive-list-date">2024/01</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/11/"><span class="card-archive-list-date">2023/11</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/10/"><span class="card-archive-list-date">2023/10</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/09/"><span class="card-archive-list-date">2023/09</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">2023/07</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/05/"><span class="card-archive-list-date">2023/05</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/04/"><span class="card-archive-list-date">2023/04</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/03/"><span class="card-archive-list-date">2023/03</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/02/"><span class="card-archive-list-date">2023/02</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/01/"><span class="card-archive-list-date">2023/01</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">8</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2022/12/"><span class="card-archive-list-date">2022/12</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span class="card-archive-list-count-unit">篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/"><span class="card-archive-list-date">全部文章</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">91</span><span class="card-archive-list-count-unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fa-solid fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div><div class="console-btn-item on" id="consoleCommentBarrage" onclick="sco.switchCommentBarrage()"><span class="commentBarrage"><i class="solitude fa-solid fa-comment"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">91</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">74</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fa-solid fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">我的</div><div class="back-menu-list"><a class="back-menu-item" href="https://daoxuan.cc" title="个人主页"><img class="nolazyload back-menu-item-icon" src="https://picture.daoxuan.cc/image/202301301254377.webp" alt="个人主页"><span class="back-menu-item-text">个人主页</span></a><a class="back-menu-item" target="_blank" rel="noopener" href="https://ai-infra-textbook.vercel.app/" title="AI Infra 自学教材"><img class="nolazyload back-menu-item-icon" src="/img/ai-infra-textbook.svg" alt="AI Infra 自学教材"><span class="back-menu-item-text">AI Infra 自学教材</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  fas fa-folder-closed"></i><span>全部文章</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  fas fa-clone"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  fas fa-tags"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  fas fa-user-group"></i><span>友情链接</span></a></li><li><a class="site-page child" href="javascript:travelling()"><i class="solitude  fas fa-gift"></i><span>宝藏博主</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  fas fa-laptop"></i><span>我的装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  fas fa-toolbox"></i><span>在线工具</span></a></li><li><a class="site-page child" href="/music/"><i class="solitude  fas fa-music"></i><span>音乐馆</span></a></li><li><a class="site-page child" href="/about/"><i class="solitude  fas fa-user"></i><span>关于本站</span></a></li><li><a class="site-page child" href="/bangumis/"><i class="solitude  fa-brands fa-bilibili"></i><span>追番页面</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/AI/">AI<sup>16</sup></a><a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习<sup>13</sup></a><a href="/tags/FP8/">FP8<sup>3</sup></a><a href="/tags/%E9%87%8F%E5%8C%96/">量化<sup>4</sup></a><a href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/">优化器<sup>1</sup></a><a href="/tags/c%E8%AF%AD%E8%A8%80/">c语言<sup>1</sup></a><a href="/tags/Beego/">Beego<sup>1</sup></a><a href="/tags/C%E8%AF%AD%E8%A8%80/">C语言<sup>2</sup></a><a href="/tags/Django/">Django<sup>1</sup></a><a href="/tags/django/">django<sup>8</sup></a><a href="/tags/FP4/">FP4<sup>1</sup></a><a href="/tags/Markdown/">Markdown<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BA%8A/">图床<sup>1</sup></a><a href="/tags/python/">python<sup>4</sup></a><a href="/tags/Fire/">Fire<sup>1</sup></a><a href="/tags/%E7%88%AC%E8%99%AB/">爬虫<sup>2</sup></a><a href="/tags/LLM/">LLM<sup>1</sup></a><a href="/tags/AI-Infra/">AI Infra<sup>1</sup></a><a href="/tags/KV-Cache/">KV Cache<sup>1</sup></a><a href="/tags/Transformer/">Transformer<sup>3</sup></a><a href="/tags/%E5%B7%A5%E4%BD%9C%E6%B5%81/">工作流<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C/">网络<sup>1</sup></a><a href="/tags/butterfly/">butterfly<sup>1</sup></a><a href="/tags/%E6%8A%A5%E9%94%99/">报错<sup>5</sup></a><a href="/tags/chatgpt/">ChatGPT<sup>2</sup></a><a href="/tags/VisualGLM-6B/">VisualGLM-6B<sup>1</sup></a><a href="/tags/%E5%90%8E%E7%AB%AF/">后端<sup>2</sup></a><a href="/tags/%E6%95%99%E7%A8%8B/">教程<sup>1</sup></a><a href="/tags/copilot/">copilot<sup>1</sup></a><a href="/tags/claude/">claude<sup>1</sup></a><a href="/tags/vscode/">vscode<sup>1</sup></a><a href="/tags/github/">github<sup>1</sup></a><a href="/tags/DNS/">DNS<sup>1</sup></a><a href="/tags/%E6%AD%A3%E5%88%99%E5%8C%96/">正则化<sup>1</sup></a><a href="/tags/go/">go<sup>4</sup></a><a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化<sup>1</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/">博客<sup>2</sup></a><a href="/tags/%E4%BC%98%E5%8C%96/">优化<sup>1</sup></a><a href="/tags/openclaw/">openclaw<sup>2</sup></a><a href="/tags/hexo/">hexo<sup>4</sup></a><a href="/tags/algolia/">algolia<sup>1</sup></a><a href="/tags/mac/">mac<sup>1</sup></a><a href="/tags/%E8%8B%B1%E8%AF%AD/">英语<sup>1</sup></a><a href="/tags/%E4%B8%BB%E9%A2%98%E5%9B%A2%E6%97%A5/">主题团日<sup>1</sup></a><a href="/tags/%E6%96%B0%E5%B9%B4%E6%84%BF%E6%9C%9B/">新年愿望<sup>1</sup></a><a href="/tags/%E7%94%B5%E5%BD%B1%E6%8E%A8%E8%8D%90/">电影推荐<sup>1</sup></a><a href="/tags/%E4%B8%AA%E4%BA%BA%E5%8F%98%E5%8C%96/">个人变化<sup>1</sup></a><a href="/tags/wireguard/">wireguard<sup>1</sup></a><a href="/tags/%E5%85%85%E7%94%B5%E6%A1%A9/">充电桩<sup>1</sup></a><a href="/tags/%E5%B7%A6%E5%80%BC/">左值<sup>1</sup></a><a href="/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/">内网穿透<sup>1</sup></a><a href="/tags/English/">English<sup>3</sup></a><a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型<sup>1</sup></a><a href="/tags/SSH/">SSH<sup>1</sup></a><a href="/tags/%E5%86%99%E4%BD%9C/">写作<sup>1</sup></a><a href="/tags/%E5%8A%A0%E5%A5%BD%E5%8F%8B/">加好友<sup>1</sup></a><a href="/tags/%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">年终总结<sup>1</sup></a><a href="/tags/%E6%A0%87%E7%AD%BE%E5%A4%96%E6%8C%82%E7%9A%84%E4%BD%BF%E7%94%A8/">标签外挂的使用<sup>1</sup></a><a href="/tags/%E6%BC%94%E8%AE%B2%E7%A8%BF/">演讲稿<sup>1</sup></a><a href="/tags/%E6%B5%B7%E5%A4%A7/">海大<sup>1</sup></a><a href="/tags/%E6%81%8B%E7%88%B1/">恋爱<sup>1</sup></a><a href="/tags/%E5%A4%96%E5%8C%85/">外包<sup>1</sup></a><a href="/tags/%E7%94%9F%E6%B4%BB/">生活<sup>1</sup></a><a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记<sup>1</sup></a><a href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">数值计算<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全<sup>1</sup></a><a href="/tags/%E6%9C%89%E8%B6%A3%E7%9A%84%E7%9F%A5%E8%AF%86/">有趣的知识<sup>1</sup></a><a href="/tags/CDN/">CDN<sup>1</sup></a><a href="/tags/%E9%87%8D%E5%AE%9A%E5%90%91%E6%AC%A1%E6%95%B0%E8%BF%87%E5%A4%9A/">重定向次数过多<sup>1</sup></a><a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习<sup>1</sup></a><a href="/tags/remoteapp/">remoteapp<sup>1</sup></a><a href="/tags/%E6%8E%A8%E8%8D%90/">推荐<sup>1</sup></a><a href="/tags/%E6%80%A7%E8%83%BD/">性能<sup>1</sup></a></div></div></div></div><!-- keyboard--><!-- righhtside--><div class="needEndHide" id="rightside"><div class="rs_hide"><button class="translate" type="button" title="简繁转换">简</button><button class="mode" type="button" title="显示模式切换" onclick="sco.switchDarkMode()"><i class="fas fa-circle-half-stroke"></i></button><button class="aside pc" type="button" title="侧边栏" onclick="sco.switchHideAside()"><i class="fas fa-arrows-alt-h"></i></button></div><div class="rs_show"><button class="config" type="button" title="扩展" onclick="document.querySelector(&quot;.rs_hide&quot;).classList.toggle(&quot;show&quot;)"><i class="fas fa-gear fa-spin"></i></button><button class="mobile toc" type="button" title="目录" onclick="document.querySelector('#card-toc').classList.toggle('open')"><i class="fas fa-list"></i></button><button class="comment" type="button" title="评论" onclick="sco.scrollTo('post-comment')"><i class="fas fa-comment"></i></button><button class="barrage pc" type="button" title="弹" onclick="sco.switchCommentBarrage()"><span>弹</span></button><button class="top" type="button" title="返回顶部" onclick="sco.toTop()"><i class="fas fa-arrow-up"></i><span id="percent">0</span></button></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude fas fa-bars-progress"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">我的</div><div class="back-menu-list"><a class="back-menu-item" href="https://daoxuan.cc" title="个人主页"><img class="nolazyload back-menu-item-icon" src="https://picture.daoxuan.cc/image/202301301254377.webp" alt="个人主页"><span class="back-menu-item-text">个人主页</span></a><a class="back-menu-item" target="_blank" rel="noopener" href="https://ai-infra-textbook.vercel.app/" title="AI Infra 自学教材"><img class="nolazyload back-menu-item-icon" src="/img/ai-infra-textbook.svg" alt="AI Infra 自学教材"><span class="back-menu-item-text">AI Infra 自学教材</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">道宣的窝</span><i class="solitude fa-solid fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">MXFP4 和 NVFP4 的区别</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  fas fa-folder-closed"></i><span>全部文章</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  fas fa-clone"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  fas fa-tags"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  fas fa-user-group"></i><span>友情链接</span></a></li><li><a class="site-page child" href="javascript:travelling()"><i class="solitude  fas fa-gift"></i><span>宝藏博主</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  fas fa-laptop"></i><span>我的装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  fas fa-toolbox"></i><span>在线工具</span></a></li><li><a class="site-page child" href="/music/"><i class="solitude  fas fa-music"></i><span>音乐馆</span></a></li><li><a class="site-page child" href="/about/"><i class="solitude  fas fa-user"></i><span>关于本站</span></a></li><li><a class="site-page child" href="/bangumis/"><i class="solitude  fa-brands fa-bilibili"></i><span>追番页面</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索"><i class="solitude fa-solid fa-magnifying-glass"></i></a></div><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);"><label><i class="left"></i><i class="center"></i><i class="right"></i></label></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fa-solid fa-bars"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/img/posts/mxfp4-nvfp4-cover.png" alt="MXFP4 和 NVFP4 的区别"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/AI/">AI</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/"><span class="tags-name tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>AI</span></a><a class="post-meta__tags" href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"><span class="tags-name tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>深度学习</span></a><a class="post-meta__tags" href="/tags/%E9%87%8F%E5%8C%96/"><span class="tags-name tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>量化</span></a><a class="post-meta__tags" href="/tags/FP4/"><span class="tags-name tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>FP4</span></a></div></div></div></div><h1 class="post-title">MXFP4 和 NVFP4 的区别</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2026-11-14 18:00:00"><i class="post-meta-icon solitude fas fa-calendar-days"></i><time datetime="2026-11-14T10:00:00.000Z">2026-11-14T10:00:00.000Z</time></span><span class="post-meta-date" title="最后更新于 2026-11-14 17:58:41"><i class="post-meta-icon solitude fa-solid fa-arrows-rotate"></i><time datetime="2026-11-14T09:58:41.168Z">2026-11-14T09:58:41.168Z</time></span><span class="post-meta-position" title="作者IP归属地为青岛"><i class="post-meta-icon solitude fas fa-location-dot"></i><span>青岛</span></span><span class="post-meta-commentcount" title="评论数" onclick="sco.scrollTo('post-comment')"><i class="solitude fa-solid fa-comment"></i><a href="/posts/27744/#post-comment"><span class="twikoo-count"><i class="solitude fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div id="post"><article class="post-content article-container"><h1 id="MXFP4-和-NVFP4-的区别"><a href="#MXFP4-和-NVFP4-的区别" class="headerlink" title="MXFP4 和 NVFP4 的区别"></a>MXFP4 和 NVFP4 的区别</h1><h2 id="MXFP4：开放标准，但精度较粗"><a href="#MXFP4：开放标准，但精度较粗" class="headerlink" title="MXFP4：开放标准，但精度较粗"></a>MXFP4：开放标准，但精度较粗</h2><p>MXFP（Microscaling Floating-Point）是 Open Compute Project 推动的微缩放格式标准。它的 4 位版本 <strong>MXFP4</strong> 有三个特点：</p>
+<ul>
+<li><strong>共享尺度较粗</strong>：每 <strong>32 个</strong>数值共用一块的缩放因子，而这个因子通常只能取 2 的幂次，即 E8M0 格式。</li>
+<li><strong>主要优势</strong>：作为开放标准，跨平台兼容性好，硬件实现成本也相对低。</li>
+<li><strong>主要短板</strong>：分组偏大、缩放又只能按 2 的幂次跳，碰到数值分布不均匀的张量，量化误差压不住，模型精度会往下掉。</li>
+</ul>
+<h2 id="NVFP4：NVIDIA-专有，精度更优"><a href="#NVFP4：NVIDIA-专有，精度更优" class="headerlink" title="NVFP4：NVIDIA 专有，精度更优"></a>NVFP4：NVIDIA 专有，精度更优</h2><p>NVFP4 是 NVIDIA 为 Blackwell 架构 GPU 专门设计的 4 位格式，改进的方向正对着 MXFP4 的精度痛点：</p>
+<ul>
+<li><strong>更细的微块</strong>：共享缩放因子的分组缩小到 <strong>16 个</strong>数值，能更细地跟上局部数据的变化。</li>
+<li><strong>更高精度的缩放因子</strong>：块内缩放因子用 <strong>FP8（E4M3）</strong>格式，不再局限于 2 的幂次，拟合实际数值分布更准；此外还有一层张量级的全局 FP32 缩放，负责兜住整体的动态范围。</li>
+<li><strong>实际效果</strong>：同样是 4 位存储，NVFP4 的量化误差显著小于 MXFP4，模型越大，这种差距在精度上越明显。</li>
+</ul>
+<h2 id="NVFP4-的计算过程"><a href="#NVFP4-的计算过程" class="headerlink" title="NVFP4 的计算过程"></a>NVFP4 的计算过程</h2><h3 id="数据格式：极简的-E2M1"><a href="#数据格式：极简的-E2M1" class="headerlink" title="数据格式：极简的 E2M1"></a>数据格式：极简的 E2M1</h3><p>NVFP4 的每个数值只占 4 个比特，位分配是 <strong>1 个符号位、2 个指数位、1 个尾数位</strong>，也就是 E2M1。它能直接表示的非零数值很有限，绝对值最大到 6，往下是 0.5、1、1.5、2、3、4 这几档。单看这套编码，精度相当粗糙，所以它必须靠一套精细的缩放机制把动态范围“放大”。</p>
+<h3 id="精度核心：两级分层缩放"><a href="#精度核心：两级分层缩放" class="headerlink" title="精度核心：两级分层缩放"></a>精度核心：两级分层缩放</h3><p>NVFP4 比 MXFP4 准，关键就在这里。它用两级缩放因子还原高精度数值，<strong>实际值 = 4 位数值 × 块缩放因子 × 全局缩放因子</strong>，两级各管一段（这个思路和 MOSS 那篇论文很像）。</p>
+<p><strong>块级缩放管局部。</strong> 每 <strong>16 个</strong>连续的 NVFP4 数值共用一个缩放因子，这个因子用 <strong>FP8（E4M3）</strong>格式存储。MXFP4 是每 32 个值共用一个 2 的幂次因子，两相对比，NVFP4 的分组更小、因子精度更高，更贴合局部数据的实际分布，量化误差因此小得多。</p>
+<p><strong>全局缩放管宏观。</strong> 整个张量（比如一整层权重）再配一个 <strong>FP32</strong> 格式的全局缩放因子。它先把整个张量的数值范围“压”到 FP8 块缩放因子能有效处理的区间里，层与层之间巨大的数量级差异就靠它兜住。</p>
+<h3 id="训练稳定性技巧"><a href="#训练稳定性技巧" class="headerlink" title="训练稳定性技巧"></a>训练稳定性技巧</h3><p>NVFP4 不只用于推理，也支持训练，为此加了两项针对性技术。</p>
+<p><strong>随机舍入。</strong> 把数值转成 NVFP4 时，不按“四舍五入”把方向定死，而是按概率决定往哪边舍。统计上看，量化后的期望值等于原始值，训练中量化误差不会系统性累积。这个功能由 Blackwell 架构的 GPU 指令硬件加速，目前主要用在梯度上。</p>
+<p><strong>随机 Hadamard 变换。</strong> 量化之前，先对输入和梯度做一次正交旋转，把少数特别大的离群值摊到各个维度上，整个张量的分布更均匀，也就更容易被 4 位精度准确表示。这项技术用在计算权重梯度时那个对量化最敏感的矩阵乘法里。</p>
+<h2 id="随机舍入：让小梯度不被“四舍五入”吞掉"><a href="#随机舍入：让小梯度不被“四舍五入”吞掉" class="headerlink" title="随机舍入：让小梯度不被“四舍五入”吞掉"></a>随机舍入：让小梯度不被“四舍五入”吞掉</h2><p><strong>它解决什么问题。</strong> 4 位精度能表示的档位很少，就是前面列过的 0.5、1、1.5、2、3、4、6。梯度值可能小到 0.1 这种量级，普通的“四舍五入”会直接把它舍成 0。训练中这样的微小更新大量存在，每次都被抹掉，累积起来就是系统性偏差，模型可能根本学不动。</p>
+<p><strong>它的做法。</strong> 不用确定性的就近舍入，改成<strong>按概率决定舍入方向</strong>。一个值落在 0 和 0.5 之间，离 0 更近，就大概率舍到 0，但也有不小的概率舍到 0.5，概率大小跟它到两个档位的距离成正比。这样从统计期望上看，量化后的值等于原始值，整个量化过程是<strong>无偏</strong>的。</p>
+<p><strong>用在哪里、不用在哪里。</strong> NVIDIA 的配方里，随机舍入<strong>只用在对梯度的量化上</strong>。权重和激活值仍然用普通的“就近舍入”（round-to-nearest-even），因为对它们用随机舍入反而可能放大误差，而不是抵消误差。这个功能由 Blackwell 的 FP4 转换指令原生支持。</p>
+<h2 id="随机舍入只用在对梯度的量化上，为什么？"><a href="#随机舍入只用在对梯度的量化上，为什么？" class="headerlink" title="随机舍入只用在对梯度的量化上，为什么？"></a>随机舍入只用在对梯度的量化上，为什么？</h2><p>原因可以用一句话概括：<strong>它对梯度是解药，对权重和激活却可能变成毒药</strong>。这背后是两类数据在训练中扮演的角色和统计特性不同。</p>
+<h3 id="梯度需要“无偏”，随机舍入正好提供"><a href="#梯度需要“无偏”，随机舍入正好提供" class="headerlink" title="梯度需要“无偏”，随机舍入正好提供"></a>梯度需要“无偏”，随机舍入正好提供</h3><p>梯度是参数更新的方向。4 位格式的档位极其稀疏，如果对梯度做普通的“四舍五入”，大量微小的梯度值会被系统性地舍入到同一个方向（通常是 0），参数更新因此带上<strong>系统性偏差</strong>，模型可能学不动，或者收敛变差。</p>
+<p>随机舍入的精妙之处在于，它按概率决定舍入方向，量化后的<strong>期望值等于原始值</strong>，这种偏差就被抹掉了。NVIDIA 明确指出，这对“防止微小更新被压碎为零”至关重要。</p>
+<h3 id="权重和激活用随机舍入，反而会放大误差"><a href="#权重和激活用随机舍入，反而会放大误差" class="headerlink" title="权重和激活用随机舍入，反而会放大误差"></a>权重和激活用随机舍入，反而会放大误差</h3><p>权重和激活值不需要，也不该承受随机舍入带来的额外方差。</p>
+<p>NVIDIA 的官方说明很直接，<strong>权重和激活保持“就近舍入”（round-to-nearest-even），因为对它们使用随机舍入反而会放大误差</strong>。原因在于，梯度那种“大量微小值被系统性抹掉”的偏差，在权重和激活上并不构成主要矛盾。权重本身可以通过训练去适应 FP4 的表示方式，激活值在每次前向中都是确定的。给它们引入随机性，只会多出一层不必要的噪声，偏差却消不掉。</p>
+<h3 id="一个直观的对比"><a href="#一个直观的对比" class="headerlink" title="一个直观的对比"></a>一个直观的对比</h3><p>可以这样理解。<strong>梯度</strong>像一堆指向四面八方的小箭头，如果每次都用“就近”规则把它们掰向少数几个方向，合力的方向就偏了；随机舍入让它们有的偏左一点、有的偏右一点，平均下来方向还是对的。</p>
+<p><strong>权重和激活</strong>则是模型实际存储和传递的信号本身，它们需要的是<strong>稳定、可复现</strong>的表示，而不是每次读取都带上随机抖动。给它们加随机性，只会让信号本身变嘈杂。</p>
+<p>所以 NVIDIA 的 NVFP4 训练配方把这两种舍入模式做了明确分工：随机舍入专门服务梯度量化，借 Blackwell 硬件的原生支持低成本地消除偏差；权重和激活保持确定性的就近舍入，保证信号本身干净、一致。</p>
+<h2 id="随机-Hadamard-变换：把“扎眼”的离群值摊平"><a href="#随机-Hadamard-变换：把“扎眼”的离群值摊平" class="headerlink" title="随机 Hadamard 变换：把“扎眼”的离群值摊平"></a>随机 Hadamard 变换：把“扎眼”的离群值摊平</h2><p><strong>它的做法。</strong> 量化之前，先对数据做一次<strong>正交旋转</strong>，也就是 Hadamard 变换。旋转会把原本集中在少数几个维度上的大数值<strong>分散到所有维度上</strong>，整个张量的数值分布更均匀，也更“像”高斯分布。分布均匀了，4 位精度就更容易准确地表示每一个值。变换本身可逆，在矩阵乘法内部会自然抵消，不改变最终的计算结果。</p>
+<p><strong>为什么加“随机”。</strong> 标准 Hadamard 变换是固定的。如果数据里恰好存在与变换基“对齐”的结构化离群值，变换可能打不散它。引入<strong>随机的符号翻转</strong>（乘一个随机对角符号向量），可以降低这种“漏网”的概率，对大模型、长训练周期更稳。</p>
+<p><strong>用在哪里。</strong> 它<strong>只用在权重梯度（WGRAD）的矩阵乘法输入上</strong>。前向（FPROP）和激活梯度（DGRAD）不用，是因为一旦对激活做了变换，权重也必须跟着做同样的变换才能保持计算一致，而这会破坏权重二维缩放方案的一致性。权重梯度这一步对量化噪声最敏感，把变换集中用在这里，性价比最高。</p>
+<h2 id="Hadamard-变换是什么"><a href="#Hadamard-变换是什么" class="headerlink" title="Hadamard 变换是什么"></a>Hadamard 变换是什么</h2><p>Hadamard 变换（阿达马变换）本质上是一种<strong>正交变换</strong>。放到量化语境里，它像一台“数据平滑器”：通过一个只含 +1 和 -1 的矩阵，把向量里少数特别大的“尖峰”能量均匀地分摊到所有维度上，数据分布变平坦，也就更适合低精度表示。</p>
+<h3 id="构造-Hadamard-矩阵的方法"><a href="#构造-Hadamard-矩阵的方法" class="headerlink" title="构造 Hadamard 矩阵的方法"></a>构造 Hadamard 矩阵的方法</h3><p><strong>维度是 2 的幂次时。</strong> 递归关系是把四块 $H_n$ 拼成一个大矩阵，右下角那块取负号：</p>
+<script type="math/tex; mode=display">
+H_{2n} = \begin{bmatrix}
+H_n & H_n \\
+H_n & -H_n
+\end{bmatrix}</script><p>这个结构可以一直递归下去，构造出所有 $2^k$ 阶的哈达玛矩阵。</p>
+<p><strong>维度不是 2 的幂次时。</strong> 还有 Paley 构造法。它利用有限域中的二次剩余（勒让德符号）来填充矩阵：q 取素数幂且 q ≡ 3 (mod 4) 时，能直接得到 $q+1$ 阶的 Hadamard 矩阵；也可以先造一张 $q+1$ 阶的 Conference 矩阵，再把它扩充到 $2(q+1)$ 阶。下面用 $q=3$ 的例子走后一条路。</p>
+<h3 id="Conference-矩阵"><a href="#Conference-矩阵" class="headerlink" title="Conference 矩阵"></a>Conference 矩阵</h3><p>Conference 矩阵（会议矩阵）很像 Hadamard 矩阵的“带 0 版本”。我们直接把它画出来，你就知道它长什么样了。</p>
+<h4 id="1-它的外貌特征"><a href="#1-它的外貌特征" class="headerlink" title="1. 它的外貌特征"></a>1. 它的外貌特征</h4><p>假设这是一个 $n$ 阶的 Conference 矩阵 $C$，它的样子是这样的：</p>
+<script type="math/tex; mode=display">
+C = \begin{bmatrix}
+\mathbf{0} & \pm 1 & \pm 1 & \cdots & \pm 1 \\
+\pm 1 & \mathbf{0} & \pm 1 & \cdots & \pm 1 \\
+\pm 1 & \pm 1 & \mathbf{0} & \cdots & \pm 1 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+\pm 1 & \pm 1 & \pm 1 & \cdots & \mathbf{0}
+\end{bmatrix}</script><p><strong>它的长相有三个硬性规矩：</strong></p>
+<ol>
+<li><strong>对角线全是 0</strong>。</li>
+<li>除了对角线，其他所有位置<strong>全是 +1 或 -1</strong>（没有别的数）。</li>
+<li><strong>任意两行互相垂直</strong>（也就是任意两行对应位置相乘再相加，结果必须是 0）。</li>
+</ol>
+<h4 id="2-它和-Hadamard-矩阵是什么关系？"><a href="#2-它和-Hadamard-矩阵是什么关系？" class="headerlink" title="2. 它和 Hadamard 矩阵是什么关系？"></a>2. 它和 Hadamard 矩阵是什么关系？</h4><p>Hadamard 矩阵是“全是 $\pm 1$，且每行长度平方为 $n$”（即 $HH^T = nI$）。<br>Conference 矩阵是“对角线是 0，其余是 $\pm 1$，且每行长度平方为 $n-1$”（即 $CC^T = (n-1)I$）。<br>形式上，它像是把 Hadamard 矩阵对角线上的 $\pm 1$ 换成 0 得来的，代价是每行的长度平方从 $n$ 掉到 $n-1$。</p>
+<h4 id="3-亲手造一个-4-阶的-Conference-矩阵"><a href="#3-亲手造一个-4-阶的-Conference-矩阵" class="headerlink" title="3. 亲手造一个 4 阶的 Conference 矩阵"></a>3. 亲手造一个 4 阶的 Conference 矩阵</h4><p>我们拿 $q=3$（质数）来举例，用它造出来的 Conference 矩阵是 $q+1 = 4$ 阶的。真实的矩阵长这样：</p>
+<script type="math/tex; mode=display">
+C = \begin{bmatrix}
+\mathbf{0} & 1 & 1 & 1 \\
+1 & \mathbf{0} & -1 & 1 \\
+1 & 1 & \mathbf{0} & -1 \\
+1 & -1 & 1 & \mathbf{0}
+\end{bmatrix}</script><p><strong>来验证一下它的性质：</strong></p>
+<ul>
+<li><strong>看对角线</strong>：全是 0，满足。</li>
+<li><strong>看第一行和第二行</strong>（验证垂直）：<br>对应位置相乘相加：$(0\times1) + (1\times0) + (1\times-1) + (1\times1) = 0 + 0 - 1 + 1 = 0$。垂直！</li>
+<li><strong>算自己跟自己的内积</strong>（算行长度平方）：<br>第一行：$0^2 + 1^2 + 1^2 + 1^2 = 3$。正好是 $n-1$（$4-1=3$）。</li>
+</ul>
+<h4 id="4-它是怎么被“捏”出来的？"><a href="#4-它是怎么被“捏”出来的？" class="headerlink" title="4. 它是怎么被“捏”出来的？"></a>4. 它是怎么被“捏”出来的？</h4><p>还记得刚才说的勒让德符号 $L(x)$ 吗？这个矩阵就是把 $q=3$ 的 $L$ 值填进去的结果：行和列都按 $\infty, 0, 1, 2$ 的顺序排，第 $i$ 行第 $j$ 列填 $L(i-j)$，第一行和第一列取 $+1$，对角线上取 0。</p>
+<ul>
+<li>当 $q=3$ 时，剩余系是 <code>0, 1, 2</code>。</li>
+<li>$1^2 \pmod 3 = 1$，1 是平方数，所以 $L(1) = 1$。</li>
+<li>模 3 的平方只有 0 和 1，2 怎么都凑不出来，所以 $L(2) = -1$。</li>
+<li>$L(0) = 0$。</li>
+</ul>
+<p>按这个规则填完，就得到上面那个 4 阶矩阵了。<br><em>(注：不同教材的行列排列（置换）可能不同，但矩阵本质是一样的)</em>。</p>
+<h4 id="5-怎么用它变成正规的-Hadamard-矩阵？"><a href="#5-怎么用它变成正规的-Hadamard-矩阵？" class="headerlink" title="5. 怎么用它变成正规的 Hadamard 矩阵？"></a>5. 怎么用它变成正规的 Hadamard 矩阵？</h4><p>手里有了这个带 0 的“半成品”，还得把它变成全是 $\pm 1$ 的 Hadamard 矩阵。一个很自然的想法是“加边法”：把矩阵里的<strong>所有 0 换成 +1</strong>，再在最上面加一行全 1、最左边加一列全 1。可 4 阶加一圈边只有 5 阶，而阶数大于 2 的 Hadamard 矩阵，阶数必须是 4 的倍数，5 阶这种东西根本不存在。</p>
+<p>真正好用的做法是把 4 阶的 Conference 矩阵当作积木，拼出一个 8 阶的 Hadamard 矩阵。先准备两份副本：把对角线上的 0 换成 $+1$，得到 $A = C + I$；换成 $-1$，得到 $B = C - I$。然后按分块的方式拼起来：</p>
+<script type="math/tex; mode=display">
+H = \begin{bmatrix}
+A & B \\
+B^T & -A^T
+\end{bmatrix}</script><p>得到的 8 阶矩阵是这样的：</p>
+<script type="math/tex; mode=display">
+H = \begin{bmatrix}
+ 1 &  1 &  1 &  1 & -1 &  1 &  1 &  1 \\
+ 1 &  1 & -1 &  1 &  1 & -1 & -1 &  1 \\
+ 1 &  1 &  1 & -1 &  1 &  1 & -1 & -1 \\
+ 1 & -1 &  1 &  1 &  1 & -1 &  1 & -1 \\
+-1 &  1 &  1 &  1 & -1 & -1 & -1 & -1 \\
+ 1 & -1 &  1 & -1 & -1 & -1 & -1 &  1 \\
+ 1 & -1 & -1 &  1 & -1 &  1 & -1 & -1 \\
+ 1 &  1 & -1 & -1 & -1 & -1 &  1 & -1
+\end{bmatrix}</script><p>任意两行互乘相加都等于 0，每行长度平方都是 8，就是一个合格的 Hadamard 矩阵。</p>
+<p><strong>总结一下：</strong> Conference 矩阵就是一个<strong>对角线挖空变 0、其余全是 $\pm1$</strong> 的矩阵。数学家正是拿它当原料，通过对角线上 0 的替换和分块拼接，造出那些阶数非常刁钻的 Hadamard 矩阵。</p>
+<h3 id="什么是“二次剩余”？"><a href="#什么是“二次剩余”？" class="headerlink" title="什么是“二次剩余”？"></a>什么是“二次剩余”？</h3><p>上面说二次剩余就是“能写成另一个数平方”的数，那就直接拿 $q=7$ 试一下。</p>
+<p>把 1 到 6 各自平方，然后<strong>模 7</strong>（除以 7 取余数）：</p>
+<ul>
+<li>1² = 1，1 mod 7 = <strong>1</strong></li>
+<li>2² = 4，4 mod 7 = <strong>4</strong></li>
+<li>3² = 9，9 mod 7 = <strong>2</strong></li>
+<li>4² = 16，16 mod 7 = <strong>2</strong></li>
+<li>5² = 25，25 mod 7 = <strong>4</strong></li>
+<li>6² = 36，36 mod 7 = <strong>1</strong></li>
+</ul>
+<p>平方算来算去，余数<strong>只出现了 1、2、4</strong> 这三个数。</p>
+<ul>
+<li>能写成平方的（1、2、4），就叫<strong>“二次剩余”</strong>，所以 $L(1)=1, L(2)=1, L(4)=1$。</li>
+<li>怎么算都凑不出平方的（3、5、6），就叫<strong>“非二次剩余”</strong>，所以 $L(3)=-1, L(5)=-1, L(6)=-1$。</li>
+<li>0 单独处理：$L(0)=0$。</li>
+</ul>
+<p><strong>这就是勒让德符号 $L(x)$ 的全部含义。它像一台“标签机”：</strong> 给你一个数，查一下属于哪一类，是二次剩余就贴 <strong>+1</strong>，是非二次剩余就贴 <strong>-1</strong>，是 0 就贴 <strong>0</strong>。</p>
+<h3 id="为什么不用-Conference-矩阵，而用-Hadamard"><a href="#为什么不用-Conference-矩阵，而用-Hadamard" class="headerlink" title="为什么不用 Conference 矩阵，而用 Hadamard"></a>为什么不用 Conference 矩阵，而用 Hadamard</h3><p>既然 Conference 矩阵和 Hadamard 矩阵都能做“正交旋转”“能量均摊”，为什么在 AI 芯片（比如 Blackwell 架构）和 NVFP4 的量化里，工程师选的是 Hadamard，Conference 矩阵被晾在一边？</p>
+<p>核心原因就两个字：<strong>成本</strong>。说得具体些，是<strong>算力成本</strong>和<strong>硬件实现成本</strong>。可以从四个角度看。</p>
+<h4 id="1-计算速度：Hadamard-是纯加法，Conference-矩阵带着-0"><a href="#1-计算速度：Hadamard-是纯加法，Conference-矩阵带着-0" class="headerlink" title="1. 计算速度：Hadamard 是纯加法，Conference 矩阵带着 0"></a>1. 计算速度：Hadamard 是纯加法，Conference 矩阵带着 0</h4><p>在实际工程里，我们用的不是完整的矩阵乘法，而是<strong>快速变换算法（FWHT）</strong>。</p>
+<ul>
+<li><strong>Hadamard 变换</strong>：矩阵里只有 $+1$ 和 $-1$，做变换时<strong>只需要加法和减法</strong>，完全用不上乘法器（硬件里乘法器极其昂贵，也费电）。一维的 Hadamard 变换可以用“蝶形图”极快算出来，时间复杂度是 $O(N \log N)$。</li>
+<li><strong>Conference 矩阵</strong>：它的对角线上有 $0$。用快速算法时，碰到 0 虽然不用乘也不用加，却会<strong>破坏硬件流水线的对称性</strong>。更要命的是，它没有 Hadamard 那种极度规律、可以直接套分治法的结构，尤其是 Paley 构造出来的矩阵，元素排布是“乱”的。</li>
+</ul>
+<h4 id="2-维度限制：Conference-矩阵太挑剔"><a href="#2-维度限制：Conference-矩阵太挑剔" class="headerlink" title="2. 维度限制：Conference 矩阵太挑剔"></a>2. 维度限制：Conference 矩阵太挑剔</h4><p>AI 模型里张量的维度（比如 4096、8192）通常都是 <strong>2 的幂次</strong>。</p>
+<ul>
+<li><strong>Hadamard 变换</strong>：只要有 2 的幂次维度，就能从 2 阶矩阵出发无限递归（克罗内克积），生成任何 $2^k$ 阶的矩阵，正好贴合计算机底层的二进制架构。</li>
+<li><strong>Conference 矩阵</strong>：它能给出非 2 的幂次的阶数，但条件卡得很死。Paley 构造法要求 $q$ 是素数幂，阶数就锁在 $q+1$ 或 $2(q+1)$ 这类值上。你没法轻易得到一个 4096 阶的 Conference 矩阵，但闭着眼睛也能写出一个 4096 阶的 Hadamard 矩阵。</li>
+</ul>
+<h4 id="3-硬件实现：Hadamard-可以“零成本”融进-GPU"><a href="#3-硬件实现：Hadamard-可以“零成本”融进-GPU" class="headerlink" title="3. 硬件实现：Hadamard 可以“零成本”融进 GPU"></a>3. 硬件实现：Hadamard 可以“零成本”融进 GPU</h4><p>在 NVFP4 的实际运作中，Hadamard 变换并不是一个单独的步骤，不会“先算完、存下来、再拿去量化”。它是<strong>直接融合在矩阵乘法（GEMM）的指令里</strong>的。</p>
+<ul>
+<li>Hadamard 的 $1$ 和 $-1$ 翻转逻辑极度简单，Blackwell 的 Tensor Core 在读取内存的瞬间就能顺手把符号翻转和加减法做完，几乎不增加延迟。</li>
+<li>而 Conference 矩阵的对角线 $0$ 和复杂的符号分布，会让硬件电路设计变得很难看，甚至需要额外的寄存器去屏蔽那些 0，这就违背了“用 4 位精度极限榨取算力”的初衷。</li>
+</ul>
+<h4 id="4-目的不同：我们只需要“搅匀”，不需要“开会”"><a href="#4-目的不同：我们只需要“搅匀”，不需要“开会”" class="headerlink" title="4. 目的不同：我们只需要“搅匀”，不需要“开会”"></a>4. 目的不同：我们只需要“搅匀”，不需要“开会”</h4><p>再回到数学本质上。</p>
+<ul>
+<li><strong>Conference 矩阵</strong>的诞生，是为了解决“通信里自己不能干扰自己”的问题（所以对角线是 0），顺带用有限域凑出极少数特定阶数的 Hadamard 矩阵。</li>
+<li><strong>在 AI 量化中</strong>，我们根本不在乎对角线是不是 0，只需要一台<strong>能把任何方向的向量均匀打散到各个维度上的搅拌机</strong>。Hadamard 矩阵的每一行都是完美的对称分布（一半 1、一半 -1），是最高效的那一台。</li>
+</ul>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>在纯数学家的黑板上，Conference 矩阵是精巧的艺术品，它填补了非 2 次幂阶数的空白。</p>
+<p>但在 GPU 的硅片上，<strong>Hadamard 矩阵是标准工业零件</strong>。它不需要乘除法，完美契合 2 的幂次，结构极度规律，能以接近零成本的方式在硬件里跑完。在动辄几千维、每秒要算上万亿次的 AI 训练里，也只有这种极简结构能活下来。</p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><a class="post-copyright__author_img" href="/about/"><img class="post-copyright__author_img_front" src= "" data-lazy-src="https://picture.daoxuan.cc/image/202301301254377.webp"></a><div class="post-copyright__author_name">DaoXuan</div><div class="post-copyright__author_desc">道宣的窝</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div><div class="reward-link mode"><a class="reward-link-button" href="/atom.xml"><i class="solitude fa-solid fa-seedling"></i>订阅</a></div></div></div><div class="social-share"><a class="social-share-ico icon-qq" target="_blank" rel="noopener" href="https://connect.qq.com/widget/shareqq/index.html?url=https%3A%2F%2Fdaoxuan.cc%2Fposts%2F27744%2F&amp;title=MXFP4%20%E5%92%8C%20NVFP4%20%E7%9A%84%E5%8C%BA%E5%88%AB&amp;desc=undefined&amp;summary=undefined&amp;site=MXFP4%20%E5%92%8C%20NVFP4%20%E7%9A%84%E5%8C%BA%E5%88%AB&amp;pics=%2Fimg%2Fposts%2Fmxfp4-nvfp4-cover.png" title="分享到QQ"><i class="solitude fab fa-qq"></i></a><a class="social-share-ico icon-twitter" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fdaoxuan.cc%2Fposts%2F27744%2F&amp;text=MXFP4%20%E5%92%8C%20NVFP4%20%E7%9A%84%E5%8C%BA%E5%88%AB" title="分享到Twitter"><i class="solitude fab fa-twitter"></i></a><a class="social-share-ico icon-facebook" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdaoxuan.cc%2Fposts%2F27744%2F" title="分享到Facebook"><i class="solitude fab fa-facebook"></i></a><a class="social-share-ico icon-telegram" target="_blank" rel="noopener" href="https://t.me/share/url?url=https%3A%2F%2Fdaoxuan.cc%2Fposts%2F27744%2F&amp;text=MXFP4%20%E5%92%8C%20NVFP4%20%E7%9A%84%E5%8C%BA%E5%88%AB" title="分享到Telegram"><i class="solitude fab fa-telegram"></i></a><div class="social-share-ico icon-link" onclick="utils.copy(&quot;https://daoxuan.cc/posts/27744/&quot;)" title="复制文章链接"><i class="solitude fas fa-link"></i></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">DaoXuan</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/"><span class="tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>AI<span class="tagsPageCount">16</span></span></a><a class="post-meta__tags" href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"><span class="tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>深度学习<span class="tagsPageCount">13</span></span></a><a class="post-meta__tags" href="/tags/%E9%87%8F%E5%8C%96/"><span class="tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>量化<span class="tagsPageCount">4</span></span></a><a class="post-meta__tags" href="/tags/FP4/"><span class="tags-punctuation"><i class="solitude fa-solid fa-hashtag"></i>FP4<span class="tagsPageCount">1</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/posts/50279/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">MOSS：高效、精确的 FP8 LLM 训练，采用微尺度和自动尺度变换</div></div></a></div></nav><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="solitude fa-solid fa-comment"></i><span> 评论</span><span class="count"> (<span class="twikoo-count"><i class="solitude fa-solid fa-spinner fa-spin"></i></span>)</span></div></div><div class="comment-wrap"><div id="twikoo-wrap"></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-bg-top"><div class="is-center"><div class="author-info__top-group"><div class="author-info__sayhi" id="author-info__sayhi" onclick="sco.changeSayHelloText()">sayhello.morning</div></div></div></div><a class="card-info-avatar" href="/about/" title="头像"><div class="avatar-img"><img src= "" data-lazy-src="https://picture.daoxuan.cc/image/202301301254377.webp" alt="头像"></div></a><div class="card-info__desc_group"><div class="author-info__name">道宣</div><div class="author-info__desc">道宣的窝</div><div class="card-info__data is-center"><a href="/archives/" title="累计文章数:91"><div class="length-num">91</div><div class="headline">文章</div></a><a href="/tags/" title="标签总数:74"><div class="length-num">74</div><div class="headline">标签</div></a><a href="/categories/" title="分类总数:9"><div class="length-num">9</div><div class="headline">分类</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" target="_blank" rel="noopener" href="https://github.com/dx2331lxz" title="Github"><i class="solitude  fab fa-github"></i></a><a class="social-icon" target="_blank" rel="noopener" href="https://space.bilibili.com/510400220" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a></div></div></div></div><div class="card-widget card-platform"><div id="flip-wrapper"><div id="flip-content"><div class="face"></div><div class="back face"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fa-solid fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MXFP4-%E5%92%8C-NVFP4-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">MXFP4 和 NVFP4 的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#MXFP4%EF%BC%9A%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86%EF%BC%8C%E4%BD%86%E7%B2%BE%E5%BA%A6%E8%BE%83%E7%B2%97"><span class="toc-text">MXFP4：开放标准，但精度较粗</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NVFP4%EF%BC%9ANVIDIA-%E4%B8%93%E6%9C%89%EF%BC%8C%E7%B2%BE%E5%BA%A6%E6%9B%B4%E4%BC%98"><span class="toc-text">NVFP4：NVIDIA 专有，精度更优</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NVFP4-%E7%9A%84%E8%AE%A1%E7%AE%97%E8%BF%87%E7%A8%8B"><span class="toc-text">NVFP4 的计算过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F%EF%BC%9A%E6%9E%81%E7%AE%80%E7%9A%84-E2M1"><span class="toc-text">数据格式：极简的 E2M1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B2%BE%E5%BA%A6%E6%A0%B8%E5%BF%83%EF%BC%9A%E4%B8%A4%E7%BA%A7%E5%88%86%E5%B1%82%E7%BC%A9%E6%94%BE"><span class="toc-text">精度核心：两级分层缩放</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E7%A8%B3%E5%AE%9A%E6%80%A7%E6%8A%80%E5%B7%A7"><span class="toc-text">训练稳定性技巧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E8%88%8D%E5%85%A5%EF%BC%9A%E8%AE%A9%E5%B0%8F%E6%A2%AF%E5%BA%A6%E4%B8%8D%E8%A2%AB%E2%80%9C%E5%9B%9B%E8%88%8D%E4%BA%94%E5%85%A5%E2%80%9D%E5%90%9E%E6%8E%89"><span class="toc-text">随机舍入：让小梯度不被“四舍五入”吞掉</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E8%88%8D%E5%85%A5%E5%8F%AA%E7%94%A8%E5%9C%A8%E5%AF%B9%E6%A2%AF%E5%BA%A6%E7%9A%84%E9%87%8F%E5%8C%96%E4%B8%8A%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">随机舍入只用在对梯度的量化上，为什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A2%AF%E5%BA%A6%E9%9C%80%E8%A6%81%E2%80%9C%E6%97%A0%E5%81%8F%E2%80%9D%EF%BC%8C%E9%9A%8F%E6%9C%BA%E8%88%8D%E5%85%A5%E6%AD%A3%E5%A5%BD%E6%8F%90%E4%BE%9B"><span class="toc-text">梯度需要“无偏”，随机舍入正好提供</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9D%83%E9%87%8D%E5%92%8C%E6%BF%80%E6%B4%BB%E7%94%A8%E9%9A%8F%E6%9C%BA%E8%88%8D%E5%85%A5%EF%BC%8C%E5%8F%8D%E8%80%8C%E4%BC%9A%E6%94%BE%E5%A4%A7%E8%AF%AF%E5%B7%AE"><span class="toc-text">权重和激活用随机舍入，反而会放大误差</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E7%9B%B4%E8%A7%82%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-text">一个直观的对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA-Hadamard-%E5%8F%98%E6%8D%A2%EF%BC%9A%E6%8A%8A%E2%80%9C%E6%89%8E%E7%9C%BC%E2%80%9D%E7%9A%84%E7%A6%BB%E7%BE%A4%E5%80%BC%E6%91%8A%E5%B9%B3"><span class="toc-text">随机 Hadamard 变换：把“扎眼”的离群值摊平</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hadamard-%E5%8F%98%E6%8D%A2%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">Hadamard 变换是什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0-Hadamard-%E7%9F%A9%E9%98%B5%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-text">构造 Hadamard 矩阵的方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Conference-%E7%9F%A9%E9%98%B5"><span class="toc-text">Conference 矩阵</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%AE%83%E7%9A%84%E5%A4%96%E8%B2%8C%E7%89%B9%E5%BE%81"><span class="toc-text">1. 它的外貌特征</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%AE%83%E5%92%8C-Hadamard-%E7%9F%A9%E9%98%B5%E6%98%AF%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="toc-text">2. 它和 Hadamard 矩阵是什么关系？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%BA%B2%E6%89%8B%E9%80%A0%E4%B8%80%E4%B8%AA-4-%E9%98%B6%E7%9A%84-Conference-%E7%9F%A9%E9%98%B5"><span class="toc-text">3. 亲手造一个 4 阶的 Conference 矩阵</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%AE%83%E6%98%AF%E6%80%8E%E4%B9%88%E8%A2%AB%E2%80%9C%E6%8D%8F%E2%80%9D%E5%87%BA%E6%9D%A5%E7%9A%84%EF%BC%9F"><span class="toc-text">4. 它是怎么被“捏”出来的？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E6%80%8E%E4%B9%88%E7%94%A8%E5%AE%83%E5%8F%98%E6%88%90%E6%AD%A3%E8%A7%84%E7%9A%84-Hadamard-%E7%9F%A9%E9%98%B5%EF%BC%9F"><span class="toc-text">5. 怎么用它变成正规的 Hadamard 矩阵？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E2%80%9C%E4%BA%8C%E6%AC%A1%E5%89%A9%E4%BD%99%E2%80%9D%EF%BC%9F"><span class="toc-text">什么是“二次剩余”？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%94%A8-Conference-%E7%9F%A9%E9%98%B5%EF%BC%8C%E8%80%8C%E7%94%A8-Hadamard"><span class="toc-text">为什么不用 Conference 矩阵，而用 Hadamard</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E8%AE%A1%E7%AE%97%E9%80%9F%E5%BA%A6%EF%BC%9AHadamard-%E6%98%AF%E7%BA%AF%E5%8A%A0%E6%B3%95%EF%BC%8CConference-%E7%9F%A9%E9%98%B5%E5%B8%A6%E7%9D%80-0"><span class="toc-text">1. 计算速度：Hadamard 是纯加法，Conference 矩阵带着 0</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E7%BB%B4%E5%BA%A6%E9%99%90%E5%88%B6%EF%BC%9AConference-%E7%9F%A9%E9%98%B5%E5%A4%AA%E6%8C%91%E5%89%94"><span class="toc-text">2. 维度限制：Conference 矩阵太挑剔</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E7%A1%AC%E4%BB%B6%E5%AE%9E%E7%8E%B0%EF%BC%9AHadamard-%E5%8F%AF%E4%BB%A5%E2%80%9C%E9%9B%B6%E6%88%90%E6%9C%AC%E2%80%9D%E8%9E%8D%E8%BF%9B-GPU"><span class="toc-text">3. 硬件实现：Hadamard 可以“零成本”融进 GPU</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%9B%AE%E7%9A%84%E4%B8%8D%E5%90%8C%EF%BC%9A%E6%88%91%E4%BB%AC%E5%8F%AA%E9%9C%80%E8%A6%81%E2%80%9C%E6%90%85%E5%8C%80%E2%80%9D%EF%BC%8C%E4%B8%8D%E9%9C%80%E8%A6%81%E2%80%9C%E5%BC%80%E4%BC%9A%E2%80%9D"><span class="toc-text">4. 目的不同：我们只需要“搅匀”，不需要“开会”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fa-solid fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/posts/27744/" title="MXFP4 和 NVFP4 的区别"><div class="thumbnail"><img alt="MXFP4 和 NVFP4 的区别" src= "" data-lazy-src="/img/posts/mxfp4-nvfp4-cover.png"></div><div class="content"><span class="title" href="/posts/27744/" title="MXFP4 和 NVFP4 的区别">MXFP4 和 NVFP4 的区别</span><span class="article-recent_post_categories" href="/posts/27744/">AI</span></div></a><a class="aside-list-item" href="/posts/50279/" title="MOSS：高效、精确的 FP8 LLM 训练，采用微尺度和自动尺度变换"><div class="thumbnail"><img alt="MOSS：高效、精确的 FP8 LLM 训练，采用微尺度和自动尺度变换" src= "" data-lazy-src="/img/posts/moss-fp8-cover.png"></div><div class="content"><span class="title" href="/posts/50279/" title="MOSS：高效、精确的 FP8 LLM 训练，采用微尺度和自动尺度变换">MOSS：高效、精确的 FP8 LLM 训练，采用微尺度和自动尺度变换</span><span class="article-recent_post_categories" href="/posts/50279/">AI</span></div></a><a class="aside-list-item" href="/posts/60929/" title="GEMM（矩阵乘）"><div class="thumbnail"><img alt="GEMM（矩阵乘）" src= "" data-lazy-src="/img/posts/gemm-matrix-multiply-cover.png"></div><div class="content"><span class="title" href="/posts/60929/" title="GEMM（矩阵乘）">GEMM（矩阵乘）</span><span class="article-recent_post_categories" href="/posts/60929/">AI</span></div></a><a class="aside-list-item" href="/posts/32114/" title="将 FP8 训练扩展到万亿代币的 LLMs"><div class="thumbnail"><img alt="将 FP8 训练扩展到万亿代币的 LLMs" src= "" data-lazy-src="/img/posts/fp8-trillion-tokens-cover.png"></div><div class="content"><span class="title" href="/posts/32114/" title="将 FP8 训练扩展到万亿代币的 LLMs">将 FP8 训练扩展到万亿代币的 LLMs</span><span class="article-recent_post_categories" href="/posts/32114/">AI</span></div></a><a class="aside-list-item" href="/posts/57198/" title="从 Sigmoid 到 SwiGLU：理解 Transformer 中的激活函数"><div class="thumbnail"><img alt="从 Sigmoid 到 SwiGLU：理解 Transformer 中的激活函数" src= "" data-lazy-src="/img/posts/activation-functions-cover.png"></div><div class="content"><span class="title" href="/posts/57198/" title="从 Sigmoid 到 SwiGLU：理解 Transformer 中的激活函数">从 Sigmoid 到 SwiGLU：理解 Transformer 中的激活函数</span><span class="article-recent_post_categories" href="/posts/57198/">AI</span></div></a></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span>道宣的窝</span></div><div class="footer-bar-description">Articles from DaoXuan / 文章来自 DaoXuan</div><a class="footer-bar-link" href="/about/">Learn more / 了解更多</a></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2022 - 2026 By&nbsp;<a class="footer-bar-link" href="/"><img class="author-avatar" src= "" data-lazy-src="https://picture.daoxuan.cc/image/202301301254377.webp">道宣</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://beian.mps.gov.cn/#/query/webSearch" title="黑ICP备2024021258号"><img class="beian-icon" src= "" data-lazy-src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" alt="黑ICP备2024021258号"><span class="beian-name">黑ICP备2024021258号</span></a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://beian.miit.gov.cn/" title="黑ICP备2024021258号-1"><span class="beian-name">黑ICP备2024021258号-1</span></a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/everfu/hexo-theme-solitude" alt="Theme">Theme</a></div></div></div><div class="comment-barrage needEndHide"></div></footer></div><!-- right_menu--><!-- inject body--><div><script src="/js/utils.js?v=2.1.19"></script><script src="/js/main.js?v=2.1.19"></script><script src="/js/third_party/waterfall.min.js?v=2.1.19"></script><script src="https://fastly.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script src="/js/third_party/universe.min.js?v=2.1.19"></script><script>dark()
+</script><script src="/js/tw_cn.js?v=2.1.19"></script><script src="https://fastly.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.iife.min.js"></script><script src="https://fastly.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script src="https://fastly.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.min.js"></script><script src="https://fastly.jsdelivr.net/npm/swiper@11.0.5/swiper-bundle.min.js"></script><script>(() => {
+  let musicAssetsPromise;
+  const aplayerCss = 'https://fastly.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css';
+  const aplayerJs = 'https://fastly.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js';
+  const metingJs = 'https://fastly.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js';
+  const musicFallbackJs = '/js/music-fallback.js?v=2.1.19';
+  const metingApi = 'https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&r=:r';
+
+  const hasStylesheet = url => {
+    const absoluteUrl = new URL(url, document.baseURI).href;
+    return Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .some(link => link.href === absoluteUrl);
+  };
+
+  window.loadMetingAssets = () => {
+    window.meting_api = metingApi;
+    if (musicAssetsPromise) return musicAssetsPromise;
+
+    const cssPromise = hasStylesheet(aplayerCss)
+      ? Promise.resolve()
+      : utils.getCSS(aplayerCss, 'aplayer-lazy-css');
+
+    const aplayerPromise = typeof window.APlayer === 'undefined'
+      ? utils.getScript(aplayerJs)
+      : Promise.resolve();
+    const fallbackPromise = typeof window.utils?.attachMusicFallback === 'function'
+      ? Promise.resolve()
+      : utils.getScript(musicFallbackJs);
+
+    musicAssetsPromise = Promise.all([cssPromise, aplayerPromise, fallbackPromise])
+      .then(() => {
+        if (typeof window.APlayer === 'undefined') throw new Error('APlayer failed to initialize');
+        if (window.customElements?.get('meting-js')) return undefined;
+        return utils.getScript(metingJs);
+      })
+      .then(() => {
+        if (!window.customElements?.get('meting-js')) throw new Error('MetingJS failed to initialize');
+      })
+      .catch(error => {
+        musicAssetsPromise = null;
+        throw error;
+      });
+
+    return musicAssetsPromise;
+  };
+})();
+</script><script>const coverColorConfig = {
+  time: 43200000
+}</script><script src="/js/covercolor/local.js?v=2.1.19"></script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://fastly.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><script>
+  (function () {
+    let retryTimer;
+
+    function typesetMath() {
+      if (window.MathJax && MathJax.Hub) {
+        MathJax.Hub.Queue(['Typeset', MathJax.Hub, document.querySelector('.article-container') || document]);
+        return true;
+      }
+      return false;
+    }
+
+    function waitForMathJax(retries = 0) {
+      if (typesetMath() || retries >= 100) {
+        retryTimer = null;
+        return;
+      }
+      if (retryTimer) return;
+      retryTimer = window.setTimeout(() => {
+        retryTimer = null;
+        waitForMathJax(retries + 1);
+      }, 100);
+    }
+
+    document.addEventListener('DOMContentLoaded', waitForMathJax, { once: true });
+    window.addEventListener('load', waitForMathJax, { once: true });
+    document.addEventListener('pjax:complete', waitForMathJax);
+    waitForMathJax();
+  })();
+</script>
+<div class="js-pjax"><script>(() => {
+    const getCount = () => {
+        const ele = document.querySelectorAll('.twikoo-count')
+        if (!ele) return
+        twikoo.getCommentsCount({
+            envId: 'https://twikoo.daoxuan.cc/',
+            region: '',
+            urls: [window.location.pathname],
+            includeReply: false
+        }).then(res => {
+            ele.forEach(item => item.textContent = res[0].count)
+        }).catch(err => {
+            console.error(err)
+        })
+    }
+    const init = () => {
+        twikoo.init(Object.assign({
+            el: '#twikoo-wrap',
+            envId: 'https://twikoo.daoxuan.cc/',
+            region: '',
+            path: window.location.pathname,
+            onCommentLoaded: () => {
+                GLOBAL_CONFIG.lightbox && utils.lightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+            }
+        }, null))
+
+         && getCount()
+        sco.owoBig({
+            body: '.OwO-body',
+            item: '.OwO-items li'
+        })
+
+        true && barrageTwikoo()
+    }
+
+    const loadTwikoo = () => {
+        if (typeof twikoo === 'object') setTimeout(init,0)
+        else utils.getScript('https://fastly.jsdelivr.net/npm/twikoo@1.6.40/dist/twikoo.all.min.js').then(init)
+    }
+
+    if ('Twikoo' === 'Twikoo' || true) {
+        if (true) utils.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+        else loadTwikoo()
+    } else {
+        window.loadTwoComment = loadTwikoo
+    }
+})()
+</script><script>async function barrageTwikoo() {
+    await fetch("https://twikoo.daoxuan.cc/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            event: "COMMENT_GET",
+            accessToken: "",
+            url: window.location.pathname
+        })
+    }).then(async res => {
+        if (!res.ok) throw new Error("HTTP error! status: " + res.status)
+        const data = await res.json();
+        const init = () => {
+            initializeCommentBarrage((data.data).map(item => Object.assign({
+                content: item.comment,
+                nick: item.nick,
+                mailMd5: item.mailMd5,
+                id: item.id
+            })))
+        }
+        if (typeof initializeCommentBarrage === "undefined") await utils.getScript('/js/third_party/barrage.min.js?v=2.1.19').then(init)
+        else init()
+    }).catch(error => console.error("An error occurred while fetching comments: ", error))
+}</script></div></div><script>const links = [{"name":"道宣的窝","link":"/"},{"name":"Akilarの糖果屋","link":"https://akilar.top/"},{"name":"张洪Heo","link":"https://blog.zhheo.com/"},{"name":"百里飞洋","link":"https://blog.meta-code.top/"},{"name":"Leonus","link":"https://blog.leonus.cn/"},{"name":"安知鱼`Blog","link":"https://anzhiy.cn/"},{"name":"ichika","link":"https://ichika.cc"},{"name":"Ordis","link":"https://imbhj.com"},{"name":"我不是咕咕鸽——VPS折腾不完全记录","link":"https://blog.laoda.de"},{"name":"冰屋小站","link":"https://blog.biduang.cn/"},{"name":"呆鱼","link":"https://daiyu.fun/"},{"name":"Cream薄荷糖","link":"https://www.creammint.cn/"},{"name":"JrHimself","link":"https://www.jrhim.com/"}]
+const randomText = '点击前往按钮进入随机一个友链，不保证跳转网站的安全性和可用性。本次随机到的是本站友链：⌈ ${name} ⌋'
+function travelling() {
+    const link = links[utils.randomNum(links.length)];
+    Snackbar.show({
+        text: randomText.replace(/\$\{name}/,link.name),
+        duration: 8000,
+        pos: 'top-center',
+        actionText: '前往',
+        onActionClick: function(element) {
+            element.style.opacity = 0;
+            window.open(link.link, '_blank');
+        }
+    });
+}
+</script><script>function randomLinksList() {
+    const linkcard = document.getElementById('friend-links-in-footer');
+    if (linkcard == null) return;
+
+    let data = '';
+    let linksCopy = [...links];
+    let count = Math.min(3, linksCopy.length);
+
+    for (let i = 0; i < count; i++) {
+        let index = utils.randomNum(linksCopy.length);
+        const {link, name} = linksCopy[index];
+        data += `<a class="footer-item" href="${link}" target="_blank" rel="noopener noreferrer nofollow">${name}</a>`;
+        linksCopy.splice(index, 1);
+    }
+
+    linkcard.innerHTML = data + '<a class="footer-item" href="/links/">更多</a>';
+}</script><!-- pjax--><script>const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- google adsense--><!-- search--><div id="algolia-search"><div class="search-dialog"><div class="algolia-navbar"><div class="search-dialog__title" id="algolia-search-title">搜索</div><div class="algolia-tips"><i class="solitude fab fa-algolia"></i><span class="algolia-tips-text">Algolia</span></div><span class="search-close-button"><i class="solitude fa-solid fa-xmark"></i></span></div><div id="algolia-input-panel"><div id="algolia-search-input"></div></div><div id="search-results"><div id="algolia-hits"></div></div><div id="algolia-tips"><div id="algolia-pagination"></div><div id="algolia-stats"></div></div></div><div id="search-mask"></div></div><script>(() => {
+    let searchPromise;
+
+    const loadSearch = () => {
+        if (window.openSearch) return Promise.resolve();
+        if (searchPromise) return searchPromise;
+
+        searchPromise = utils.getScript('https://fastly.jsdelivr.net/npm/instantsearch.js@4.75.5/dist/instantsearch.production.min.js')
+            .then(() => utils.getScript('https://fastly.jsdelivr.net/npm/algoliasearch@5.14.2/dist/algoliasearch.umd.min.js'))
+            .then(() => utils.getScript('/js/search/algolia.js?v=2.1.19'))
+            .then(() => {
+                const trigger = document.querySelector('#search-button > .search');
+                trigger?.removeEventListener('click', openSearchWhenReady);
+                if (trigger) delete trigger.dataset.lazySearchBound;
+            })
+            .catch(error => {
+                searchPromise = null;
+                console.error('Search assets failed to load:', error);
+                throw error;
+            });
+
+        return searchPromise;
+    };
+
+    const openSearchWhenReady = event => {
+        event?.preventDefault();
+        loadSearch().then(() => window.openSearch?.());
+    };
+
+    const bindSearchTrigger = () => {
+        const trigger = document.querySelector('#search-button > .search');
+        if (trigger && !trigger.dataset.lazySearchBound) {
+            trigger.addEventListener('click', openSearchWhenReady);
+            trigger.dataset.lazySearchBound = 'true';
+        }
+    };
+
+    bindSearchTrigger();
+    document.addEventListener('pjax:complete', bindSearchTrigger);
+    document.addEventListener('keydown', event => {
+        if (event.ctrlKey && event.key === 'k' && !window.openSearch) {
+            openSearchWhenReady(event);
+        }
+    });
+})();</script><!-- Tianli-Talk--><!-- music--></body></html>
+        <script>
+            const posts = ["posts/27744/","posts/50279/","posts/60929/","posts/32114/","posts/57198/","posts/21253/","posts/57954/","posts/15574/","posts/31246/","posts/40710/","posts/46918/","posts/47382/","posts/18002/","posts/21578/","posts/56981/","posts/54119/","posts/42170/","posts/64295/","posts/41157/","posts/22620/","posts/11103/","posts/28864/","posts/39828/","posts/35461/","posts/52161/","posts/20296/","posts/25626/","posts/43834/","posts/14971/","posts/23147/","posts/30621/","posts/58955/","posts/59863/","posts/39530/","posts/48977/","posts/25443/","posts/48193/","posts/12233/","posts/8583/","posts/13888/","posts/9118/","posts/50029/","posts/20760/","posts/45899/","posts/31606/","posts/54641/","posts/63511/","posts/14505/","posts/27467/","posts/5430/","posts/51950/","posts/3200/","posts/26473/","posts/52000/","posts/16342/","posts/44613/","posts/9815/","posts/64064/","posts/55779/","posts/16961/","posts/64089/","posts/10030/","posts/59715/","posts/58914/","posts/64135/","posts/55030/","posts/53297/","posts/55622/","posts/20868/","posts/64429/","posts/49711/","posts/46458/","posts/22520/","posts/371/","posts/54468/","posts/30117/","posts/20439/","posts/49774/","posts/12972/","posts/25087/","posts/6890/","posts/50092/","posts/54218/","posts/2500/","posts/12709/","posts/24979/","posts/65143/","posts/36714/","posts/41761/","posts/22678/","posts/24059/"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>
