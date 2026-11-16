@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2026-11-14T09:58:41.168Z</updated>
+  <updated>2026-11-16T15:27:23.410Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -15,6 +15,34 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>MSE、MAE、Huber Loss</title>
+    <link href="https://daoxuan.cc/posts/30553/"/>
+    <id>https://daoxuan.cc/posts/30553/</id>
+    <published>2026-11-16T15:30:00.000Z</published>
+    <updated>2026-11-16T15:27:23.410Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="MSE、MAE、Huber-Loss"><a href="#MSE、MAE、Huber-Loss" class="headerlink" title="MSE、MAE、Huber Loss"></a><strong>MSE、MAE、Huber Loss</strong></h1><p>下面详细对比 <strong>MSE、MAE、Huber Loss</strong> 的特性，并解释<strong>为什么</strong>它们会表现出这些特性。</p><h3 id="1-数学定义"><a href="#1-数学定义" class="headerlink" title="1. 数学定义"></a>1. 数学定义</h3><p>设误差</p><script type="math/tex; mode=display">e = y_{\text{pred}} - y_{\text{true}}</script><div class="table-container"><table><thead><tr><th>损失函数</th><th>公式</th><th>对误差的惩罚方式</th></tr></thead><tbody><tr><td><strong>MSE</strong> (均方误差)</td><td>$L = \dfrac{1}{2} e^2$</td><td>二次惩罚</td></tr><tr><td><strong>MAE</strong> (平均绝对误差)</td><td>$L = \lvert e\rvert$</td><td>一次惩罚</td></tr><tr><td><strong>Huber</strong></td><td>$\begin{cases} \frac{1}{2}e^2 &amp; \lvert e\rvert \le \delta \cr \delta(\lvert e\rvert - \frac{1}{2}\delta) &amp; \lvert e\rvert &gt; \delta \end{cases}$</td><td>小误差二次，大误差一次</td></tr></tbody></table></div><p>（$\delta$ 是阈值，论文里用 $10^{-4}$）</p><hr><h3 id="2-核心特性对比"><a href="#2-核心特性对比" class="headerlink" title="2. 核心特性对比"></a>2. 核心特性对比</h3><div class="table-container"><table><thead><tr><th>特性</th><th>MSE</th><th>MAE</th><th>Huber</th></tr></thead><tbody><tr><td><strong>小误差时的行为</strong></td><td>很敏感（二次）</td><td>不敏感（线性）</td><td>像 MSE（二次）</td></tr><tr><td><strong>大误差时的行为</strong></td><td>非常敏感（二次爆炸）</td><td>稳定（线性）</td><td>像 MAE（线性）</td></tr><tr><td><strong>对异常值（Outlier）的鲁棒性</strong></td><td>差（容易被拉偏）</td><td>好</td><td>好（接近 MAE）</td></tr><tr><td><strong>梯度性质</strong></td><td>梯度 = $e$（随误差增大而增大）</td><td>梯度 = $\text{sign}(e)$（恒为 ±1）</td><td>小误差时梯度 = $e$，大误差时梯度 = $\pm\delta$</td></tr><tr><td><strong>是否处处可导</strong></td><td>是</td><td>在 0 点不可导</td><td>是（光滑）</td></tr><tr><td><strong>优化难度</strong></td><td>容易（光滑且梯度信息丰富）</td><td>稍难（0 点不可导，梯度恒定）</td><td>容易（结合了两者优点）</td></tr><tr><td><strong>收敛速度（误差较小时）</strong></td><td>快</td><td>慢</td><td>快</td></tr></tbody></table></div><hr><h3 id="3-为什么会有这些特性？（从梯度角度理解）"><a href="#3-为什么会有这些特性？（从梯度角度理解）" class="headerlink" title="3. 为什么会有这些特性？（从梯度角度理解）"></a>3. 为什么会有这些特性？（从梯度角度理解）</h3><p>损失函数的特性本质上由它的<strong>梯度（导数）</strong>决定，因为优化器是根据梯度来更新参数的。</p><ol><li><p><strong>MSE</strong></p><ul><li>梯度 = $e$</li><li>误差越大，梯度越大 → 参数更新步长越大</li><li><strong>优点</strong>：误差大的时候会“用力”去纠正，收敛快</li><li><strong>缺点</strong>：如果存在异常值（误差特别大），梯度会变得非常大，把模型参数狠狠拉向这个异常点，导致整体拟合被破坏</li></ul></li><li><p><strong>MAE</strong></p><ul><li>梯度 = $\text{sign}(e)$（即 +1 或 -1）</li><li>不管误差是 0.1 还是 100，梯度大小都是 1</li><li><strong>优点</strong>：异常值的影响力被限制住了，更鲁棒</li><li><strong>缺点</strong>：<ul><li>误差已经很小的时候，梯度还是 ±1，不会自动变小，容易在最优解附近震荡</li><li>在 $e=0$ 处不可导，优化器处理起来稍麻烦</li></ul></li></ul></li><li><p><strong>Huber Loss</strong></p><ul><li>设计目标：小误差时用 MSE 的优点，大误差时用 MAE 的优点</li><li>当 $\lvert e\rvert \le \delta$ 时，梯度 = $e$（和 MSE 一样）</li><li>当 $\lvert e\rvert &gt; \delta$ 时，梯度被截断为 $\pm \delta$（和 MAE 类似，但有上限）</li><li><strong>结果</strong>：<ul><li>正常点（误差小）→ 用二次惩罚，收敛快、精度高</li><li>异常点（误差大）→ 梯度不再无限增大，不会主导整个优化过程</li><li>同时全程可导，优化友好</li></ul></li></ul></li></ol><hr><h3 id="4-直观比喻"><a href="#4-直观比喻" class="headerlink" title="4. 直观比喻"></a>4. 直观比喻</h3><ul><li><strong>MSE</strong>：像一个“较真”的人，误差稍微大一点就发脾气（惩罚急剧上升），遇到极端情况容易情绪失控。</li><li><strong>MAE</strong>：像一个“佛系”的人，误差多大惩罚都差不多，很稳，但细节上不够精细。</li><li><strong>Huber</strong>：像一个“有分寸”的人，小事情认真对待，大事情保持冷静，既精细又不容易被极端值带偏。</li></ul><hr><h3 id="5-什么时候用哪个？"><a href="#5-什么时候用哪个？" class="headerlink" title="5. 什么时候用哪个？"></a>5. 什么时候用哪个？</h3><ul><li>数据干净、几乎没有异常值 → <strong>MSE</strong> 通常最好（收敛快、精度高）</li><li>数据有明显噪声或异常值 → <strong>MAE</strong> 或 <strong>Huber</strong></li><li>想要两者优点结合，且希望优化过程更稳定 → <strong>Huber</strong>（很多现代回归和鲁棒优化都会优先考虑它）</li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;MSE、MAE、Huber-Loss&quot;&gt;&lt;a href=&quot;#MSE、MAE、Huber-Loss&quot; class=&quot;headerlink&quot; title=&quot;MSE、MAE、Huber Loss&quot;&gt;&lt;/a&gt;&lt;strong&gt;MSE、MAE、Huber Loss&lt;/stro</summary>
+      
+    
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/tags/AI/"/>
+    
+    <category term="深度学习" scheme="https://daoxuan.cc/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="损失函数" scheme="https://daoxuan.cc/tags/%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0/"/>
+    
+  </entry>
   
   <entry>
     <title>MXFP4 和 NVFP4 的区别</title>
