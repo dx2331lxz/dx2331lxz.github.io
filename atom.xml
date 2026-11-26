@@ -6,7 +6,7 @@
   <link href="https://daoxuan.cc/atom.xml" rel="self"/>
   
   <link href="https://daoxuan.cc/"/>
-  <updated>2026-11-24T13:19:50.826Z</updated>
+  <updated>2026-11-26T17:24:48.355Z</updated>
   <id>https://daoxuan.cc/</id>
   
   <author>
@@ -15,6 +15,37 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>FlashAttention：把 N×N 注意力矩阵留在片上</title>
+    <link href="https://daoxuan.cc/posts/62421/"/>
+    <id>https://daoxuan.cc/posts/62421/</id>
+    <published>2026-11-26T17:20:00.000Z</published>
+    <updated>2026-11-26T17:24:48.355Z</updated>
+    
+    <content type="html"><![CDATA[<p>FlashAttention 一次乘法都没少算。前向照旧要算 $QK^\top$，反向还要把它再算一遍。它改的是这些计算发生的位置，以及中间结果写到哪里去。</p><p>也正因为如此，它算出来的结果和标准注意力在浮点误差范围内完全一致。这一点是它和稀疏注意力、低秩近似那类方法的分界：后者拿精度换速度，FlashAttention 换的是访存。</p><h2 id="慢的不是乘法"><a href="#慢的不是乘法" class="headerlink" title="慢的不是乘法"></a>慢的不是乘法</h2><p>标准实现分三步走：</p><script type="math/tex; mode=display">S = QK^\top/\sqrt{d},\qquad P=\operatorname{softmax}(S),\qquad O=PV</script><p>三个步骤各是一个 kernel，中间那两个 $N\times N$ 的结果都得先写进 HBM，下一步再读出来。序列一长，这两个矩阵就成了显存里最占地方的东西。</p><p>A100 的参数摆在这里：108 个 SM，每个 192 KB 片上 SRAM，SRAM 带宽约 19 TB/s；HBM 容量 40 到 80 GB，带宽只有 1.5 到 2 TB/s。速度差了将近一个数量级，容量差了几万倍。</p><p>拿具体的形状算一笔。序列长度 8192，32 个头，FP16。单头的 $S$ 是 $8192\times8192$ 个元素，两个字节一个，128 MiB。32 个头乘起来就是 4 GiB，这还只是一层里的一个中间矩阵。而这一层的 $Q$、$K$、$V$ 单头各是 $8192\times64$ 个元素，1 MiB，32 个头加起来才 96 MiB。中间结果比三个输入加起来还大四十多倍。</p><p>再看算术强度。每处理 $S$ 里的一个元素，$QK^\top$ 贡献 $2d$ 次浮点运算，$PV$ 又贡献 $2d$ 次，$d=64$ 时合计 256 次。而按最省的写法，这个元素也要经历写 $S$、读 $S$、写 $P$、读 $P$ 四趟，FP16 下至少 8 字节。256 除以 8 是 32，单位 FLOP 每字节。A100 的 FP16 张量核峰值 312 TFLOPS，带宽 1.55 TB/s，想把算力喂满需要 200 上下的算术强度。这里只有 32，差着六倍，说明这些 kernel 大部分时间在等数据，张量核是空着的。</p><h2 id="分块卡在-softmax-上"><a href="#分块卡在-softmax-上" class="headerlink" title="分块卡在 softmax 上"></a>分块卡在 softmax 上</h2><p>既然瓶颈在中间矩阵，最直接的想法是别把它整个造出来，切成块，算一块丢一块。矩阵乘法天然可以这么干，麻烦出在 softmax。</p><p>softmax 要的是整行的最大值和整行的和。一行横跨所有的 Key 块，只拿到其中一块时，行最大值还没定，分母也没定。等下一块进来，最大值可能变大，之前按旧基准算好的结果就全部作废。</p><p>FlashAttention 借的是 online softmax 的做法：定不下来就先存着，后面再修正。对每个 Query 行维护三个量，当前见过的行最大值 $m_i$、对应的未归一化指数和 $\ell_i$、以及未归一化的输出块 $\tilde{O}_i$。新读进一块 Key 和 Value，得到这一块自己的最大值 $\tilde{m}$ 与和 $\tilde{\ell}$，再按下面三式把旧状态并进来：</p><script type="math/tex; mode=display">m' = \max(m_i,\ \tilde{m}),\qquad\ell' = e^{m_i-m'}\ell_i + e^{\tilde{m}-m'}\tilde{\ell},\qquadO' = e^{m_i-m'}\tilde{O}_i + e^{\tilde{m}-m'}\tilde{P}V</script><p>旧的输出块整体乘一个 $e^{m_i-m’}$，新块的贡献也乘一个同类系数，两边都被拉回新的最大值基准上，再相加。等所有 Key 块跑完，$O$ 再除以 $\ell$，得到的就是精确的 softmax 结果。</p><p>块大小按 SRAM 反推。设片上可用空间为 $M$，论文取 $B_c=\lceil M/(4d)\rceil$、$B_r=\min(\lceil M/(4d)\rceil,d)$。除以 4 是因为同一时刻要放下 $Q$、$K$、$V$ 三块和输出块。头维度越大，能切的块越小，循环次数越多。</p><p>循环顺序是外层走 Key 和 Value 块，内层走 Query 块。每个 Key、Value 块从 HBM 只读一趟，就把所有 Query 行都服务完；Query 块和输出则要跟着外层反复进出，进出的次数等于 Key 块的个数。这一项乘上 $N\times d$ 的体积，就是 IO 分析里那个 $O(N^2d^2/M)$ 的二次项。所以分块压掉的是 $S$ 和 $P$ 的往返，$Q$、$O$ 仍然要按 $N^2$ 的规模搬，只是被摊薄了一个 $d^2/M$ 的系数。</p><h2 id="一个-kernel-走完"><a href="#一个-kernel-走完" class="headerlink" title="一个 kernel 走完"></a>一个 kernel 走完</h2><p>分块真正的收益不在算法本身，在它让整个注意力可以塞进一个 CUDA kernel。加载 $Q$、$K$、$V$ 的块，算 $S$，减最大值，取指数，累加，再乘 $V$，所有步骤在 SRAM 里连贯执行，中间结果一次都不落 HBM。掩码和 dropout 也能就地作用在块上，不用为它们单独跑一个 kernel、多写一遍显存。</p><p>写回 HBM 的只有输出 $O$ 和两个长度 $N$ 的统计量 $m$、$\ell$，都不是 $N\times N$ 的东西。标准实现要写 $S$ 和 $P$ 两个 $N\times N$ 矩阵，这是显存占用从二次降到线性的全部原因。</p><h2 id="反向：拿计算换那趟往返"><a href="#反向：拿计算换那趟往返" class="headerlink" title="反向：拿计算换那趟往返"></a>反向：拿计算换那趟往返</h2><p>反向的麻烦更大。要算 $Q$、$K$、$V$ 三个梯度，公式里全都有 $P$：</p><script type="math/tex; mode=display">dV = P^\top dO,\qquad dP = dO\,V^\top,\qquad dS = P\odot\left(dP - \operatorname{rowsum}(dP\odot P)\right)</script><p>标准做法是把前向的 $P$ 存下来，反向直接取用，代价是一整个 $N\times N$ 的读写。FlashAttention 不存。它只留下输出 $O$ 和前向的那两个统计量 $m_i$、$\ell_i$，后两者的空间都是 $O(N)$ 级别。</p><p>反向时重新把 $Q$、$K$、$V$ 的块调进 SRAM，再算一次 $S=QK^\top/\sqrt{d}$，然后</p><script type="math/tex; mode=display">P_{ij}=\frac{\exp\left(s_{ij}-m_i\right)}{\ell_i}</script><p>$m_i$ 和 $\ell_i$ 就是前向存下来的原值，所以这个 $P$ 和当初算出来的 $P$ 是同一个数（浮点误差范围内）。重算不是近似重建，是精确还原。拿到 $P$ 之后 $dV$、$dP$、$dS$ 都按原来的公式走，$dQ$、$dK$ 再分别乘回 $K$、$Q$。</p><p>这一类做法在文献里叫选择性梯度检查点。普通的梯度检查点也在省显存，代价通常是变慢。FlashAttention 反过来了：重算多花了与一次前向同量级的 FLOPs，但因为 $P$ 那趟 HBM 往返被彻底消掉，反向实测反而快 2 到 4 倍。</p><h2 id="省下的到底是哪一笔"><a href="#省下的到底是哪一笔" class="headerlink" title="省下的到底是哪一笔"></a>省下的到底是哪一笔</h2><p>把 HBM 访问次数写成复杂度，账就清楚了。标准注意力是 $\Omega(Nd + N^2)$，其中 $N^2$ 那一项来自 $S$ 和 $P$ 的反复读写。FlashAttention 是</p><script type="math/tex; mode=display">O\left(\frac{N^2d^2}{M}\right)</script><p>$M$ 是 SRAM 大小，按元素个数算。$d^2/M$ 这个因子能把二次项压掉多少，取决于头维度和片上空间的比例。$d=64$、$M$ 按 FP16 折成约 9.8 万个元素时，这个因子大概是 $1/24$。不过这条界是渐近的，实际实现里还有别的固定开销，论文报的实测是 HBM 访问最多少 9 倍。</p><div class="table-container"><table><thead><tr><th>项目</th><th>标准注意力</th><th>FlashAttention</th></tr></thead><tbody><tr><td>前向写回 HBM</td><td>$S$、$P$，各 $N\times N$</td><td>只有 $O$ 和 $m$、$\ell$</td></tr><tr><td>反向读 HBM</td><td>$P$，$N\times N$</td><td>$Q$、$K$、$V$、$O$、$dO$ 的块，没有 $N\times N$</td></tr><tr><td>HBM 访问次数</td><td>$\Omega(Nd+N^2)$</td><td>$O(N^2d^2/M)$</td></tr><tr><td>FLOPs</td><td>基准</td><td>略高，反向多一次重算</td></tr><tr><td>结果</td><td>精确</td><td>精确，浮点误差内一致</td></tr><tr><td>显存占用</td><td>$O(N^2)$</td><td>$O(N)$</td></tr></tbody></table></div><p>论文给的端到端数字是：GPT-2 上训练快 3 倍，注意力这个 kernel 本身快 7.6 倍，BERT-large 快 15%，长程竞技场快 2.4 倍。kernel 的倍数比端到端大得多，因为端到端里还有前馈层、归一化、优化器这些这次改动没碰到的部分。</p><h2 id="它没有解决什么"><a href="#它没有解决什么" class="headerlink" title="它没有解决什么"></a>它没有解决什么</h2><p>FLOPs 没有降，计算复杂度仍然是 $O(N^2d)$。序列长到一定程度，该算不动的还是算不动。线性注意力、稀疏注意力针对的是这个层面的问题，FlashAttention 只负责让同样的计算少等数据。两件事可以叠加，但不能互相替代。</p><p>分块边长受 SRAM 挤压。$d=64$ 时一块能放不少行，$d=128$ 或者要做双缓冲时，块就变小，循环次数跟着涨。片上空间是有限的，这个上限挪不动。</p><p>短序列上的收益有限。$N$ 只有几百时，$N\times N$ 本来就不大，kernel 的启动开销和固定开销占比上来，加速比会变平。FlashAttention 的收益是随 $N$ 放大的一条曲线。</p><p>实现层面的代价也要算进去。它依赖手写 CUDA kernel，换硬件或者要自定义掩码结构，就得回到 kernel 里改。后来的 FlashAttention-2 主要在并行划分上做文章，把工作拆到序列维上，让 SM 吃得更满；FlashAttention-3 针对 Hopper 的异步管线重新编排。这些都是在同一套分块加重算的骨架上继续压榨。</p><p>说到底，FlashAttention 算的还是那些乘法，只是不再把 $N\times N$ 的中间结果搬来搬去。省下来的是一笔带宽账，而现代 GPU 上，带宽恰恰是注意力最缺的那一样。</p><h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><ol><li>Dao, T., Fu, D. Y., Ermon, S., Rudra, A., &amp; Ré, C. (2022). <em>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</em>. NeurIPS 2022.</li><li>Dao, T. (2023). <em>FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning</em>. ICLR 2024.</li></ol>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;FlashAttention 一次乘法都没少算。前向照旧要算 $QK^&#92;top$，反向还要把它再算一遍。它改的是这些计算发生的位置，以及中间结果写到哪里去。&lt;/p&gt;
+&lt;p&gt;也正因为如此，它算出来的结果和标准注意力在浮点误差范围内完全一致。这一点是它和稀疏注意力、低秩近似那类</summary>
+      
+    
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://daoxuan.cc/tags/AI/"/>
+    
+    <category term="深度学习" scheme="https://daoxuan.cc/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="Transformer" scheme="https://daoxuan.cc/tags/Transformer/"/>
+    
+    <category term="性能优化" scheme="https://daoxuan.cc/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"/>
+    
+  </entry>
   
   <entry>
     <title>从矩阵乘法结合律到线性注意力：为什么需要特征映射？</title>
